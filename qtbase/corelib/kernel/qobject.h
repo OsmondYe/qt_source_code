@@ -89,7 +89,7 @@ public:
     inline bool isWidgetType() const { return d_ptr->isWidget; }
     inline bool isWindowType() const { return d_ptr->isWindow; }
 
-    inline bool signalsBlocked() const Q_DECL_NOTHROW { return d_ptr->blockSig; }
+    inline bool signalsBlocked() const  { return d_ptr->blockSig; }
     bool blockSignals(bool b) ;
 
     QThread *thread() const;
@@ -158,17 +158,28 @@ public:
 
 #ifdef Q_QDOC
     template<typename PointerToMemberFunction>
-    static QMetaObject::Connection connect(const QObject *sender, PointerToMemberFunction signal, const QObject *receiver, PointerToMemberFunction method, Qt::ConnectionType type = Qt::AutoConnection);
+    static QMetaObject::Connection connect(const QObject *sender, 
+    	ointerToMemberFunction signal, 
+    	const QObject *receiver, 
+    	PointerToMemberFunction method, 
+    	Qt::ConnectionType type = Qt::AutoConnection);
     template<typename PointerToMemberFunction, typename Functor>
-    static QMetaObject::Connection connect(const QObject *sender, PointerToMemberFunction signal, Functor functor);
+    static QMetaObject::Connection connect(const QObject *sender, 
+    	ointerToMemberFunction signal, 
+    	Functor functor);
     template<typename PointerToMemberFunction, typename Functor>
-    static QMetaObject::Connection connect(const QObject *sender, PointerToMemberFunction signal, const QObject *context, Functor functor, Qt::ConnectionType type = Qt::AutoConnection);
+    static QMetaObject::Connection connect(const QObject *sender, 
+    	ointerToMemberFunction signal, 
+    	const QObject *context, 
+    	Functor functor, 
+    	Qt::ConnectionType type = Qt::AutoConnection);
 #else
     //Connect a signal to a pointer to qobject member function
     template <typename Func1, typename Func2>
-    static inline QMetaObject::Connection connect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal,
-                                     const typename QtPrivate::FunctionPointer<Func2>::Object *receiver, Func2 slot,
-                                     Qt::ConnectionType type = Qt::AutoConnection)
+    static inline QMetaObject::Connection connect(
+    		const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal,
+            const typename QtPrivate::FunctionPointer<Func2>::Object *receiver, Func2 slot,
+            Qt::ConnectionType type = Qt::AutoConnection)
     {
         typedef QtPrivate::FunctionPointer<Func1> SignalType;
         typedef QtPrivate::FunctionPointer<Func2> SlotType;
@@ -366,7 +377,7 @@ protected:
     QScopedPointer<QObjectData> d_ptr;
 
     static const QMetaObject staticQtMetaObject;
-    friend inline const QMetaObject *qt_getQtMetaObject() Q_DECL_NOEXCEPT;
+    friend inline const QMetaObject *qt_getQtMetaObject() ;
 
     friend struct QMetaObject;
     friend struct QMetaObjectPrivate;
@@ -472,79 +483,40 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QObject *);
 class QSignalBlocker
 {
 public:
-    inline explicit QSignalBlocker(QObject *o) Q_DECL_NOTHROW;
-    inline explicit QSignalBlocker(QObject &o) Q_DECL_NOTHROW;
-    inline ~QSignalBlocker();
+    inline explicit QSignalBlocker(QObject *o) ;
+    inline explicit QSignalBlocker(QObject &o) ;
+    inline ~QSignalBlocker()	{
+	    if (m_o && !m_inhibited)
+	        m_o->blockSignals(m_blocked);
+	}
 
-#ifdef Q_COMPILER_RVALUE_REFS
-    inline QSignalBlocker(QSignalBlocker &&other) Q_DECL_NOTHROW;
-    inline QSignalBlocker &operator=(QSignalBlocker &&other) Q_DECL_NOTHROW;
-#endif
 
-    inline void reblock() Q_DECL_NOTHROW;
-    inline void unblock() Q_DECL_NOTHROW;
+    inline void reblock(){
+    	if (m_o) m_o->blockSignals(true);
+    	m_inhibited = false;
+	}
+    inline void unblock() 	{
+	    if (m_o) m_o->blockSignals(m_blocked);
+	    m_inhibited = true;
+	}
 private:
-    Q_DISABLE_COPY(QSignalBlocker)
     QObject * m_o;
     bool m_blocked;
     bool m_inhibited;
 };
 
-QSignalBlocker::QSignalBlocker(QObject *o) Q_DECL_NOTHROW
+QSignalBlocker::QSignalBlocker(QObject *o) 
     : m_o(o),
       m_blocked(o && o->blockSignals(true)),
       m_inhibited(false)
 {}
 
-QSignalBlocker::QSignalBlocker(QObject &o) Q_DECL_NOTHROW
+QSignalBlocker::QSignalBlocker(QObject &o) 
     : m_o(&o),
       m_blocked(o.blockSignals(true)),
       m_inhibited(false)
 {}
 
-#ifdef Q_COMPILER_RVALUE_REFS
-QSignalBlocker::QSignalBlocker(QSignalBlocker &&other) Q_DECL_NOTHROW
-    : m_o(other.m_o),
-      m_blocked(other.m_blocked),
-      m_inhibited(other.m_inhibited)
-{
-    other.m_o = Q_NULLPTR;
-}
-
-QSignalBlocker &QSignalBlocker::operator=(QSignalBlocker &&other) Q_DECL_NOTHROW
-{
-    if (this != &other) {
-        // if both *this and other block the same object's signals:
-        // unblock *this iff our dtor would unblock, but other's wouldn't
-        if (m_o != other.m_o || (!m_inhibited && other.m_inhibited))
-            unblock();
-        m_o = other.m_o;
-        m_blocked = other.m_blocked;
-        m_inhibited = other.m_inhibited;
-        // disable other:
-        other.m_o = Q_NULLPTR;
-    }
-    return *this;
-}
-#endif
-
-QSignalBlocker::~QSignalBlocker()
-{
-    if (m_o && !m_inhibited)
-        m_o->blockSignals(m_blocked);
-}
-
-void QSignalBlocker::reblock() Q_DECL_NOTHROW
-{
-    if (m_o) m_o->blockSignals(true);
-    m_inhibited = false;
-}
-
-void QSignalBlocker::unblock() Q_DECL_NOTHROW
-{
-    if (m_o) m_o->blockSignals(m_blocked);
-    m_inhibited = true;
-}
 
 namespace QtPrivate {
     inline QObject & deref_for_methodcall(QObject &o) { return  o; }

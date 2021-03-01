@@ -758,7 +758,7 @@ static bool check_parent_thread(QObject *parent,
 QObject::QObject(QObject *parent)
     : d_ptr(new QObjectPrivate)
 {
-    Q_D(QObject);
+    QObjectPrivate * const d = d_func();
     d_ptr->q_ptr = this;
     d->threadData = (parent && !parent->thread()) ? parent->d_func()->threadData : QThreadData::current();
     d->threadData->ref();
@@ -785,7 +785,7 @@ QObject::QObject(QObject *parent)
 QObject::QObject(QObjectPrivate &dd, QObject *parent)
     : d_ptr(&dd)
 {
-    Q_D(QObject);
+    QObjectPrivate * const d = d_func();
     d_ptr->q_ptr = this;
     d->threadData = (parent && !parent->thread()) ? parent->d_func()->threadData : QThreadData::current();
     d->threadData->ref();
@@ -840,7 +840,7 @@ QObject::QObject(QObjectPrivate &dd, QObject *parent)
 
 QObject::~QObject()
 {
-    Q_D(QObject);
+    QObjectPrivate * const d = d_func();
     d->wasDeleted = true;
     d->blockSig = 0; // unblock signals so we always emit destroyed()
 
@@ -1003,122 +1003,10 @@ QObjectPrivate::Connection::~Connection()
 }
 
 
-/*!
-    \fn QMetaObject *QObject::metaObject() const
-
-    Returns a pointer to the meta-object of this object.
-
-    A meta-object contains information about a class that inherits
-    QObject, e.g. class name, superclass name, properties, signals and
-    slots. Every QObject subclass that contains the Q_OBJECT macro will have a
-    meta-object.
-
-    The meta-object information is required by the signal/slot
-    connection mechanism and the property system. The inherits()
-    function also makes use of the meta-object.
-
-    If you have no pointer to an actual object instance but still
-    want to access the meta-object of a class, you can use \l
-    staticMetaObject.
-
-    Example:
-
-    \snippet code/src_corelib_kernel_qobject.cpp 1
-
-    \sa staticMetaObject
-*/
-
-/*!
-    \variable QObject::staticMetaObject
-
-    This variable stores the meta-object for the class.
-
-    A meta-object contains information about a class that inherits
-    QObject, e.g. class name, superclass name, properties, signals and
-    slots. Every class that contains the Q_OBJECT macro will also have
-    a meta-object.
-
-    The meta-object information is required by the signal/slot
-    connection mechanism and the property system. The inherits()
-    function also makes use of the meta-object.
-
-    If you have a pointer to an object, you can use metaObject() to
-    retrieve the meta-object associated with that object.
-
-    Example:
-
-    \snippet code/src_corelib_kernel_qobject.cpp 2
-
-    \sa metaObject()
-*/
-
-/*! \fn T *qobject_cast<T *>(QObject *object)
-    \relates QObject
-
-    Returns the given \a object cast to type T if the object is of type
-    T (or of a subclass); otherwise returns 0.  If \a object is 0 then
-    it will also return 0.
-
-    The class T must inherit (directly or indirectly) QObject and be
-    declared with the \l Q_OBJECT macro.
-
-    A class is considered to inherit itself.
-
-    Example:
-
-    \snippet code/src_corelib_kernel_qobject.cpp 3
-
-    The qobject_cast() function behaves similarly to the standard C++
-    \c dynamic_cast(), with the advantages that it doesn't require
-    RTTI support and it works across dynamic library boundaries.
-
-    qobject_cast() can also be used in conjunction with interfaces;
-    see the \l{tools/plugandpaint/app}{Plug & Paint} example for details.
-
-    \warning If T isn't declared with the Q_OBJECT macro, this
-    function's return value is undefined.
-
-    \sa QObject::inherits()
-*/
-
-/*!
-    \fn bool QObject::inherits(const char *className) const
-
-    Returns \c true if this object is an instance of a class that
-    inherits \a className or a QObject subclass that inherits \a
-    className; otherwise returns \c false.
-
-    A class is considered to inherit itself.
-
-    Example:
-
-    \snippet code/src_corelib_kernel_qobject.cpp 4
-
-    If you need to determine whether an object is an instance of a particular
-    class for the purpose of casting it, consider using qobject_cast<Type *>(object)
-    instead.
-
-    \sa metaObject(), qobject_cast()
-*/
-
-/*!
-    \property QObject::objectName
-
-    \brief the name of this object
-
-    You can find an object by name (and type) using findChild().
-    You can find a set of objects with findChildren().
-
-    \snippet code/src_corelib_kernel_qobject.cpp 5
-
-    By default, this property contains an empty string.
-
-    \sa metaObject(), QMetaObject::className()
-*/
 
 QString QObject::objectName() const
 {
-    Q_D(const QObject);
+    const QObjectPrivate * const d = d_func();
     return d->extraData ? d->extraData->objectName : QString();
 }
 
@@ -1127,7 +1015,7 @@ QString QObject::objectName() const
 */
 void QObject::setObjectName(const QString &name)
 {
-    Q_D(QObject);
+    QObjectPrivate * const d = d_func();
     if (!d->extraData)
         d->extraData = new QObjectPrivate::ExtraData;
 
@@ -1208,7 +1096,7 @@ bool QObject::event(QEvent *e)
         }
 
     case QEvent::ThreadChange: {
-        Q_D(QObject);
+        QObjectPrivate * const d = d_func();
         QThreadData *threadData = d->threadData;
         QAbstractEventDispatcher *eventDispatcher = threadData->eventDispatcher.load();
         if (eventDispatcher) {
@@ -1332,34 +1220,10 @@ bool QObject::eventFilter(QObject * /* watched */, QEvent * /* event */)
     return false;
 }
 
-/*!
-    \fn bool QObject::signalsBlocked() const
-
-    Returns \c true if signals are blocked; otherwise returns \c false.
-
-    Signals are not blocked by default.
-
-    \sa blockSignals(), QSignalBlocker
-*/
-
-/*!
-    If \a block is true, signals emitted by this object are blocked
-    (i.e., emitting a signal will not invoke anything connected to it).
-    If \a block is false, no such blocking will occur.
-
-    The return value is the previous value of signalsBlocked().
-
-    Note that the destroyed() signal will be emitted even if the signals
-    for this object have been blocked.
-
-    Signals emitted while being blocked are not buffered.
-
-    \sa signalsBlocked(), QSignalBlocker
-*/
 
 bool QObject::blockSignals(bool block) Q_DECL_NOTHROW
 {
-    Q_D(QObject);
+    QObjectPrivate * const d = d_func();
     bool previous = d->blockSig;
     d->blockSig = block;
     return previous;
@@ -1411,7 +1275,7 @@ QThread *QObject::thread() const
  */
 void QObject::moveToThread(QThread *targetThread)
 {
-    Q_D(QObject);
+    QObjectPrivate * const d = d_func();
 
     if (d->threadData->thread == targetThread) {
         // object is already in this thread
@@ -1572,7 +1436,7 @@ void QObjectPrivate::_q_reregisterTimers(void *pointer)
 
 int QObject::startTimer(int interval, Qt::TimerType timerType)
 {
-    Q_D(QObject);
+    QObjectPrivate * const d = d_func();
 
     if (Q_UNLIKELY(interval < 0)) {
         qWarning("QObject::startTimer: Timers cannot have negative intervals");
@@ -1643,7 +1507,7 @@ int QObject::startTimer(int interval, Qt::TimerType timerType)
 
 void QObject::killTimer(int id)
 {
-    Q_D(QObject);
+    QObjectPrivate * const d = d_func();
     if (Q_UNLIKELY(thread() != QThread::currentThread())) {
         qWarning("QObject::killTimer: Timers cannot be stopped from another thread");
         return;
@@ -1934,7 +1798,7 @@ QObject *qt_qFindChild_helper(const QObject *parent, const QString &name, const 
 */
 void QObject::setParent(QObject *parent)
 {
-    Q_D(QObject);
+    QObjectPrivate * const d = d_func();
     Q_ASSERT(!d->isWidget);
     d->setParent_helper(parent);
 }
@@ -2044,7 +1908,7 @@ void QObjectPrivate::setParent_helper(QObject *o)
 
 void QObject::installEventFilter(QObject *obj)
 {
-    Q_D(QObject);
+    QObjectPrivate * const d = d_func();
     if (!obj)
         return;
     if (d->threadData != obj->d_func()->threadData) {
@@ -2076,7 +1940,7 @@ void QObject::installEventFilter(QObject *obj)
 
 void QObject::removeEventFilter(QObject *obj)
 {
-    Q_D(QObject);
+    QObjectPrivate * const d = d_func();
     if (d->extraData) {
         for (int i = 0; i < d->extraData->eventFilters.count(); ++i) {
             if (d->extraData->eventFilters.at(i) == obj)
@@ -2304,7 +2168,7 @@ static void err_info_about_objects(const char * func,
 
 QObject *QObject::sender() const
 {
-    Q_D(const QObject);
+    const QObjectPrivate * const d = d_func();
 
     QMutexLocker locker(signalSlotLock(this));
     if (!d->currentSender)
@@ -2345,7 +2209,7 @@ QObject *QObject::sender() const
 
 int QObject::senderSignalIndex() const
 {
-    Q_D(const QObject);
+    const QObjectPrivate * const d = d_func();
 
     QMutexLocker locker(signalSlotLock(this));
     if (!d->currentSender)
@@ -2384,7 +2248,7 @@ int QObject::senderSignalIndex() const
 
 int QObject::receivers(const char *signal) const
 {
-    Q_D(const QObject);
+    const QObjectPrivate * const d = d_func();
     int receivers = 0;
     if (signal) {
         QByteArray signal_name = QMetaObject::normalizedSignature(signal);
@@ -2445,7 +2309,7 @@ int QObject::receivers(const char *signal) const
 */
 bool QObject::isSignalConnected(const QMetaMethod &signal) const
 {
-    Q_D(const QObject);
+    const QObjectPrivate * const d = d_func();
     if (!signal.mobj)
         return false;
 
@@ -3831,7 +3695,7 @@ int QObjectPrivate::signalIndex(const char *signalName,
 */
 bool QObject::setProperty(const char *name, const QVariant &value)
 {
-    Q_D(QObject);
+    QObjectPrivate * const d = d_func();
     const QMetaObject* meta = metaObject();
     if (!name || !meta)
         return false;
@@ -3885,7 +3749,7 @@ bool QObject::setProperty(const char *name, const QVariant &value)
 */
 QVariant QObject::property(const char *name) const
 {
-    Q_D(const QObject);
+    const QObjectPrivate * const d = d_func();
     const QMetaObject* meta = metaObject();
     if (!name || !meta)
         return QVariant();
@@ -3914,7 +3778,7 @@ QVariant QObject::property(const char *name) const
 */
 QList<QByteArray> QObject::dynamicPropertyNames() const
 {
-    Q_D(const QObject);
+    const QObjectPrivate * const d = d_func();
     if (d->extraData)
         return d->extraData->propertyNames;
     return QList<QByteArray>();
@@ -4015,7 +3879,7 @@ void QObject::dumpObjectInfo() const
     qDebug("OBJECT %s::%s", metaObject()->className(),
            objectName().isEmpty() ? "unnamed" : objectName().toLocal8Bit().data());
 
-    Q_D(const QObject);
+    const QObjectPrivate * const d = d_func();
     QMutexLocker locker(signalSlotLock(this));
 
     // first, look for connections where this object is the sender
@@ -4073,29 +3937,20 @@ void QObject::dumpObjectInfo() const
     }
 }
 
-#ifndef QT_NO_USERDATA
-/*!
-    \internal
- */
+
 uint QObject::registerUserData()
 {
     static int user_data_registration = 0;
     return user_data_registration++;
 }
 
-/*!
-    \internal
- */
-QObjectUserData::~QObjectUserData()
-{
-}
 
-/*!
-    \internal
- */
+QObjectUserData::~QObjectUserData(){}
+
+
 void QObject::setUserData(uint id, QObjectUserData* data)
 {
-    Q_D(QObject);
+    QObjectPrivate * const d = d_func();
     if (!d->extraData)
         d->extraData = new QObjectPrivate::ExtraData;
 
@@ -4104,12 +3959,10 @@ void QObject::setUserData(uint id, QObjectUserData* data)
     d->extraData->userData[id] = data;
 }
 
-/*!
-    \internal
- */
+
 QObjectUserData* QObject::userData(uint id) const
 {
-    Q_D(const QObject);
+    const QObjectPrivate * const d = d_func();
     if (!d->extraData)
         return 0;
     if ((int)id < d->extraData->userData.size())
@@ -4117,7 +3970,6 @@ QObjectUserData* QObject::userData(uint id) const
     return 0;
 }
 
-#endif // QT_NO_USERDATA
 
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -4134,424 +3986,6 @@ QDebug operator<<(QDebug dbg, const QObject *o)
 }
 #endif
 
-/*!
-    \macro Q_CLASSINFO(Name, Value)
-    \relates QObject
-
-    This macro associates extra information to the class, which is available
-    using QObject::metaObject(). Qt makes only limited use of this feature, in
-    the \l{Active Qt}, \l{Qt D-Bus} and \l{Qt QML module}{Qt QML}.
-
-    The extra information takes the form of a \a Name string and a \a Value
-    literal string.
-
-    Example:
-
-    \snippet code/src_corelib_kernel_qobject.cpp 35
-
-    \sa QMetaObject::classInfo()
-    \sa QAxFactory
-    \sa {Using Qt D-Bus Adaptors}
-    \sa {Extending QML}
-*/
-
-/*!
-    \macro Q_INTERFACES(...)
-    \relates QObject
-
-    This macro tells Qt which interfaces the class implements. This
-    is used when implementing plugins.
-
-    Example:
-
-    \snippet ../widgets/tools/plugandpaint/plugins/basictools/basictoolsplugin.h 1
-    \dots
-    \snippet ../widgets/tools/plugandpaint/plugins/basictools/basictoolsplugin.h 3
-
-    See the \l{tools/plugandpaint/plugins/basictools}{Plug & Paint
-    Basic Tools} example for details.
-
-    \sa Q_DECLARE_INTERFACE(), Q_PLUGIN_METADATA(), {How to Create Qt Plugins}
-*/
-
-/*!
-    \macro Q_PROPERTY(...)
-    \relates QObject
-
-    This macro is used for declaring properties in classes that
-    inherit QObject. Properties behave like class data members, but
-    they have additional features accessible through the \l
-    {Meta-Object System}.
-
-    \snippet code/doc_src_properties.cpp 0
-
-    The property name and type and the \c READ function are required.
-    The type can be any type supported by QVariant, or it can be a
-    user-defined type.  The other items are optional, but a \c WRITE
-    function is common.  The attributes default to true except \c USER,
-    which defaults to false.
-
-    For example:
-
-    \snippet code/src_corelib_kernel_qobject.cpp 37
-
-    For more details about how to use this macro, and a more detailed
-    example of its use, see the discussion on \l {Qt's Property System}.
-
-    \sa {Qt's Property System}
-*/
-
-/*!
-    \macro Q_ENUMS(...)
-    \relates QObject
-    \obsolete
-
-    This macro registers one or several enum types to the meta-object
-    system.
-
-    For example:
-
-    \snippet code/src_corelib_kernel_qobject.cpp 38
-
-    If you want to register an enum that is declared in another class,
-    the enum must be fully qualified with the name of the class
-    defining it. In addition, the class \e defining the enum has to
-    inherit QObject as well as declare the enum using Q_ENUMS().
-
-    In new code, you should prefer the use of the Q_ENUM() macro, which makes the
-    type available also to the meta type system.
-    For instance, QMetaEnum::fromType() will not work with types declared with Q_ENUMS().
-
-    \sa {Qt's Property System}
-*/
-
-/*!
-    \macro Q_FLAGS(...)
-    \relates QObject
-    \obsolete
-
-    This macro registers one or several \l{QFlags}{flags types} with the
-    meta-object system. It is typically used in a class definition to declare
-    that values of a given enum can be used as flags and combined using the
-    bitwise OR operator.
-
-    \note This macro takes care of registering individual flag values
-    with the meta-object system, so it is unnecessary to use Q_ENUMS()
-    in addition to this macro.
-
-    In new code, you should prefer the use of the Q_FLAG() macro, which makes the
-    type available also to the meta type system.
-
-    \sa {Qt's Property System}
-*/
-
-/*!
-    \macro Q_ENUM(...)
-    \relates QObject
-    \since 5.5
-
-    This macro registers an enum type with the meta-object system.
-    It must be placed after the enum declaration in a class that has the Q_OBJECT or the
-    Q_GADGET macro. For namespaces use \l Q_ENUM_NS() instead.
-
-    For example:
-
-    \snippet code/src_corelib_kernel_qobject.cpp 38
-
-    Enumerations that are declared with Q_ENUM have their QMetaEnum registered in the
-    enclosing QMetaObject. You can also use QMetaEnum::fromType() to get the QMetaEnum.
-
-    Registered enumerations are automatically registered also to the Qt meta
-    type system, making them known to QMetaType without the need to use
-    Q_DECLARE_METATYPE(). This will enable useful features; for example, if used
-    in a QVariant, you can convert them to strings. Likewise, passing them to
-    QDebug will print out their names.
-
-    \sa {Qt's Property System}
-*/
-
-
-/*!
-    \macro Q_FLAG(...)
-    \relates QObject
-    \since 5.5
-
-    This macro registers a single \l{QFlags}{flags type} with the
-    meta-object system. It is typically used in a class definition to declare
-    that values of a given enum can be used as flags and combined using the
-    bitwise OR operator. For namespaces use \l Q_FLAG_NS() instead.
-
-    The macro must be placed after the enum declaration.
-
-    For example, in QLibrary, the \l{QLibrary::LoadHints}{LoadHints} flag is
-    declared in the following way:
-
-    \snippet code/src_corelib_kernel_qobject.cpp 39
-
-    The declaration of the flags themselves is performed in the public section
-    of the QLibrary class itself, using the \l Q_DECLARE_FLAGS() macro.
-
-    \note The Q_FLAG macro takes care of registering individual flag values
-    with the meta-object system, so it is unnecessary to use Q_ENUM()
-    in addition to this macro.
-
-    \sa {Qt's Property System}
-*/
-
-/*!
-    \macro Q_ENUM_NS(...)
-    \relates QObject
-    \since 5.8
-
-    This macro registers an enum type with the meta-object system.
-    It must be placed after the enum declaration in a namespace that
-    has the Q_NAMESPACE macro. It is the same as \l Q_ENUM but in a
-    namespace.
-
-    Enumerations that are declared with Q_ENUM_NS have their QMetaEnum
-    registered in the enclosing QMetaObject. You can also use
-    QMetaEnum::fromType() to get the QMetaEnum.
-
-    Registered enumerations are automatically registered also to the Qt meta
-    type system, making them known to QMetaType without the need to use
-    Q_DECLARE_METATYPE(). This will enable useful features; for example, if
-    used in a QVariant, you can convert them to strings. Likewise, passing them
-    to QDebug will print out their names.
-
-    \sa {Qt's Property System}
-*/
-
-
-/*!
-    \macro Q_FLAG_NS(...)
-    \relates QObject
-    \since 5.8
-
-    This macro registers a single \l{QFlags}{flags type} with the
-    meta-object system. It is used in a namespace that has the
-    Q_NAMESPACE macro, to declare that values of a given enum can be
-    used as flags and combined using the bitwise OR operator.
-    It is the same as \l Q_FLAG but in a namespace.
-
-    The macro must be placed after the enum declaration.
-
-    \note The Q_FLAG_NS macro takes care of registering individual flag
-    values with the meta-object system, so it is unnecessary to use
-    Q_ENUM_NS() in addition to this macro.
-
-    \sa {Qt's Property System}
-*/
-
-
-/*!
-    \macro Q_OBJECT
-    \relates QObject
-
-    The Q_OBJECT macro must appear in the private section of a class
-    definition that declares its own signals and slots or that uses
-    other services provided by Qt's meta-object system.
-
-    For example:
-
-    \snippet signalsandslots/signalsandslots.h 1
-    \codeline
-    \snippet signalsandslots/signalsandslots.h 2
-    \snippet signalsandslots/signalsandslots.h 3
-
-    \note This macro requires the class to be a subclass of QObject. Use
-    Q_GADGET instead of Q_OBJECT to enable the meta object system's support
-    for enums in a class that is not a QObject subclass.
-
-    \sa {Meta-Object System}, {Signals and Slots}, {Qt's Property System}
-*/
-
-/*!
-    \macro Q_GADGET
-    \relates QObject
-
-    The Q_GADGET macro is a lighter version of the Q_OBJECT macro for classes
-    that do not inherit from QObject but still want to use some of the
-    reflection capabilities offered by QMetaObject. Just like the Q_OBJECT
-    macro, it must appear in the private section of a class definition.
-
-    Q_GADGETs can have Q_ENUM, Q_PROPERTY and Q_INVOKABLE, but they cannot have
-    signals or slots
-
-    Q_GADGET makes a class member, \c{staticMetaObject}, available.
-    \c{staticMetaObject} is of type QMetaObject and provides access to the
-    enums declared with Q_ENUMS.
-*/
-
-/*!
-    \macro Q_NAMESPACE
-    \since 5.8
-
-    The Q_NAMESPACE macro can be used to add QMetaObject capabilities
-    to a namespace.
-
-    Q_NAMESPACEs can have Q_CLASSINFO, Q_ENUM_NS, Q_FLAG_NS, but they
-    cannot have Q_ENUM, Q_FLAG, Q_PROPERTY, Q_INVOKABLE, signals nor slots.
-
-    Q_NAMESPACE makes an external variable, \c{staticMetaObject}, available.
-    \c{staticMetaObject} is of type QMetaObject and provides access to the
-    enums declared with Q_ENUM_NS/Q_FLAG_NS.
-*/
-
-/*!
-    \macro Q_SIGNALS
-    \relates QObject
-
-    Use this macro to replace the \c signals keyword in class
-    declarations, when you want to use Qt Signals and Slots with a
-    \l{3rd Party Signals and Slots} {3rd party signal/slot mechanism}.
-
-    The macro is normally used when \c no_keywords is specified with
-    the \c CONFIG variable in the \c .pro file, but it can be used
-    even when \c no_keywords is \e not specified.
-*/
-
-/*!
-    \macro Q_SIGNAL
-    \relates QObject
-
-    This is an additional macro that allows you to mark a single
-    function as a signal. It can be quite useful, especially when you
-    use a 3rd-party source code parser which doesn't understand a \c
-    signals or \c Q_SIGNALS groups.
-
-    Use this macro to replace the \c signals keyword in class
-    declarations, when you want to use Qt Signals and Slots with a
-    \l{3rd Party Signals and Slots} {3rd party signal/slot mechanism}.
-
-    The macro is normally used when \c no_keywords is specified with
-    the \c CONFIG variable in the \c .pro file, but it can be used
-    even when \c no_keywords is \e not specified.
-*/
-
-/*!
-    \macro Q_SLOTS
-    \relates QObject
-
-    Use this macro to replace the \c slots keyword in class
-    declarations, when you want to use Qt Signals and Slots with a
-    \l{3rd Party Signals and Slots} {3rd party signal/slot mechanism}.
-
-    The macro is normally used when \c no_keywords is specified with
-    the \c CONFIG variable in the \c .pro file, but it can be used
-    even when \c no_keywords is \e not specified.
-*/
-
-/*!
-    \macro Q_SLOT
-    \relates QObject
-
-    This is an additional macro that allows you to mark a single
-    function as a slot. It can be quite useful, especially when you
-    use a 3rd-party source code parser which doesn't understand a \c
-    slots or \c Q_SLOTS groups.
-
-    Use this macro to replace the \c slots keyword in class
-    declarations, when you want to use Qt Signals and Slots with a
-    \l{3rd Party Signals and Slots} {3rd party signal/slot mechanism}.
-
-    The macro is normally used when \c no_keywords is specified with
-    the \c CONFIG variable in the \c .pro file, but it can be used
-    even when \c no_keywords is \e not specified.
-*/
-
-/*!
-    \macro Q_EMIT
-    \relates QObject
-
-    Use this macro to replace the \c emit keyword for emitting
-    signals, when you want to use Qt Signals and Slots with a
-    \l{3rd Party Signals and Slots} {3rd party signal/slot mechanism}.
-
-    The macro is normally used when \c no_keywords is specified with
-    the \c CONFIG variable in the \c .pro file, but it can be used
-    even when \c no_keywords is \e not specified.
-*/
-
-/*!
-    \macro Q_INVOKABLE
-    \relates QObject
-
-    Apply this macro to declarations of member functions to allow them to
-    be invoked via the meta-object system. The macro is written before
-    the return type, as shown in the following example:
-
-    \snippet qmetaobject-invokable/window.h Window class with invokable method
-
-    The \c invokableMethod() function is marked up using Q_INVOKABLE, causing
-    it to be registered with the meta-object system and enabling it to be
-    invoked using QMetaObject::invokeMethod().
-    Since \c normalMethod() function is not registered in this way, it cannot
-    be invoked using QMetaObject::invokeMethod().
-*/
-
-/*!
-    \macro Q_REVISION
-    \relates QObject
-
-    Apply this macro to declarations of member functions to tag them with a
-    revision number in the meta-object system. The macro is written before
-    the return type, as shown in the following example:
-
-    \snippet qmetaobject-revision/window.h Window class with revision
-
-    This is useful when using the meta-object system to dynamically expose
-    objects to another API, as you can match the version expected by multiple
-    versions of the other API. Consider the following simplified example:
-
-    \snippet qmetaobject-revision/main.cpp Window class using revision
-
-    Using the same Window class as the previous example, the newProperty and
-    newMethod would only be exposed in this code when the expected version is
-    1 or greater.
-
-    Since all methods are considered to be in revision 0 if untagged, a tag
-    of Q_REVISION(0) is invalid and ignored.
-
-    This tag is not used by the meta-object system itself. Currently this is only
-    used by the QtQml module.
-
-    For a more generic string tag, see \l QMetaMethod::tag()
-
-    \sa QMetaMethod::revision()
-*/
-
-/*!
-    \macro Q_SET_OBJECT_NAME(Object)
-    \relates QObject
-    \since 5.0
-
-    This macro assigns \a Object the objectName "Object".
-
-    It doesn't matter whether \a Object is a pointer or not, the
-    macro figures that out by itself.
-
-    \sa QObject::objectName()
-*/
-
-/*!
-    \macro QT_NO_NARROWING_CONVERSIONS_IN_CONNECT
-    \relates QObject
-    \since 5.8
-
-    Defining this macro will disable narrowing and floating-point-to-integral
-    conversions between the arguments carried by a signal and the arguments
-    accepted by a slot, when the signal and the slot are connected using the
-    PMF-based syntax.
-
-    \sa QObject::connect
-*/
-
-/*!
-    \typedef QObjectList
-    \relates QObject
-
-    Synonym for QList<QObject *>.
-*/
 
 void qDeleteInEventHandler(QObject *o)
 {
@@ -5027,17 +4461,6 @@ bool QMetaObject::Connection::isConnected_helper() const
 
     return c->receiver;
 }
-
-
-/*!
-    \fn QMetaObject::Connection::operator bool() const
-
-    Returns \c true if the connection is valid.
-
-    The connection is valid if the call to QObject::connect succeeded.
-    The connection is invalid if QObject::connect was not able to find
-    the signal or the slot, or if the arguments do not match.
- */
 
 QT_END_NAMESPACE
 

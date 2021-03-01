@@ -54,17 +54,16 @@ struct QAbstractDeclarativeDataImpl : public QAbstractDeclarativeData
     quint32 unused: 31;
 };
 
-class Q_CORE_EXPORT QObjectPrivate : public QObjectData
+class  QObjectPrivate : public QObjectData
 {
-    Q_DECLARE_PUBLIC(QObject)
+    //Q_DECLARE_PUBLIC(QObject)
+    inline QObject* q_func() { return static_cast<Class *>(q_ptr); }
 
 public:
     struct ExtraData
     {
-        ExtraData() {}
-    #ifndef QT_NO_USERDATA
+        ExtraData() {}    
         QVector<QObjectUserData *> userData;
-    #endif
         QList<QByteArray> propertyNames;
         QVector<QVariant> propertyValues;
         QVector<int> runningTimers;
