@@ -1,42 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtCore module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #ifndef QCOREEVENT_H
 #define QCOREEVENT_H
 
@@ -48,10 +9,10 @@ QT_BEGIN_NAMESPACE
 
 
 class QEventPrivate;
-class Q_CORE_EXPORT QEvent           // event base class
+class QEvent           // event base class
 {
-    Q_GADGET
-    QDOC_PROPERTY(bool accepted READ isAccepted WRITE setAccepted)
+    //Q_GADGET
+    //QDOC_PROPERTY(bool accepted READ isAccepted WRITE setAccepted)
 public:
     enum Type {
         /*
@@ -183,10 +144,10 @@ public:
 
         // last event id used = 132
 
-#ifdef QT_KEYPAD_NAVIGATION
+
         EnterEditFocus = 150,                   // enter edit mode in keypad navigation
         LeaveEditFocus = 151,                   // enter edit mode in keypad navigation
-#endif
+
         AcceptDropsChange = 152,
 
         ZeroTimerEvent = 154,                   // Used for Windows Zero timer events
@@ -247,17 +208,13 @@ public:
         TouchUpdate = 195,
         TouchEnd = 196,
 
-#ifndef QT_NO_GESTURES
         NativeGesture = 197,                    // QtGui native gesture
-#endif
         RequestSoftwareInputPanel = 199,
         CloseSoftwareInputPanel = 200,
 
         WinIdChange = 203,
-#ifndef QT_NO_GESTURES
         Gesture = 198,
         GestureOverride = 202,
-#endif
         ScrollPrepare = 204,
         Scroll = 205,
 
@@ -292,7 +249,7 @@ public:
         User = 1000,                            // first user event id
         MaxUser = 65535                         // last user event id
     };
-    Q_ENUM(Type)
+    //Q_ENUM(Type)
 
     explicit QEvent(Type type);
     QEvent(const QEvent &other);
@@ -330,11 +287,10 @@ private:
     // from QtTest:
     friend class QSpontaneKeyEvent;
     // needs this:
-    Q_ALWAYS_INLINE
-    void setSpontaneous() { spont = true; }
+    inline  void setSpontaneous() { spont = true; }
 };
 
-class Q_CORE_EXPORT QTimerEvent : public QEvent
+class  QTimerEvent : public QEvent
 {
 public:
     explicit QTimerEvent( int timerId );
@@ -346,7 +302,7 @@ protected:
 
 class QObject;
 
-class Q_CORE_EXPORT QChildEvent : public QEvent
+class  QChildEvent : public QEvent
 {
 public:
     QChildEvent( Type type, QObject *child );
@@ -359,7 +315,7 @@ protected:
     QObject *c;
 };
 
-class Q_CORE_EXPORT QDynamicPropertyChangeEvent : public QEvent
+class  QDynamicPropertyChangeEvent : public QEvent
 {
 public:
     explicit QDynamicPropertyChangeEvent(const QByteArray &name);
@@ -371,7 +327,7 @@ private:
     QByteArray n;
 };
 
-class Q_CORE_EXPORT QDeferredDeleteEvent : public QEvent
+class  QDeferredDeleteEvent : public QEvent
 {
 public:
     explicit QDeferredDeleteEvent();

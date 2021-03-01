@@ -17,7 +17,7 @@ QT_BEGIN_NAMESPACE
 QEventLoop::QEventLoop(QObject *parent)
     : QObject(*new QEventLoopPrivate, parent)
 {
-    Q_D(QEventLoop);
+    QEventLoopPrivate * const d = d_func();
     if (!QCoreApplication::instance() && QCoreApplicationPrivate::threadRequiresCoreApplication()) {
         qWarning("QEventLoop: Cannot be used without QApplication");
     } else if (!d->threadData->eventDispatcher.load()) {
@@ -32,22 +32,10 @@ QEventLoop::~QEventLoop()
 { }
 
 
-/*!
-    Processes pending events that match \a flags until there are no
-    more events to process. Returns \c true if pending events were handled;
-    otherwise returns \c false.
 
-    This function is especially useful if you have a long running
-    operation and want to show its progress without allowing user
-    input; i.e. by using the \l ExcludeUserInputEvents flag.
-
-    This function is simply a wrapper for
-    QAbstractEventDispatcher::processEvents(). See the documentation
-    for that function for details.
-*/
 bool QEventLoop::processEvents(ProcessEventsFlags flags)
 {
-    Q_D(QEventLoop);
+    QEventLoopPrivate * const d = d_func();
     if (!d->threadData->eventDispatcher.load())
         return false;
     return d->threadData->eventDispatcher.load()->processEvents(flags);
@@ -57,8 +45,8 @@ bool QEventLoop::processEvents(ProcessEventsFlags flags)
     Enters the main event loop and waits until exit() is called.
     Returns the value that was passed to exit().
 
-    If \a flags are specified, only events of the types allowed by
-    the \a flags will be processed.
+    If  flags are specified, only events of the types allowed by
+    the  flags will be processed.
 
     It is necessary to call this function to start event handling. The
     main event loop receives events from the window system and
@@ -69,8 +57,7 @@ bool QEventLoop::processEvents(ProcessEventsFlags flags)
     can be used before calling exec(), because modal widgets
     use their own local event loop.
 
-    To make your application perform idle processing (i.e. executing a
-    special function whenever there are no pending events), use a
+    To make your application perform idle processing , use a
     QTimer with 0 timeout. More sophisticated idle processing schemes
     can be achieved using processEvents().
 
@@ -78,7 +65,7 @@ bool QEventLoop::processEvents(ProcessEventsFlags flags)
 */
 int QEventLoop::exec(ProcessEventsFlags flags)
 {
-    Q_D(QEventLoop);
+    QEventLoopPrivate * const d = d_func();
     //we need to protect from race condition with QThread::exit
     QMutexLocker locker(&static_cast<QThreadPrivate *>(QObjectPrivate::get(d->threadData->thread))->mutex);
     if (d->threadData->quitNow)
@@ -152,7 +139,7 @@ int QEventLoop::exec(ProcessEventsFlags flags)
 */
 void QEventLoop::processEvents(ProcessEventsFlags flags, int maxTime)
 {
-    Q_D(QEventLoop);
+    QEventLoopPrivate * const d = d_func();
     if (!d->threadData->eventDispatcher.load())
         return;
 
@@ -181,7 +168,7 @@ void QEventLoop::processEvents(ProcessEventsFlags flags, int maxTime)
 */
 void QEventLoop::exit(int returnCode)
 {
-    Q_D(QEventLoop);
+    QEventLoopPrivate * const d = d_func();
     if (!d->threadData->eventDispatcher.load())
         return;
 
@@ -210,7 +197,7 @@ bool QEventLoop::isRunning() const
 */
 void QEventLoop::wakeUp()
 {
-    Q_D(QEventLoop);
+    QEventLoopPrivate * const d = d_func();
     if (!d->threadData->eventDispatcher.load())
         return;
     d->threadData->eventDispatcher.load()->wakeUp();

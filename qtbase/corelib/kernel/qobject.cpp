@@ -730,26 +730,13 @@ static bool check_parent_thread(QObject *parent,
     return true;
 }
 
-/*!
-    Constructs an object with parent object \a parent.
-
-    The parent of an object may be viewed as the object's owner. For
-    instance, a \l{QDialog}{dialog box} is the parent of the \uicontrol{OK}
-    and \uicontrol{Cancel} buttons it contains.
-
-    The destructor of a parent object destroys all child objects.
-
-    Setting \a parent to 0 constructs an object with no parent. If the
-    object is a widget, it will become a top-level window.
-
-    \sa parent(), findChild(), findChildren()
-*/
-
 QObject::QObject(QObject *parent)
     : d_ptr(new QObjectPrivate)
 {
     QObjectPrivate * const d = d_func();
-    d_ptr->q_ptr = this;
+	
+    d_ptr->q_ptr = this; // oye:  mutual link between obj and obj_private
+    
     d->threadData = (parent && !parent->thread()) ? parent->d_func()->threadData : QThreadData::current();
     d->threadData->ref();
     if (parent) {
@@ -807,25 +794,34 @@ QObject::QObject(QObjectPrivate &dd, QObject *parent)
 /*!
     Destroys the object, deleting all its child objects.
 
-    All signals to and from the object are automatically disconnected, and
-    any pending posted events for the object are removed from the event
-    queue. However, it is often safer to use deleteLater() rather than
+    All signals to and from the object are automatically disconnected, 
+    
+    Any pending posted events for the object are removed from the event
+    queue. 
+
+    However, it is often safer to use deleteLater() rather than
     deleting a QObject subclass directly.
 
-    \warning All child objects are deleted. If any of these objects
+
+    All child objects are deleted. If any of these objects
     are on the stack or global, sooner or later your program will
-    crash. We do not recommend holding pointers to child objects from
-    outside the parent. If you still do, the destroyed() signal gives
+    crash. 
+
+    We do not recommend holding pointers to child objects from
+    outside the parent. 
+
+    If you still do, the destroyed() signal gives
     you an opportunity to detect when an object is destroyed.
 
-    \warning Deleting a QObject while pending events are waiting to
-    be delivered can cause a crash. You must not delete the QObject
-    directly if it exists in a different thread than the one currently
-    executing. Use deleteLater() instead, which will cause the event
-    loop to delete the object after all pending events have been
-    delivered to it.
 
-    \sa deleteLater()
+    Deleting a QObject while pending events are waiting to
+    be delivered can cause a crash. 
+    You must not delete the QObject directly if it exists in a different 
+    thread than the one currently  executing. 
+
+    Use deleteLater() instead, which will cause the event loop to delete 
+    the object after all pending events have been delivered to it.
+
 */
 
 QObject::~QObject()
@@ -1219,11 +1215,7 @@ bool QObject::blockSignals(bool block) Q_DECL_NOTHROW
     return previous;
 }
 
-/*!
-    Returns the thread in which the object lives.
 
-    \sa moveToThread()
-*/
 QThread *QObject::thread() const
 {
     return d_func()->threadData->thread;

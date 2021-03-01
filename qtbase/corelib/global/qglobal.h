@@ -287,16 +287,11 @@ typedef qptrdiff qintptr;
 #  define Q_ALWAYS_INLINE inline
 #endif
 
-//defines the type for the WNDPROC on windows
-//the alignment needs to be forced for sse2 to not crash with mingw
-#if defined(Q_OS_WIN)
-#  if defined(Q_CC_MINGW) && !defined(Q_OS_WIN64)
-#    define QT_ENSURE_STACK_ALIGNED_FOR_SSE __attribute__ ((force_align_arg_pointer))
-#  else
-#    define QT_ENSURE_STACK_ALIGNED_FOR_SSE
-#  endif
-#  define QT_WIN_CALLBACK CALLBACK QT_ENSURE_STACK_ALIGNED_FOR_SSE
-#endif
+
+
+#define QT_ENSURE_STACK_ALIGNED_FOR_SSE
+#define QT_WIN_CALLBACK CALLBACK QT_ENSURE_STACK_ALIGNED_FOR_SSE
+
 
 typedef int QNoImplicitBoolCast;
 

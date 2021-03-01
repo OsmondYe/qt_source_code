@@ -149,23 +149,28 @@ public:
 };
 
 
-
+//oye:  thread local data
 class QThreadData
 {
 public:
-    QThreadData(int initialRefCount = 1);
+    QThreadData(int initialRefCount = 1): _ref(initialRefCount), loopLevel(0), scopeLevel(0),
+      eventDispatcher(0),
+      quitNow(false), canWait(true), isAdopted(false), requiresCoreApplication(true)
+	{
+	    
+	}
     ~QThreadData();
 
-    static Q_AUTOTEST_EXPORT QThreadData *current(bool createIfNecessary = true);
+    static  QThreadData *current(bool createIfNecessary = true);
     static void clearCurrentThreadData();
     static QThreadData *get2(QThread *thread)
     { Q_ASSERT_X(thread != 0, "QThread", "internal error"); return thread->d_func()->data; }
 
 
-    void ref();
-    void deref();
-    inline bool hasEventDispatcher() const
-    { return eventDispatcher.load() != 0; }
+    void ref(){(void) _ref.ref();} // _ref+1;
+	
+    void deref(){if (!_ref.deref()) delete this;}
+    inline bool hasEventDispatcher() const    { return eventDispatcher.load() != 0; }
 
     bool canWaitLocked()
     {
@@ -228,15 +233,32 @@ public:
 // thread wrapper for the main() thread
 class QAdoptedThread : public QThread
 {
-    Q_DECLARE_PRIVATE(QThread)
+    //Q_DECLARE_PRIVATE(QThread)
+    inline QThreadPrivate* d_func() { return reinterpret_cast<QThreadPrivate *>(qGetPtrHelper(d_ptr)); } 
 
 public:
-    QAdoptedThread(QThreadData *data = 0);
-    ~QAdoptedThread();
-    void init();
+    QAdoptedThread(QThreadData *data = 0): QThread(*new QThreadPrivate(data))	{
+		// thread should be running and not finished for the lifetime
+		// of the application (even if QCoreApplication goes away)
+		d_func()->running = true;
+		d_func()->finished = false;
+		init();    
+	}
+	
+    ~QAdoptedThread(){}
+    
+	
+	void init()	{
+	    d_func()->handle = GetCurrentThread();
+	    d_func()->id = GetCurrentThreadId();
+	}
 
 private:
-    void run() Q_DECL_OVERRIDE;
+	
+	void run()	{
+		// this function should never be called
+		qFatal("QAdoptedThread::run(): Internal error, this implementation should never be called.");
+	}
 };
 
 QT_END_NAMESPACE

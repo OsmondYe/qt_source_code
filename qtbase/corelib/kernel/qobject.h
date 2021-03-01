@@ -81,15 +81,14 @@ public:
 private:      
     static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **);      
     struct QPrivateSignal {}; 
-    QT_ANNOTATE_CLASS(qt_qobject, "")
+    //QT_ANNOTATE_CLASS(qt_qobject, "")
 
 // end enpandsion of the macro O_OBJECT
 //----------------------------------------------------------
 
 	
     //Q_PROPERTY(QString objectName READ objectName WRITE setObjectName NOTIFY objectNameChanged)
-    //Q_DECLARE_PRIVATE(QObject)    
-	QObjectPrivate* d_func() { return reinterpret_cast<QObjectPrivate *>(qGetPtrHelper(d_ptr)); } 
+
 
 protected:
     QScopedPointer<QObjectData> d_ptr;
@@ -109,8 +108,11 @@ protected:
 
 
 public:
-     explicit QObject(QObject *parent=Q_NULLPTR);
+    explicit QObject(QObject *parent=Q_NULLPTR);
     virtual ~QObject();
+
+	    //Q_DECLARE_PRIVATE(QObject)    
+	inline QObjectPrivate* d_func() { return reinterpret_cast<QObjectPrivate *>(qGetPtrHelper(d_ptr)); } 
 	
 	// oye, widget overrides it to expand ui event
     virtual bool event(QEvent *event);
@@ -197,24 +199,6 @@ public:
     inline QMetaObject::Connection connect(const QObject *sender, const char *signal,
                         const char *member, Qt::ConnectionType type = Qt::AutoConnection) const;
 
-#ifdef Q_QDOC
-    template<typename PointerToMemberFunction>
-    static QMetaObject::Connection connect(const QObject *sender, 
-    	ointerToMemberFunction signal, 
-    	const QObject *receiver, 
-    	PointerToMemberFunction method, 
-    	Qt::ConnectionType type = Qt::AutoConnection);
-    template<typename PointerToMemberFunction, typename Functor>
-    static QMetaObject::Connection connect(const QObject *sender, 
-    	ointerToMemberFunction signal, 
-    	Functor functor);
-    template<typename PointerToMemberFunction, typename Functor>
-    static QMetaObject::Connection connect(const QObject *sender, 
-    	ointerToMemberFunction signal, 
-    	const QObject *context, 
-    	Functor functor, 
-    	Qt::ConnectionType type = Qt::AutoConnection);
-#else
     //Connect a signal to a pointer to qobject member function
     template <typename Func1, typename Func2>
     static inline QMetaObject::Connection connect(
@@ -325,7 +309,7 @@ public:
                                 typename SignalType::ReturnType>(slot),
                            type, types, &SignalType::Object::staticMetaObject);
     }
-#endif //Q_QDOC
+
 
     static bool disconnect(const QObject *sender, const char *signal,
                            const QObject *receiver, const char *member);
@@ -338,10 +322,6 @@ public:
         { return disconnect(this, Q_NULLPTR, receiver, member); }
     static bool disconnect(const QMetaObject::Connection &);
 
-#ifdef Q_QDOC
-    template<typename PointerToMemberFunction>
-    static bool disconnect(const QObject *sender, PointerToMemberFunction signal, const QObject *receiver, PointerToMemberFunction method);
-#else
     template <typename Func1, typename Func2>
     static inline bool disconnect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal,
                                   const typename QtPrivate::FunctionPointer<Func2>::Object *receiver, Func2 slot)
@@ -371,7 +351,7 @@ public:
         return disconnectImpl(sender, reinterpret_cast<void **>(&signal), receiver, zero,
                               &SignalType::Object::staticMetaObject);
     }
-#endif //Q_QDOC
+
 
 
     void dumpObjectTree() const;
@@ -476,13 +456,22 @@ template <class T> inline const char * qobject_interface_iid()
 class QSignalBlocker
 {
 public:
-    inline explicit QSignalBlocker(QObject *o) ;
-    inline explicit QSignalBlocker(QObject &o) ;
+    inline explicit QSignalBlocker(QObject *o) 
+    : m_o(o),
+      m_blocked(o && o->blockSignals(true)),
+      m_inhibited(false)
+	{}
+    inline explicit 
+	QSignalBlocker(QObject &o) 
+		: m_o(&o),
+		  m_blocked(o.blockSignals(true)),
+		  m_inhibited(false)
+	{}
+    
     inline ~QSignalBlocker()	{
 	    if (m_o && !m_inhibited)
 	        m_o->blockSignals(m_blocked);
 	}
-
 
     inline void reblock(){
     	if (m_o) m_o->blockSignals(true);
@@ -497,18 +486,6 @@ private:
     bool m_blocked;
     bool m_inhibited;
 };
-
-QSignalBlocker::QSignalBlocker(QObject *o) 
-    : m_o(o),
-      m_blocked(o && o->blockSignals(true)),
-      m_inhibited(false)
-{}
-
-QSignalBlocker::QSignalBlocker(QObject &o) 
-    : m_o(&o),
-      m_blocked(o.blockSignals(true)),
-      m_inhibited(false)
-{}
 
 
 namespace QtPrivate {

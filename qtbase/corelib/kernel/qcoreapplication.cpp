@@ -1,51 +1,10 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtCore module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #include "qcoreapplication.h"
 #include "qcoreapplication_p.h"
 
-#ifndef QT_NO_QOBJECT
+
 #include "qabstracteventdispatcher.h"
 #include "qcoreevent.h"
 #include "qeventloop.h"
-#endif
 #include "qcorecmdlineargs_p.h"
 #include <qdatastream.h>
 #include <qdebug.h>
@@ -56,12 +15,10 @@
 #include <private/qloggingregistry_p.h>
 #include <qstandardpaths.h>
 #include <qtextcodec.h>
-#ifndef QT_NO_QOBJECT
 #include <qthread.h>
 #include <qthreadpool.h>
 #include <qthreadstorage.h>
 #include <private/qthread_p.h>
-#endif
 #include <qelapsedtimer.h>
 #include <qlibraryinfo.h>
 #include <qvarlengtharray.h>
@@ -70,57 +27,16 @@
 #include <private/qlocale_p.h>
 #include <private/qhooks_p.h>
 
-#ifndef QT_NO_QOBJECT
-#if defined(Q_OS_UNIX)
-# if defined(Q_OS_DARWIN)
-#  include "qeventdispatcher_cf_p.h"
-# else
-#  if !defined(QT_NO_GLIB)
-#   include "qeventdispatcher_glib_p.h"
-#  endif
-# endif
-# include "qeventdispatcher_unix_p.h"
-#endif
-#ifdef Q_OS_WIN
-# ifdef Q_OS_WINRT
-#  include "qeventdispatcher_winrt_p.h"
-#  include "qfunctions_winrt.h"
-#  include <wrl.h>
-#  include <Windows.ApplicationModel.core.h>
-   using namespace ABI::Windows::ApplicationModel::Core;
-   using namespace Microsoft::WRL;
-# else
-#  include "qeventdispatcher_win_p.h"
-# endif
-#endif
-#endif // QT_NO_QOBJECT
 
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
-#  include <private/qjni_p.h>
-#  include <private/qjnihelpers_p.h>
-#endif
+#include "qeventdispatcher_win_p.h"
 
-#ifdef Q_OS_MAC
-#  include "qcore_mac_p.h"
-#endif
+
 
 #include <stdlib.h>
-
-#ifdef Q_OS_UNIX
-#  include <locale.h>
-#  include <unistd.h>
-#  include <sys/types.h>
-#endif
-
-#ifdef Q_OS_VXWORKS
-#  include <taskLib.h>
-#endif
-
 #include <algorithm>
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_QOBJECT
 class QMutexUnlocker
 {
 public:
@@ -135,76 +51,16 @@ private:
 
     QMutex *mtx;
 };
-#endif
 
-#if defined(Q_OS_WIN) || defined(Q_OS_MAC)
+
 extern QString qAppFileName();
-#endif
 
-#if QT_VERSION >= 0x060000
-# error "Bump QCoreApplicatoinPrivate::app_compile_version to 0x060000"
-#endif
 int QCoreApplicationPrivate::app_compile_version = 0x050000; //we don't know exactly, but it's at least 5.0.0
 
 bool QCoreApplicationPrivate::setuidAllowed = false;
 
-#if !defined(Q_OS_WIN)
-#ifdef Q_OS_DARWIN
-QString QCoreApplicationPrivate::infoDictionaryStringProperty(const QString &propertyName)
-{
-    QString bundleName;
-    QCFString cfPropertyName = propertyName.toCFString();
-    CFTypeRef string = CFBundleGetValueForInfoDictionaryKey(CFBundleGetMainBundle(),
-                                                            cfPropertyName);
-    if (string)
-        bundleName = QString::fromCFString(static_cast<CFStringRef>(string));
-    return bundleName;
-}
-#endif
-QString QCoreApplicationPrivate::appName() const
-{
-    QString applicationName;
-#ifdef Q_OS_DARWIN
-    applicationName = infoDictionaryStringProperty(QStringLiteral("CFBundleName"));
-#endif
-    if (applicationName.isEmpty() && argv[0]) {
-        char *p = strrchr(argv[0], '/');
-        applicationName = QString::fromLocal8Bit(p ? p + 1 : argv[0]);
-    }
-
-    return applicationName;
-}
-QString QCoreApplicationPrivate::appVersion() const
-{
-    QString applicationVersion;
-#ifndef QT_BOOTSTRAPPED
-#  ifdef Q_OS_DARWIN
-    applicationVersion = infoDictionaryStringProperty(QStringLiteral("CFBundleVersion"));
-#  elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
-    QJNIObjectPrivate context(QtAndroidPrivate::context());
-    if (context.isValid()) {
-        QJNIObjectPrivate pm = context.callObjectMethod(
-            "getPackageManager", "()Landroid/content/pm/PackageManager;");
-        QJNIObjectPrivate pn = context.callObjectMethod<jstring>("getPackageName");
-        if (pm.isValid() && pn.isValid()) {
-            QJNIObjectPrivate packageInfo = pm.callObjectMethod(
-                "getPackageInfo", "(Ljava/lang/String;I)Landroid/content/pm/PackageInfo;",
-                pn.object(), 0);
-            if (packageInfo.isValid()) {
-                QJNIObjectPrivate versionName = packageInfo.getObjectField(
-                    "versionName", "Ljava/lang/String;");
-                if (versionName.isValid())
-                    return versionName.toString();
-            }
-        }
-    }
-#  endif
-#endif
-    return applicationVersion;
-}
-#endif
-
 QString *QCoreApplicationPrivate::cachedApplicationFilePath = 0;
+
 
 bool QCoreApplicationPrivate::checkInstance(const char *function)
 {
@@ -245,16 +101,16 @@ void QCoreApplicationPrivate::processCommandLineArguments()
 
 // Support for introspection
 
-#ifndef QT_NO_QOBJECT
-QSignalSpyCallbackSet Q_CORE_EXPORT qt_signal_spy_callback_set = { 0, 0, 0, 0 };
+
+QSignalSpyCallbackSet  qt_signal_spy_callback_set = { 0, 0, 0, 0 };
 
 void qt_register_signal_spy_callbacks(const QSignalSpyCallbackSet &callback_set)
 {
     qt_signal_spy_callback_set = callback_set;
 }
-#endif
 
-extern "C" void Q_CORE_EXPORT qt_startup_hook()
+
+extern "C" void  qt_startup_hook()
 {
 }
 
@@ -262,13 +118,12 @@ typedef QList<QtStartUpFunction> QStartUpFuncList;
 Q_GLOBAL_STATIC(QStartUpFuncList, preRList)
 typedef QList<QtCleanUpFunction> QVFuncList;
 Q_GLOBAL_STATIC(QVFuncList, postRList)
-#ifndef QT_NO_QOBJECT
+	
+
 static QBasicMutex globalPreRoutinesMutex;
-#endif
+
 
 /*!
-    \internal
-
     Adds a global routine that will be called from the QCoreApplication
     constructor. The public API is Q_COREAPP_STARTUP_FUNCTION.
 */
@@ -277,11 +132,8 @@ void qAddPreRoutine(QtStartUpFunction p)
     QStartUpFuncList *list = preRList();
     if (!list)
         return;
-    // Due to C++11 parallel dynamic initialization, this can be called
-    // from multiple threads.
-#ifndef QT_NO_THREAD
+
     QMutexLocker locker(&globalPreRoutinesMutex);
-#endif
     if (QCoreApplication::instance())
         p();
     list->prepend(p); // in case QCoreApplication is re-created, see qt_call_pre_routines
@@ -308,9 +160,9 @@ static void qt_call_pre_routines()
     if (!preRList.exists())
         return;
 
-#ifndef QT_NO_THREAD
+
     QMutexLocker locker(&globalPreRoutinesMutex);
-#endif
+
     QVFuncList *list = &(*preRList);
     // Unlike qt_call_post_routines, we don't empty the list, because
     // Q_COREAPP_STARTUP_FUNCTION is a macro, so the user expects
@@ -319,7 +171,7 @@ static void qt_call_pre_routines()
         list->at(i)();
 }
 
-void Q_CORE_EXPORT qt_call_post_routines()
+void  qt_call_post_routines()
 {
     if (!postRList.exists())
         return;
@@ -333,14 +185,14 @@ void Q_CORE_EXPORT qt_call_post_routines()
 // initialized in qcoreapplication and in qtextstream autotest when setlocale is called.
 static bool qt_locale_initialized = false;
 
-#ifndef QT_NO_QOBJECT
 
 // app starting up if false
 bool QCoreApplicationPrivate::is_app_running = false;
  // app closing down if true
 bool QCoreApplicationPrivate::is_app_closing = false;
 
-Q_CORE_EXPORT uint qGlobalPostedEventsCount()
+
+uint qGlobalPostedEventsCount()
 {
     QThreadData *currentThreadData = QThreadData::current();
     return currentThreadData->postEventList.size() - currentThreadData->postEventList.startOffset;
@@ -348,7 +200,7 @@ Q_CORE_EXPORT uint qGlobalPostedEventsCount()
 
 QAbstractEventDispatcher *QCoreApplicationPrivate::eventDispatcher = 0;
 
-#endif // QT_NO_QOBJECT
+
 
 QCoreApplication *QCoreApplication::self = 0;
 uint QCoreApplicationPrivate::attribs =
@@ -356,18 +208,17 @@ uint QCoreApplicationPrivate::attribs =
     (1 << Qt::AA_SynthesizeMouseForUnhandledTabletEvents);
 
 struct QCoreApplicationData {
-    QCoreApplicationData() Q_DECL_NOTHROW {
+    QCoreApplicationData()  {
         applicationNameSet = false;
         applicationVersionSet = false;
     }
     ~QCoreApplicationData() {
-#ifndef QT_NO_QOBJECT
         // cleanup the QAdoptedThread created for the main() thread
         if (QCoreApplicationPrivate::theMainThread) {
             QThreadData *data = QThreadData::get2(QCoreApplicationPrivate::theMainThread);
             data->deref(); // deletes the data and the adopted thread
         }
-#endif
+
     }
 
     QString orgName, orgDomain;
@@ -376,20 +227,17 @@ struct QCoreApplicationData {
     bool applicationNameSet; // true if setApplicationName was called
     bool applicationVersionSet; // true if setApplicationVersion was called
 
-#if QT_CONFIG(library)
     QScopedPointer<QStringList> app_libpaths;
     QScopedPointer<QStringList> manual_libpaths;
-#endif
 
 };
 
-Q_GLOBAL_STATIC(QCoreApplicationData, coreappdata)
+//Q_GLOBAL_STATIC(QCoreApplicationData, coreappdata)
 
-#ifndef QT_NO_QOBJECT
+
 static bool quitLockRefEnabled = true;
-#endif
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+
 // Check whether the command line arguments match those passed to main()
 // by comparing to the global __argv/__argc (MS extension).
 // Deep comparison is required since argv/argc is rebuilt by WinMain for
@@ -415,27 +263,20 @@ static inline bool contains(int argc, char **argv, const char *needle)
     }
     return false;
 }
-#endif // Q_OS_WIN && !Q_OS_WINRT
+
 
 QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint flags)
     :
-#ifndef QT_NO_QOBJECT
       QObjectPrivate(),
-#endif
       argc(aargc)
     , argv(aargv)
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     , origArgc(0)
     , origArgv(Q_NULLPTR)
-#endif
     , application_type(QCoreApplicationPrivate::Tty)
-#ifndef QT_NO_QOBJECT
     , in_exec(false)
     , aboutToQuitEmitted(false)
     , threadData_clean(false)
-#else
-    , q_ptr(0)
-#endif
+
 {
     app_compile_version = flags & 0xffffff;
     static const char *const empty = "";
@@ -443,36 +284,29 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
         argc = 0;
         argv = const_cast<char **>(&empty);
     }
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+
     if (!isArgvModified(argc, argv)) {
         origArgc = argc;
         origArgv = new char *[argc];
         std::copy(argv, argv + argc, QT_MAKE_CHECKED_ARRAY_ITERATOR(origArgv, argc));
     }
-#endif // Q_OS_WIN && !Q_OS_WINRT
 
-#ifndef QT_NO_QOBJECT
+
+
     QCoreApplicationPrivate::is_app_closing = false;
-
-#  if defined(Q_OS_UNIX)
-    if (Q_UNLIKELY(!setuidAllowed && (geteuid() != getuid())))
-        qFatal("FATAL: The application binary appears to be running setuid, this is a security hole.");
-#  endif // Q_OS_UNIX
 
     QThread *cur = QThread::currentThread(); // note: this may end up setting theMainThread!
     if (cur != theMainThread)
         qWarning("WARNING: QApplication was not created in the main() thread.");
-#endif
+
 }
 
 QCoreApplicationPrivate::~QCoreApplicationPrivate()
 {
-#ifndef QT_NO_QOBJECT
     cleanupThreadData();
-#endif
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+
     delete [] origArgv;
-#endif
+
     QCoreApplicationPrivate::clearApplicationFilePath();
 }
 
@@ -538,7 +372,6 @@ void QCoreApplicationPrivate::eventDispatcherReady()
 QBasicAtomicPointer<QThread> QCoreApplicationPrivate::theMainThread = Q_BASIC_ATOMIC_INITIALIZER(0);
 QThread *QCoreApplicationPrivate::mainThread()
 {
-    Q_ASSERT(theMainThread.load() != 0);
     return theMainThread.load();
 }
 
@@ -597,16 +430,14 @@ void QCoreApplicationPrivate::initLocale()
     if (qt_locale_initialized)
         return;
     qt_locale_initialized = true;
-#if defined(Q_OS_UNIX) && !defined(QT_BOOTSTRAPPED)
     setlocale(LC_ALL, "");
-#endif
+
 }
 
 
 /*!
-    \class QCoreApplication
-    \inmodule QtCore
-    \brief The QCoreApplication class provides an event loop for Qt
+
+    The QCoreApplication class provides an event loop for Qt
     applications without UI.
 
     This class is used by non-GUI applications to provide their event
@@ -692,75 +523,26 @@ void QCoreApplicationPrivate::initLocale()
     \internal
  */
 QCoreApplication::QCoreApplication(QCoreApplicationPrivate &p)
-#ifdef QT_NO_QOBJECT
-    : d_ptr(&p)
-#else
     : QObject(p, 0)
-#endif
 {
     d_func()->q_ptr = this;
     // note: it is the subclasses' job to call
     // QCoreApplicationPrivate::eventDispatcher->startingUp();
 }
 
-#ifndef QT_NO_QOBJECT
-/*!
-    \deprecated
-    This function is equivalent to calling \c {QCoreApplication::eventDispatcher()->flush()},
-    which also is deprecated, see QAbstractEventDispatcher::flush(). Use sendPostedEvents()
-    and processEvents() for more fine-grained control of the event loop instead.
 
-    Historically this functions was used to flush the platform-specific native event queues.
-
-    \sa sendPostedEvents(), processEvents(), QAbstractEventDispatcher::flush()
-*/
-#if QT_DEPRECATED_SINCE(5, 9)
-void QCoreApplication::flush()
-{
-    if (self && self->d_func()->eventDispatcher)
-        self->d_func()->eventDispatcher->flush();
-}
-#endif
-#endif
-
-/*!
-    Constructs a Qt core application. Core applications are applications without
-    a graphical user interface. Such applications are used at the console or as
-    server processes.
-
-    The \a argc and \a argv arguments are processed by the application,
-    and made available in a more convenient form by the arguments()
-    function.
-
-    \warning The data referred to by \a argc and \a argv must stay valid
-    for the entire lifetime of the QCoreApplication object. In addition,
-    \a argc must be greater than zero and \a argv must contain at least
-    one valid character string.
-*/
-QCoreApplication::QCoreApplication(int &argc, char **argv
-#ifndef Q_QDOC
-                                   , int _internal
-#endif
-                                   )
-#ifdef QT_NO_QOBJECT
-    : d_ptr(new QCoreApplicationPrivate(argc, argv, _internal))
-#else
+QCoreApplication::QCoreApplication(int &argc, char **argv , int _internal )
     : QObject(*new QCoreApplicationPrivate(argc, argv, _internal))
-#endif
 {
     d_func()->q_ptr = this;
     d_func()->init();
-#ifndef QT_NO_QOBJECT
     QCoreApplicationPrivate::eventDispatcher->startingUp();
-#endif
+
 }
 
 
 void QCoreApplicationPrivate::init()
 {
-#if defined(Q_OS_MACOS)
-    QMacAutoReleasePool pool;
-#endif
 
     Q_Q(QCoreApplication);
 
@@ -775,14 +557,6 @@ void QCoreApplicationPrivate::init()
 
     if (!coreappdata()->applicationVersionSet)
         coreappdata()->applicationVersion = appVersion();
-
-#if defined(Q_OS_ANDROID)
-    // We've deferred initializing the logging registry due to not being
-    // able to guarantee that logging happened on the same thread as the
-    // Qt main thread, but now that the Qt main thread is set up, we can
-    // enable categorized logging.
-    QLoggingRegistry::instance()->initializeRules();
-#endif
 
 #if QT_CONFIG(library)
     // Reset the lib paths, so that they will be recomputed, taking the availability of argv[0]
@@ -814,7 +588,7 @@ void QCoreApplicationPrivate::init()
     }
 #endif
 
-#ifndef QT_NO_QOBJECT
+
     // use the event dispatcher created by the app programmer (if any)
     if (!eventDispatcher)
         eventDispatcher = threadData->eventDispatcher.load();
@@ -830,7 +604,7 @@ void QCoreApplicationPrivate::init()
 
     threadData->eventDispatcher = eventDispatcher;
     eventDispatcherReady();
-#endif
+
 
 #ifdef QT_EVAL
     extern void qt_core_eval_init(QCoreApplicationPrivate::Type);
@@ -845,26 +619,21 @@ void QCoreApplicationPrivate::init()
     if (Q_UNLIKELY(qtHookData[QHooks::Startup]))
         reinterpret_cast<QHooks::StartupCallback>(qtHookData[QHooks::Startup])();
 #endif
-
-#ifndef QT_NO_QOBJECT
     is_app_running = true; // No longer starting up.
-#endif
 }
 
-/*!
-    Destroys the QCoreApplication object.
-*/
+
 QCoreApplication::~QCoreApplication()
 {
     qt_call_post_routines();
 
     self = 0;
-#ifndef QT_NO_QOBJECT
+
     QCoreApplicationPrivate::is_app_closing = true;
     QCoreApplicationPrivate::is_app_running = false;
-#endif
 
-#if !defined(QT_NO_THREAD)
+
+
     // Synchronize and stop the global thread pool threads.
     QThreadPool *globalThreadPool = 0;
     QT_TRY {
@@ -874,14 +643,13 @@ QCoreApplication::~QCoreApplication()
     }
     if (globalThreadPool)
         globalThreadPool->waitForDone();
-#endif
 
-#ifndef QT_NO_QOBJECT
+
     d_func()->threadData->eventDispatcher = 0;
     if (QCoreApplicationPrivate::eventDispatcher)
         QCoreApplicationPrivate::eventDispatcher->closingDown();
     QCoreApplicationPrivate::eventDispatcher = 0;
-#endif
+
 
 #if QT_CONFIG(library)
     coreappdata()->app_libpaths.reset();
@@ -889,51 +657,19 @@ QCoreApplication::~QCoreApplication()
 #endif
 }
 
-/*!
-    \since 5.3
 
-    Allows the application to run setuid on UNIX platforms if \a allow
-    is true.
-
-    If \a allow is false (the default) and Qt detects the application is
-    running with an effective user id different than the real user id,
-    the application will be aborted when a QCoreApplication instance is
-    created.
-
-    Qt is not an appropriate solution for setuid programs due to its
-    large attack surface. However some applications may be required
-    to run in this manner for historical reasons. This flag will
-    prevent Qt from aborting the application when this is detected,
-    and must be set before a QCoreApplication instance is created.
-
-    \note It is strongly recommended not to enable this option since
-    it introduces security risks.
-*/
 void QCoreApplication::setSetuidAllowed(bool allow)
 {
     QCoreApplicationPrivate::setuidAllowed = allow;
 }
 
-/*!
-    \since 5.3
 
-    Returns true if the application is allowed to run setuid on UNIX
-    platforms.
-
-    \sa QCoreApplication::setSetuidAllowed()
-*/
 bool QCoreApplication::isSetuidAllowed()
 {
     return QCoreApplicationPrivate::setuidAllowed;
 }
 
 
-/*!
-    Sets the attribute \a attribute if \a on is true;
-    otherwise clears the attribute.
-
-    \sa testAttribute()
-*/
 void QCoreApplication::setAttribute(Qt::ApplicationAttribute attribute, bool on)
 {
     if (on)
@@ -942,30 +678,12 @@ void QCoreApplication::setAttribute(Qt::ApplicationAttribute attribute, bool on)
         QCoreApplicationPrivate::attribs &= ~(1 << attribute);
 }
 
-/*!
-  Returns \c true if attribute \a attribute is set;
-  otherwise returns \c false.
 
-  \sa setAttribute()
- */
 bool QCoreApplication::testAttribute(Qt::ApplicationAttribute attribute)
 {
     return QCoreApplicationPrivate::testAttribute(attribute);
 }
 
-
-#ifndef QT_NO_QOBJECT
-
-/*!
-    \property QCoreApplication::quitLockEnabled
-
-    \brief Whether the use of the QEventLoopLocker feature can cause the
-    application to quit.
-
-    The default is \c true.
-
-    \sa QEventLoopLocker
-*/
 
 bool QCoreApplication::isQuitLockEnabled()
 {
@@ -979,25 +697,7 @@ void QCoreApplication::setQuitLockEnabled(bool enabled)
     quitLockRefEnabled = enabled;
 }
 
-/*!
-  \internal
-  \deprecated
 
-  This function is here to make it possible for Qt extensions to
-  hook into event notification without subclassing QApplication
-*/
-bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
-{
-    return notifyInternal2(receiver, event);
-}
-
-/*!
-  \internal
-  \since 5.6
-
-  This function is here to make it possible for Qt extensions to
-  hook into event notification without subclassing QApplication.
-*/
 bool QCoreApplication::notifyInternal2(QObject *receiver, QEvent *event)
 {
     bool selfRequired = QCoreApplicationPrivate::threadRequiresCoreApplication();
@@ -1158,24 +858,11 @@ bool QCoreApplicationPrivate::notify_helper(QObject *receiver, QEvent * event)
     return receiver->event(event);
 }
 
-/*!
-  Returns \c true if an application object has not been created yet;
-  otherwise returns \c false.
-
-  \sa closingDown()
-*/
 
 bool QCoreApplication::startingUp()
 {
     return !QCoreApplicationPrivate::is_app_running;
 }
-
-/*!
-  Returns \c true if the application objects are being destroyed;
-  otherwise returns \c false.
-
-  \sa startingUp()
-*/
 
 bool QCoreApplication::closingDown()
 {
@@ -1183,28 +870,6 @@ bool QCoreApplication::closingDown()
 }
 
 
-/*!
-    Processes all pending events for the calling thread according to
-    the specified \a flags until there are no more events to process.
-
-    You can call this function occasionally when your program is busy
-    performing a long operation (e.g. copying a file).
-
-    In the event that you are running a local loop which calls this function
-    continuously, without an event loop, the
-    \l{QEvent::DeferredDelete}{DeferredDelete} events will
-    not be processed. This can affect the behaviour of widgets,
-    e.g. QToolTip, that rely on \l{QEvent::DeferredDelete}{DeferredDelete}
-    events to function properly. An alternative would be to call
-    \l{QCoreApplication::sendPostedEvents()}{sendPostedEvents()} from
-    within that local loop.
-
-    Calling this function processes events only for the calling thread.
-
-    \threadsafe
-
-    \sa exec(), QTimer, QEventLoop::processEvents(), flush(), sendPostedEvents()
-*/
 void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     QThreadData *data = QThreadData::current();
@@ -1213,27 +878,10 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags)
     data->eventDispatcher.load()->processEvents(flags);
 }
 
-/*!
-    \overload processEvents()
 
-    Processes pending events for the calling thread for \a maxtime
-    milliseconds or until there are no more events to process,
-    whichever is shorter.
-
-    You can call this function occasionally when your program is busy
-    doing a long operation (e.g. copying a file).
-
-    Calling this function processes events only for the calling thread.
-
-    \threadsafe
-
-    \sa exec(), QTimer, QEventLoop::processEvents()
-*/
 void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int maxtime)
 {
-    // ### Qt 6: consider splitting this method into a public and a private
-    //           one, so that a user-invoked processEvents can be detected
-    //           and handled properly.
+
     QThreadData *data = QThreadData::current();
     if (!data->hasEventDispatcher())
         return;
@@ -1245,36 +893,7 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int m
     }
 }
 
-/*****************************************************************************
-  Main event loop wrappers
- *****************************************************************************/
-
-/*!
-    Enters the main event loop and waits until exit() is called.  Returns
-    the value that was passed to exit() (which is 0 if exit() is called via
-    quit()).
-
-    It is necessary to call this function to start event handling. The
-    main event loop receives events from the window system and
-    dispatches these to the application widgets.
-
-    To make your application perform idle processing (by executing a
-    special function whenever there are no pending events), use a
-    QTimer with 0 timeout. More advanced idle processing schemes can
-    be achieved using processEvents().
-
-    We recommend that you connect clean-up code to the
-    \l{QCoreApplication::}{aboutToQuit()} signal, instead of putting it in
-    your application's \c{main()} function because on some platforms the
-    exec() call may not return. For example, on Windows
-    when the user logs off, the system terminates the process after Qt
-    closes all top-level windows. Hence, there is no guarantee that the
-    application will have time to exit its event loop and execute code at
-    the end of the \c{main()} function after the exec()
-    call.
-
-    \sa quit(), exit(), processEvents(), QApplication::exec()
-*/
+// oye:: QEventLoop eventLoop and its exec();
 int QCoreApplication::exec()
 {
     if (!QCoreApplicationPrivate::checkInstance("exec"))
@@ -1349,50 +968,7 @@ void QCoreApplication::exit(int returnCode)
     }
 }
 
-/*****************************************************************************
-  QCoreApplication management of posted events
- *****************************************************************************/
 
-/*!
-    \fn bool QCoreApplication::sendEvent(QObject *receiver, QEvent *event)
-
-    Sends event \a event directly to receiver \a receiver, using the
-    notify() function. Returns the value that was returned from the
-    event handler.
-
-    The event is \e not deleted when the event has been sent. The normal
-    approach is to create the event on the stack, for example:
-
-    \snippet code/src_corelib_kernel_qcoreapplication.cpp 0
-
-    \sa postEvent(), notify()
-*/
-
-/*!
-    \since 4.3
-
-    Adds the event \a event, with the object \a receiver as the
-    receiver of the event, to an event queue and returns immediately.
-
-    The event must be allocated on the heap since the post event queue
-    will take ownership of the event and delete it once it has been
-    posted.  It is \e {not safe} to access the event after
-    it has been posted.
-
-    When control returns to the main event loop, all events that are
-    stored in the queue will be sent using the notify() function.
-
-    Events are sorted in descending \a priority order, i.e. events
-    with a high \a priority are queued before events with a lower \a
-    priority. The \a priority can be any integer value, i.e. between
-    INT_MAX and INT_MIN, inclusive; see Qt::EventPriority for more
-    details. Events with equal \a priority will be processed in the
-    order posted.
-
-    \threadsafe
-
-    \sa sendEvent(), notify(), sendPostedEvents(), Qt::EventPriority
-*/
 void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
 {
     if (receiver == 0) {
@@ -1777,15 +1353,6 @@ void QCoreApplication::removePostedEvents(QObject *receiver, int eventType)
     }
 }
 
-/*!
-  Removes \a event from the queue of posted events, and emits a
-  warning message if appropriate.
-
-  \warning This function can be \e really slow. Avoid using it, if
-  possible.
-
-  \threadsafe
-*/
 
 void QCoreApplicationPrivate::removePostedEvent(QEvent * event)
 {
@@ -1797,22 +1364,18 @@ void QCoreApplicationPrivate::removePostedEvent(QEvent * event)
     QMutexLocker locker(&data->postEventList.mutex);
 
     if (data->postEventList.size() == 0) {
-#if defined(QT_DEBUG)
         qDebug("QCoreApplication::removePostedEvent: Internal error: %p %d is posted",
                 (void*)event, event->type());
         return;
-#endif
     }
 
     for (int i = 0; i < data->postEventList.size(); ++i) {
         const QPostEvent & pe = data->postEventList.at(i);
         if (pe.event == event) {
-#ifndef QT_NO_DEBUG
             qWarning("QCoreApplication::removePostedEvent: Event of type %d deleted while posted to %s %s",
                      event->type(),
                      pe.receiver->metaObject()->className(),
                      pe.receiver->objectName().toLocal8Bit().data());
-#endif
             --pe.receiver->d_func()->postedEvents;
             pe.event->posted = false;
             delete pe.event;
@@ -1901,7 +1464,7 @@ void QCoreApplication::quit()
   \sa quit()
 */
 
-#endif // QT_NO_QOBJECT
+
 
 #ifndef QT_NO_TRANSLATION
 /*!
@@ -2115,25 +1678,7 @@ void QCoreApplicationPrivate::setApplicationFilePath(const QString &path)
         QCoreApplicationPrivate::cachedApplicationFilePath = new QString(path);
 }
 
-/*!
-    Returns the directory that contains the application executable.
 
-    For example, if you have installed Qt in the \c{C:\Qt}
-    directory, and you run the \c{regexp} example, this function will
-    return "C:/Qt/examples/tools/regexp".
-
-    On \macos and iOS this will point to the directory actually containing
-    the executable, which may be inside an application bundle (if the
-    application is bundled).
-
-    \warning On Linux, this function will try to get the path from the
-    \c {/proc} file system. If that fails, it assumes that \c
-    {argv[0]} contains the absolute file name of the executable. The
-    function also assumes that the current directory has not been
-    changed by the application.
-
-    \sa applicationFilePath()
-*/
 QString QCoreApplication::applicationDirPath()
 {
     if (!self) {
@@ -2147,21 +1692,7 @@ QString QCoreApplication::applicationDirPath()
     return d->cachedApplicationDirPath;
 }
 
-/*!
-    Returns the file path of the application executable.
 
-    For example, if you have installed Qt in the \c{/usr/local/qt}
-    directory, and you run the \c{regexp} example, this function will
-    return "/usr/local/qt/examples/tools/regexp/regexp".
-
-    \warning On Linux, this function will try to get the path from the
-    \c {/proc} file system. If that fails, it assumes that \c
-    {argv[0]} contains the absolute file name of the executable. The
-    function also assumes that the current directory has not been
-    changed by the application.
-
-    \sa applicationDirPath()
-*/
 QString QCoreApplication::applicationFilePath()
 {
     if (!self) {
@@ -2719,7 +2250,6 @@ void QCoreApplication::removeLibraryPath(const QString &path)
 
 #endif // QT_CONFIG(library)
 
-#ifndef QT_NO_QOBJECT
 
 /*!
     Installs an event filter \a filterObj for all native events
@@ -2832,114 +2362,9 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
     mainThread->setEventDispatcher(eventDispatcher);
 }
 
-#endif // QT_NO_QOBJECT
-
-/*!
-    \macro Q_COREAPP_STARTUP_FUNCTION(QtStartUpFunction ptr)
-    \since 5.1
-    \relates QCoreApplication
-    \reentrant
-
-    Adds a global function that will be called from the QCoreApplication
-    constructor. This macro is normally used to initialize libraries
-    for program-wide functionality, without requiring the application to
-    call into the library for initialization.
-
-    The function specified by \a ptr should take no arguments and should
-    return nothing. For example:
-
-    \snippet code/src_corelib_kernel_qcoreapplication.cpp 3
-
-    Note that the startup function will run at the end of the QCoreApplication constructor,
-    before any GUI initialization. If GUI code is required in the function,
-    use a timer (or a queued invocation) to perform the initialization later on,
-    from the event loop.
-
-    If QCoreApplication is deleted and another QCoreApplication is created,
-    the startup function will be invoked again.
-
-    \note This macro is not suitable for use in library code that is then
-    statically linked into an application since the function may not be called
-    at all due to being eliminated by the linker.
-*/
-
-/*!
-    \fn void qAddPostRoutine(QtCleanUpFunction ptr)
-    \relates QCoreApplication
-
-    Adds a global routine that will be called from the QCoreApplication
-    destructor. This function is normally used to add cleanup routines
-    for program-wide functionality.
-
-    The cleanup routines are called in the reverse order of their addition.
-
-    The function specified by \a ptr should take no arguments and should
-    return nothing. For example:
-
-    \snippet code/src_corelib_kernel_qcoreapplication.cpp 4
-
-    Note that for an application- or module-wide cleanup, qaddPostRoutine()
-    is often not suitable. For example, if the program is split into dynamically
-    loaded modules, the relevant module may be unloaded long before the
-    QCoreApplication destructor is called. In such cases, if using qaddPostRoutine()
-    is still desirable, qRemovePostRoutine() can be used to prevent a routine
-    from being called by the QCoreApplication destructor. For example, if that
-    routine was called before the module was unloaded.
-
-    For modules and libraries, using a reference-counted
-    initialization manager or Qt's parent-child deletion mechanism may
-    be better. Here is an example of a private class that uses the
-    parent-child mechanism to call a cleanup function at the right
-    time:
-
-    \snippet code/src_corelib_kernel_qcoreapplication.cpp 5
-
-    By selecting the right parent object, this can often be made to
-    clean up the module's data at the right moment.
-
-    \sa qRemovePostRoutine()
-*/
-
-/*!
-    \fn void qRemovePostRoutine(QtCleanUpFunction ptr)
-    \relates QCoreApplication
-    \since 5.3
-
-    Removes the cleanup routine specified by \a ptr from the list of
-    routines called by the QCoreApplication destructor. The routine
-    must have been previously added to the list by a call to
-    qAddPostRoutine(), otherwise this function has no effect.
-
-    \sa qAddPostRoutine()
-*/
-
-/*!
-    \macro Q_DECLARE_TR_FUNCTIONS(context)
-    \relates QCoreApplication
-
-    The Q_DECLARE_TR_FUNCTIONS() macro declares and implements two
-    translation functions, \c tr() and \c trUtf8(), with these
-    signatures:
-
-    \snippet code/src_corelib_kernel_qcoreapplication.cpp 6
-
-    This macro is useful if you want to use QObject::tr() or
-    QObject::trUtf8() in classes that don't inherit from QObject.
-
-    Q_DECLARE_TR_FUNCTIONS() must appear at the very top of the
-    class definition (before the first \c{public:} or \c{protected:}).
-    For example:
-
-    \snippet code/src_corelib_kernel_qcoreapplication.cpp 7
-
-    The \a context parameter is normally the class name, but it can
-    be any text.
-
-    \sa Q_OBJECT, QObject::tr(), QObject::trUtf8()
-*/
 
 QT_END_NAMESPACE
 
-#ifndef QT_NO_QOBJECT
+
 #include "moc_qcoreapplication.cpp"
-#endif
+

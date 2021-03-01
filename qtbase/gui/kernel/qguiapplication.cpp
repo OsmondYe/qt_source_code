@@ -589,9 +589,7 @@ QGuiApplication::QGuiApplication(int &argc, char **argv, int flags)
     QCoreApplicationPrivate::eventDispatcher->startingUp();
 }
 
-/*!
-    \internal
-*/
+
 QGuiApplication::QGuiApplication(QGuiApplicationPrivate &p)
     : QCoreApplication(p)
 {

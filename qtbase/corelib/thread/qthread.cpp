@@ -10,22 +10,10 @@
 #include "private/qcoreapplication_p.h"
 
 QT_BEGIN_NAMESPACE
-
-/*
-  QThreadData
-*/
-
-QThreadData::QThreadData(int initialRefCount)
-    : _ref(initialRefCount), loopLevel(0), scopeLevel(0),
-      eventDispatcher(0),
-      quitNow(false), canWait(true), isAdopted(false), requiresCoreApplication(true)
-{
-    // fprintf(stderr, "QThreadData %p created\n", this);
-}
-
+ 
 QThreadData::~QThreadData()
 {
-    Q_ASSERT(_ref.load() == 0);
+    Q_ASSERT(_ref.load() == 0);  // will unloading, it must be that no one will depend on it/or use it
 
     // In the odd case that Qt is running on a secondary thread, the main
     // thread instance will have been dereffed asunder because of the deref in
@@ -53,52 +41,6 @@ QThreadData::~QThreadData()
 
     // fprintf(stderr, "QThreadData %p destroyed\n", this);
 }
-
-void QThreadData::ref()
-{
-#ifndef QT_NO_THREAD
-    (void) _ref.ref();
-    Q_ASSERT(_ref.load() != 0);
-#endif
-}
-
-void QThreadData::deref()
-{
-#ifndef QT_NO_THREAD
-    if (!_ref.deref())
-        delete this;
-#endif
-}
-
-/*
-  QAdoptedThread
-*/
-
-QAdoptedThread::QAdoptedThread(QThreadData *data)
-    : QThread(*new QThreadPrivate(data))
-{
-    // thread should be running and not finished for the lifetime
-    // of the application (even if QCoreApplication goes away)
-#ifndef QT_NO_THREAD
-    d_func()->running = true;
-    d_func()->finished = false;
-    init();
-#endif
-
-    // fprintf(stderr, "new QAdoptedThread = %p\n", this);
-}
-
-QAdoptedThread::~QAdoptedThread()
-{
-    // fprintf(stderr, "~QAdoptedThread = %p\n", this);
-}
-
-void QAdoptedThread::run()
-{
-    // this function should never be called
-    qFatal("QAdoptedThread::run(): Internal error, this implementation should never be called.");
-}
-
 
 
 QThreadPrivate::QThreadPrivate(QThreadData *d)

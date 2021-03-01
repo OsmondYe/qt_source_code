@@ -3,19 +3,17 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qstring.h>
-#ifndef QT_NO_QOBJECT
+
 #include <QtCore/qobject.h>
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qeventloop.h>
-#else
-#include <QtCore/qscopedpointer.h>
-#endif
 
-#ifndef QT_NO_QOBJECT
-#if defined(Q_OS_WIN) && !defined(tagMSG)
+#include <QtCore/qscopedpointer.h>
+
+
 typedef struct tagMSG MSG;
-#endif
-#endif
+
+
 
 QT_BEGIN_NAMESPACE
 
@@ -34,13 +32,9 @@ class  QCoreApplication    : public QObject
 {
 
 public:
-    enum { ApplicationFlags = QT_VERSION    };
+    enum { ApplicationFlags = QT_VERSION };
 
-    QCoreApplication(int &argc, char **argv
-#ifndef Q_QDOC
-                     , int = ApplicationFlags
-#endif
-            );
+    QCoreApplication(int &argc, char **argv      , int = ApplicationFlags );
 
     ~QCoreApplication();
 
@@ -63,7 +57,7 @@ public:
 
     static QCoreApplication *instance() { return self; }
 
-#ifndef QT_NO_QOBJECT
+
     static int exec();
     static void processEvents(QEventLoop::ProcessEventsFlags flags = QEventLoop::AllEvents);
     static void processEvents(QEventLoop::ProcessEventsFlags flags, int maxtime);
@@ -83,7 +77,7 @@ public:
 
     static bool startingUp();
     static bool closingDown();
-#endif
+
 
     static QString applicationDirPath();
     static QString applicationFilePath();
@@ -105,12 +99,6 @@ public:
                              const char * key,
                              const char * disambiguation = Q_NULLPTR,
                              int n = -1);
-#if QT_DEPRECATED_SINCE(5, 0)
-    enum Encoding { UnicodeUTF8, Latin1, DefaultCodec = UnicodeUTF8, CodecForTr = UnicodeUTF8 };
-    QT_DEPRECATED static inline QString translate(const char * context, const char * key,
-                             const char * disambiguation, Encoding, int n = -1)
-        { return translate(context, key, disambiguation, n); }
-#endif
 
 
     void installNativeEventFilter(QAbstractNativeEventFilter *filterObj);
@@ -131,7 +119,7 @@ Q_SIGNALS:
     void applicationVersionChanged();
 
 protected:
-    bool event(QEvent *) Q_DECL_OVERRIDE;
+    bool event(QEvent *) ;
 
     virtual bool compressEvent(QEvent *, QObject *receiver, QPostEventList *);
 
@@ -186,10 +174,10 @@ private:
 typedef void (*QtStartUpFunction)();
 typedef void (*QtCleanUpFunction)();
 
-Q_CORE_EXPORT void qAddPreRoutine(QtStartUpFunction);
-Q_CORE_EXPORT void qAddPostRoutine(QtCleanUpFunction);
-Q_CORE_EXPORT void qRemovePostRoutine(QtCleanUpFunction);
-Q_CORE_EXPORT QString qAppName();                // get application name
+ void qAddPreRoutine(QtStartUpFunction);
+ void qAddPostRoutine(QtCleanUpFunction);
+ void qRemovePostRoutine(QtCleanUpFunction);
+ QString qAppName();                // get application name
 
 #define Q_COREAPP_STARTUP_FUNCTION(AFUNC) \
     static void AFUNC ## _ctor_function() {  \

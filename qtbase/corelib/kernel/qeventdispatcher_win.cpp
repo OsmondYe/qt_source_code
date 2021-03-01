@@ -1,43 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtCore module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #include "qeventdispatcher_win_p.h"
 
 #include "qcoreapplication.h"
@@ -69,6 +29,7 @@ extern uint qGlobalPostedEventsCount();
 #ifndef WM_TOUCH
 #  define WM_TOUCH 0x0240
 #endif
+
 #ifndef QT_NO_GESTURES
 #ifndef WM_GESTURE
 #  define WM_GESTURE 0x0119
@@ -87,9 +48,7 @@ enum {
 
 class QEventDispatcherWin32Private;
 
-#if !defined(DWORD_PTR) && !defined(Q_OS_WIN64)
 #define DWORD_PTR DWORD
-#endif
 
 LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp);
 
@@ -469,7 +428,7 @@ void QEventDispatcherWin32Private::postActivateSocketNotifiers()
 
 void QEventDispatcherWin32::createInternalHwnd()
 {
-    Q_D(QEventDispatcherWin32);
+    QEventDispatcherWin32Private * const d = d_func();
 
     if (d->internalHwnd)
         return;
@@ -484,7 +443,7 @@ void QEventDispatcherWin32::createInternalHwnd()
 
 void QEventDispatcherWin32::installMessageHook()
 {
-    Q_D(QEventDispatcherWin32);
+    QEventDispatcherWin32Private * const d = d_func();
 
     if (d->getMessageHook)
         return;
@@ -500,7 +459,7 @@ void QEventDispatcherWin32::installMessageHook()
 
 void QEventDispatcherWin32::uninstallMessageHook()
 {
-    Q_D(QEventDispatcherWin32);
+    QEventDispatcherWin32Private * const d = d_func();
 
     if (d->getMessageHook)
         UnhookWindowsHookEx(d->getMessageHook);
@@ -522,7 +481,7 @@ QEventDispatcherWin32::~QEventDispatcherWin32()
 
 bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
-    Q_D(QEventDispatcherWin32);
+    QEventDispatcherWin32Private * const d = d_func();
 
     if (!d->internalHwnd) {
         createInternalHwnd();
@@ -687,7 +646,7 @@ void QEventDispatcherWin32::registerSocketNotifier(QSocketNotifier *notifier)
     }
 #endif
 
-    Q_D(QEventDispatcherWin32);
+    QEventDispatcherWin32Private * const d = d_func();
     QSNDict *sn_vec[3] = { &d->sn_read, &d->sn_write, &d->sn_except };
     QSNDict *dict = sn_vec[type];
 
@@ -751,7 +710,7 @@ void QEventDispatcherWin32::unregisterSocketNotifier(QSocketNotifier *notifier)
 
 void QEventDispatcherWin32::doUnregisterSocketNotifier(QSocketNotifier *notifier)
 {
-    Q_D(QEventDispatcherWin32);
+    QEventDispatcherWin32Private * const d = d_func();
     int type = notifier->type();
     int sockfd = notifier->socket();
     Q_ASSERT(sockfd >= 0);
@@ -793,7 +752,7 @@ void QEventDispatcherWin32::registerTimer(int timerId, int interval, Qt::TimerTy
     }
 #endif
 
-    Q_D(QEventDispatcherWin32);
+    QEventDispatcherWin32Private * const d = d_func();
 
     // exiting ... do not register new timers
     // (QCoreApplication::closingDown() is set too late to be used here)
@@ -830,7 +789,7 @@ bool QEventDispatcherWin32::unregisterTimer(int timerId)
     }
 #endif
 
-    Q_D(QEventDispatcherWin32);
+    QEventDispatcherWin32Private * const d = d_func();
     if (d->timerVec.isEmpty() || timerId <= 0)
         return false;
 
@@ -858,7 +817,7 @@ bool QEventDispatcherWin32::unregisterTimers(QObject *object)
     }
 #endif
 
-    Q_D(QEventDispatcherWin32);
+    QEventDispatcherWin32Private * const d = d_func();
     if (d->timerVec.isEmpty())
         return false;
     WinTimerInfo *t;
@@ -902,7 +861,7 @@ bool QEventDispatcherWin32::registerEventNotifier(QWinEventNotifier *notifier)
         return false;
     }
 
-    Q_D(QEventDispatcherWin32);
+    QEventDispatcherWin32Private * const d = d_func();
 
     if (d->winEventNotifierList.contains(notifier))
         return true;
@@ -925,7 +884,7 @@ void QEventDispatcherWin32::unregisterEventNotifier(QWinEventNotifier *notifier)
         return;
     }
 
-    Q_D(QEventDispatcherWin32);
+    QEventDispatcherWin32Private * const d = d_func();
 
     int i = d->winEventNotifierList.indexOf(notifier);
     if (i != -1)
@@ -934,7 +893,7 @@ void QEventDispatcherWin32::unregisterEventNotifier(QWinEventNotifier *notifier)
 
 void QEventDispatcherWin32::activateEventNotifiers()
 {
-    Q_D(QEventDispatcherWin32);
+    QEventDispatcherWin32Private * const d = d_func();
     //### this could break if events are removed/added in the activation
     for (int i=0; i<d->winEventNotifierList.count(); i++) {
         if (WaitForSingleObjectEx(d->winEventNotifierList.at(i)->handle(), 0, TRUE) == WAIT_OBJECT_0)
@@ -951,7 +910,7 @@ int QEventDispatcherWin32::remainingTime(int timerId)
     }
 #endif
 
-    Q_D(QEventDispatcherWin32);
+    QEventDispatcherWin32Private * const d = d_func();
 
     if (d->timerVec.isEmpty())
         return -1;
@@ -980,7 +939,7 @@ int QEventDispatcherWin32::remainingTime(int timerId)
 
 void QEventDispatcherWin32::wakeUp()
 {
-    Q_D(QEventDispatcherWin32);
+    QEventDispatcherWin32Private * const d = d_func();
     d->serialNumber.ref();
     if (d->internalHwnd && d->wakeUps.testAndSetAcquire(0, 1)) {
         // post a WM_QT_SENDPOSTEDEVENTS to this thread if there isn't one already pending
@@ -990,7 +949,7 @@ void QEventDispatcherWin32::wakeUp()
 
 void QEventDispatcherWin32::interrupt()
 {
-    Q_D(QEventDispatcherWin32);
+    QEventDispatcherWin32Private * const d = d_func();
     d->interrupt = true;
     wakeUp();
 }
@@ -1003,7 +962,7 @@ void QEventDispatcherWin32::startingUp()
 
 void QEventDispatcherWin32::closingDown()
 {
-    Q_D(QEventDispatcherWin32);
+    QEventDispatcherWin32Private * const d = d_func();
 
     // clean up any socketnotifiers
     while (!d->sn_read.isEmpty())
@@ -1027,7 +986,7 @@ void QEventDispatcherWin32::closingDown()
 
 bool QEventDispatcherWin32::event(QEvent *e)
 {
-    Q_D(QEventDispatcherWin32);
+    QEventDispatcherWin32Private * const d = d_func();
     if (e->type() == QEvent::ZeroTimerEvent) {
         QZeroTimerEvent *zte = static_cast<QZeroTimerEvent*>(e);
         WinTimerInfo *t = d->timerDict.value(zte->timerId());
@@ -1059,13 +1018,13 @@ bool QEventDispatcherWin32::event(QEvent *e)
 
 void QEventDispatcherWin32::sendPostedEvents()
 {
-    Q_D(QEventDispatcherWin32);
+    QEventDispatcherWin32Private * const d = d_func();
     QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
 }
 
 HWND QEventDispatcherWin32::internalHwnd()
 {
-    Q_D(QEventDispatcherWin32);
+    QEventDispatcherWin32Private * const d = d_func();
     createInternalHwnd();
     return d->internalHwnd;
 }

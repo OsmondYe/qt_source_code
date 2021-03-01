@@ -132,8 +132,6 @@ public:
         RoundTile
     };
 
-
-
     enum Alignment {
         AlignLeft = 0x0001,
         AlignLeading = AlignLeft,

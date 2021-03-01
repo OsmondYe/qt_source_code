@@ -24,6 +24,7 @@ DWORD WINAPI qt_adopted_thread_watcher_function(LPVOID);
 static DWORD qt_current_thread_data_tls_index = TLS_OUT_OF_INDEXES;
 void qt_create_tls()
 {
+	// requires a slot-id for all threads, 
     if (qt_current_thread_data_tls_index != TLS_OUT_OF_INDEXES)
         return;
     static QBasicMutex mutex;
@@ -38,11 +39,8 @@ static void qt_free_tls()
         qt_current_thread_data_tls_index = TLS_OUT_OF_INDEXES;
     }
 }
-Q_DESTRUCTOR_FUNCTION(qt_free_tls)
 
-/*
-    QThreadData
-*/
+
 void QThreadData::clearCurrentThreadData()
 {
     TlsSetValue(qt_current_thread_data_tls_index, 0);
@@ -52,6 +50,7 @@ QThreadData *QThreadData::current(bool createIfNecessary)
 {
     qt_create_tls();
     QThreadData *threadData = reinterpret_cast<QThreadData *>(TlsGetValue(qt_current_thread_data_tls_index));
+	// create a new one
     if (!threadData && createIfNecessary) {
         threadData = new QThreadData;
         // This needs to be called prior to new AdoptedThread() to
@@ -88,11 +87,6 @@ QThreadData *QThreadData::current(bool createIfNecessary)
     return threadData;
 }
 
-void QAdoptedThread::init()
-{
-    d_func()->handle = GetCurrentThread();
-    d_func()->id = GetCurrentThreadId();
-}
 
 static QVector<HANDLE> qt_adopted_thread_handles;
 static QVector<QThread *> qt_adopted_qthreads;

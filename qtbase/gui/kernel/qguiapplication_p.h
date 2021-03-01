@@ -1,55 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtGui module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #ifndef QGUIAPPLICATION_P_H
 #define QGUIAPPLICATION_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
 
 #include <QtGui/private/qtguiglobal_p.h>
 #include <QtGui/qguiapplication.h>
@@ -70,12 +20,12 @@ class QColorProfile;
 class QPlatformIntegration;
 class QPlatformTheme;
 class QPlatformDragQtResponse;
-#ifndef QT_NO_DRAGANDDROP
+
 class QDrag;
-#endif // QT_NO_DRAGANDDROP
+
 class QInputDeviceManager;
 
-class Q_GUI_EXPORT QGuiApplicationPrivate : public QCoreApplicationPrivate
+class  QGuiApplicationPrivate : public QCoreApplicationPrivate
 {
     Q_DECLARE_PUBLIC(QGuiApplication)
 public:
@@ -85,8 +35,8 @@ public:
     void init();
 
     void createPlatformIntegration();
-    void createEventDispatcher() Q_DECL_OVERRIDE;
-    void eventDispatcherReady() Q_DECL_OVERRIDE;
+    void createEventDispatcher() ;
+    void eventDispatcherReady() ;
 
     virtual void notifyLayoutDirectionChange();
     virtual void notifyActiveWindowChange(QWindow *previous);
@@ -153,19 +103,19 @@ public:
     static void processTabletEnterProximityEvent(QWindowSystemInterfacePrivate::TabletEnterProximityEvent *e);
     static void processTabletLeaveProximityEvent(QWindowSystemInterfacePrivate::TabletLeaveProximityEvent *e);
 
-#ifndef QT_NO_GESTURES
+
     static void processGestureEvent(QWindowSystemInterfacePrivate::GestureEvent *e);
-#endif
+
 
     static void processPlatformPanelEvent(QWindowSystemInterfacePrivate::PlatformPanelEvent *e);
-#ifndef QT_NO_CONTEXTMENU
-    static void processContextMenuEvent(QWindowSystemInterfacePrivate::ContextMenuEvent *e);
-#endif
 
-#ifndef QT_NO_DRAGANDDROP
+    static void processContextMenuEvent(QWindowSystemInterfacePrivate::ContextMenuEvent *e);
+
+
+
     static QPlatformDragQtResponse processDrag(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions);
     static QPlatformDropQtResponse processDrop(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions);
-#endif
+
 
     static bool processNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result);
 
@@ -224,18 +174,17 @@ public:
     static QVector<TabletPointData> tabletDevicePoints;
     static TabletPointData &tabletDevicePoint(qint64 deviceId);
 
-#ifndef QT_NO_CLIPBOARD
+
     static QClipboard *qt_clipboard;
-#endif
 
     static QPalette *app_pal;
 
     static QWindowList window_list;
     static QWindow *focus_window;
 
-#ifndef QT_NO_CURSOR
+
     QList<QCursor> cursor_list;
-#endif
+
     static QList<QScreen *> screen_list;
 
     static QFont *app_font;
@@ -249,18 +198,17 @@ public:
     QIcon forcedWindowIcon;
 
     static QList<QObject *> generic_plugin_list;
-#ifndef QT_NO_SHORTCUT
-    QShortcutMap shortcutMap;
-#endif
 
-#ifndef QT_NO_SESSIONMANAGER
+    QShortcutMap shortcutMap;
+
+
     static bool is_fallback_session_management_enabled;
     QSessionManager *session_manager;
     bool is_session_restored;
     bool is_saving_session;
     void commitData();
     void saveState();
-#endif
+
 
     struct ActiveTouchPointsKey {
         ActiveTouchPointsKey(QTouchDevice *dev, int id) : device(dev), touchPointId(id) { }
@@ -310,9 +258,8 @@ public:
 protected:
     virtual void notifyThemeChanged();
     bool tryCloseRemainingWindows(QWindowList processedWindows);
-#ifndef QT_NO_DRAGANDDROP
+
     virtual void notifyDragStarted(const QDrag *);
-#endif // QT_NO_DRAGANDDROP
 
 private:
     friend class QDragManager;
@@ -328,9 +275,9 @@ private:
     static QInputDeviceManager *m_inputDeviceManager;
 };
 
-Q_GUI_EXPORT uint qHash(const QGuiApplicationPrivate::ActiveTouchPointsKey &k);
+ uint qHash(const QGuiApplicationPrivate::ActiveTouchPointsKey &k);
 
-Q_GUI_EXPORT bool operator==(const QGuiApplicationPrivate::ActiveTouchPointsKey &a,
+ bool operator==(const QGuiApplicationPrivate::ActiveTouchPointsKey &a,
                              const QGuiApplicationPrivate::ActiveTouchPointsKey &b);
 
 QT_END_NAMESPACE
