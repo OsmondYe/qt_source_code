@@ -344,13 +344,13 @@ static const QMetaTypeInterface qVariantGuiHelper[] = {
 #undef QT_IMPL_METATYPEINTERFACE_GUI_TYPES
 } // namespace used to hide QVariant handler
 
-extern Q_CORE_EXPORT const QMetaTypeInterface *qMetaTypeGuiHelper;
+extern  const QMetaTypeInterface *qMetaTypeGuiHelper;
 
 void qRegisterGuiVariant()
 {
     QVariantPrivate::registerHandler(QModulesPrivate::Gui, &qt_gui_variant_handler);
     qMetaTypeGuiHelper = qVariantGuiHelper;
 }
-Q_CONSTRUCTOR_FUNCTION(qRegisterGuiVariant)
+//Q_CONSTRUCTOR_FUNCTION(qRegisterGuiVariant)
 
 QT_END_NAMESPACE
