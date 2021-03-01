@@ -336,10 +336,8 @@ void qt_init(QApplicationPrivate *priv, int type)
 
 void qt_init_tooltip_palette()
 {
-#ifndef QT_NO_TOOLTIP
     if (const QPalette *toolTipPalette = QGuiApplicationPrivate::platformTheme()->palette(QPlatformTheme::ToolTipPalette))
         QToolTip::setPalette(*toolTipPalette);
-#endif
 }
 
 #if QT_CONFIG(statemachine)
@@ -471,10 +469,6 @@ void QApplicationPrivate::initializeWidgetFontHash()
     if (const QFont *font = theme->font(QPlatformTheme::MiniFont))
         fontHash->insert(QByteArrayLiteral("QMiniFont"), *font);
 }
-
-/*****************************************************************************
-  Functions returning the active popup and modal widgets.
- *****************************************************************************/
 
 
 QWidget *QApplication::activePopupWidget()
@@ -671,21 +665,7 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
     \sa QWidget::setStyle(), {Qt Style Sheets}
 */
 
-/*!
-    \property QApplication::autoSipEnabled
-    \since 4.5
-    \brief toggles automatic SIP (software input panel) visibility
 
-    Set this property to \c true to automatically display the SIP when entering
-    widgets that accept keyboard input. This property only affects widgets with
-    the WA_InputMethodEnabled attribute set, and is typically used to launch
-    a virtual keyboard on devices which have very few or no keys.
-
-    \b{ The property only has an effect on platforms that use software input
-    panels.}
-
-    The default is platform dependent.
-*/
 void QApplication::setAutoSipEnabled(const bool enabled)
 {
     QApplicationPrivate::autoSipEnabled = enabled;
@@ -696,7 +676,7 @@ bool QApplication::autoSipEnabled() const
     return QApplicationPrivate::autoSipEnabled;
 }
 
-#ifndef QT_NO_STYLE_STYLESHEET
+
 
 QString QApplication::styleSheet() const
 {
@@ -720,7 +700,7 @@ void QApplication::setStyleSheet(const QString& styleSheet)
     }
 }
 
-#endif // QT_NO_STYLE_STYLESHEET
+
 
 /*!
     Returns the application's style object.

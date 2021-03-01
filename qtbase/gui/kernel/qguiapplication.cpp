@@ -306,240 +306,9 @@ void QWindowGeometrySpecification::applyTo(QWindow *window) const
 
 static QWindowGeometrySpecification windowGeometrySpecification = Q_WINDOW_GEOMETRY_SPECIFICATION_INITIALIZER;
 
-/*!
-    \macro qGuiApp
-    \relates QGuiApplication
 
-    A global pointer referring to the unique application object.
-    Only valid for use when that object is a QGuiApplication.
 
-    \sa QCoreApplication::instance(), qApp
-*/
-
-/*!
-    \class QGuiApplication
-    \brief The QGuiApplication class manages the GUI application's control
-    flow and main settings.
-
-    \inmodule QtGui
-    \since 5.0
-
-    QGuiApplication contains the main event loop, where all events from the window
-    system and other sources are processed and dispatched. It also handles the
-    application's initialization and finalization, and provides session management.
-    In addition, QGuiApplication handles most of the system-wide and application-wide
-    settings.
-
-    For any GUI application using Qt, there is precisely \b one QGuiApplication
-    object no matter whether the application has 0, 1, 2 or more windows at
-    any given time. For non-GUI Qt applications, use QCoreApplication instead,
-    as it does not depend on the Qt GUI module. For QWidget based Qt applications,
-    use QApplication instead, as it provides some functionality needed for creating
-    QWidget instances.
-
-    The QGuiApplication object is accessible through the instance() function, which
-    returns a pointer equivalent to the global \l qApp pointer.
-
-    QGuiApplication's main areas of responsibility are:
-        \list
-            \li  It initializes the application with the user's desktop settings,
-                such as palette(), font() and styleHints(). It keeps
-                track of these properties in case the user changes the desktop
-                globally, for example, through some kind of control panel.
-
-            \li  It performs event handling, meaning that it receives events
-                from the underlying window system and dispatches them to the
-                relevant widgets. You can send your own events to windows by
-                using sendEvent() and postEvent().
-
-            \li  It parses common command line arguments and sets its internal
-                state accordingly. See the \l{QGuiApplication::QGuiApplication()}
-                {constructor documentation} below for more details.
-
-            \li  It provides localization of strings that are visible to the
-                user via translate().
-
-            \li  It provides some magical objects like the clipboard().
-
-            \li  It knows about the application's windows. You can ask which
-                window is at a certain position using topLevelAt(), get a list of
-                topLevelWindows(), etc.
-
-            \li  It manages the application's mouse cursor handling, see
-                setOverrideCursor()
-
-            \li  It provides support for sophisticated \l{Session Management}
-                {session management}. This makes it possible for applications
-                to terminate gracefully when the user logs out, to cancel a
-                shutdown process if termination isn't possible and even to
-                preserve the entire application's state for a future session.
-                See isSessionRestored(), sessionId() and commitDataRequest() and
-                saveStateRequest() for details.
-        \endlist
-
-    Since the QGuiApplication object does so much initialization, it \e{must} be
-    created before any other objects related to the user interface are created.
-    QGuiApplication also deals with common command line arguments. Hence, it is
-    usually a good idea to create it \e before any interpretation or
-    modification of \c argv is done in the application itself.
-
-    \table
-    \header
-        \li{2,1} Groups of functions
-
-        \row
-        \li  System settings
-        \li  desktopSettingsAware(),
-            setDesktopSettingsAware(),
-            styleHints(),
-            palette(),
-            setPalette(),
-            font(),
-            setFont().
-
-        \row
-        \li  Event handling
-        \li  exec(),
-            processEvents(),
-            exit(),
-            quit().
-            sendEvent(),
-            postEvent(),
-            sendPostedEvents(),
-            removePostedEvents(),
-            hasPendingEvents(),
-            notify().
-
-        \row
-        \li  Windows
-        \li  allWindows(),
-            topLevelWindows(),
-            focusWindow(),
-            clipboard(),
-            topLevelAt().
-
-        \row
-        \li  Advanced cursor handling
-        \li  overrideCursor(),
-            setOverrideCursor(),
-            restoreOverrideCursor().
-
-        \row
-        \li  Session management
-        \li  isSessionRestored(),
-            sessionId(),
-            commitDataRequest(),
-            saveStateRequest().
-
-        \row
-        \li  Miscellaneous
-        \li  startingUp(),
-            closingDown().
-    \endtable
-
-    \sa QCoreApplication, QAbstractEventDispatcher, QEventLoop
-*/
-
-/*!
-    Initializes the window system and constructs an application object with
-    \a argc command line arguments in \a argv.
-
-    \warning The data referred to by \a argc and \a argv must stay valid for
-    the entire lifetime of the QGuiApplication object. In addition, \a argc must
-    be greater than zero and \a argv must contain at least one valid character
-    string.
-
-    The global \c qApp pointer refers to this application object. Only one
-    application object should be created.
-
-    This application object must be constructed before any \l{QPaintDevice}
-    {paint devices} (including pixmaps, bitmaps etc.).
-
-    \note \a argc and \a argv might be changed as Qt removes command line
-    arguments that it recognizes.
-
-    \section1 Supported Command Line Options
-
-    All Qt programs automatically support a set of command-line options that
-    allow modifying the way Qt will interact with the windowing system. Some of
-    the options are also accessible via environment variables, which are the
-    preferred form if the application can launch GUI sub-processes or other
-    applications (environment variables will be inherited by child processes).
-    When in doubt, use the environment variables.
-
-    The options currently supported are the following:
-    \list
-
-        \li \c{-platform} \e {platformName[:options]}, specifies the
-            \l{Qt Platform Abstraction} (QPA) plugin.
-
-            Overridden by the \c QT_QPA_PLATFORM environment variable.
-        \li \c{-platformpluginpath} \e path, specifies the path to platform
-            plugins.
-
-            Overridden by the \c QT_QPA_PLATFORM_PLUGIN_PATH environment
-            variable.
-
-        \li \c{-platformtheme} \e platformTheme, specifies the platform theme.
-
-            Overridden by the \c QT_QPA_PLATFORMTHEME environment variable.
-
-        \li \c{-plugin} \e plugin, specifies additional plugins to load. The argument
-            may appear multiple times.
-
-            Overridden by the \c QT_QPA_GENERIC_PLUGINS environment variable.
-
-        \li \c{-qmljsdebugger=}, activates the QML/JS debugger with a specified port.
-            The value must be of format \c{port:1234}\e{[,block]}, where
-            \e block is optional
-            and will make the application wait until a debugger connects to it.
-        \li \c {-qwindowgeometry} \e geometry, specifies window geometry for
-            the main window using the X11-syntax. For example:
-            \c {-qwindowgeometry 100x100+50+50}
-        \li \c {-qwindowicon}, sets the default window icon
-        \li \c {-qwindowtitle}, sets the title of the first window
-        \li \c{-reverse}, sets the application's layout direction to
-            Qt::RightToLeft. This option is intended to aid debugging and should
-            not be used in production. The default value is automatically detected
-            from the user's locale (see also QLocale::textDirection()).
-        \li \c{-session} \e session, restores the application from an earlier
-            \l{Session Management}{session}.
-    \endlist
-
-    The following standard command line options are available for X11:
-
-    \list
-        \li \c {-display} \e {hostname:screen_number}, switches displays on X11.
-
-             Overrides the \c DISPLAY environment variable.
-        \li \c {-geometry} \e geometry, same as \c {-qwindowgeometry}.
-    \endlist
-
-    \section1 Platform-Specific Arguments
-
-    You can specify platform-specific arguments for the \c{-platform} option.
-    Place them after the platform plugin name following a colon as a
-    comma-separated list. For example,
-    \c{-platform windows:dialogs=xp,fontengine=freetype}.
-
-    The following parameters are available for \c {-platform windows}:
-
-    \list
-        \li \c {dialogs=[xp|none]}, \c xp uses XP-style native dialogs and
-            \c none disables them.
-        \li \c {fontengine=freetype}, uses the FreeType font engine.
-    \endlist
-
-    For more information about the platform-specific arguments available for
-    embedded Linux platforms, see \l{Qt for Embedded Linux}.
-
-    \sa arguments() QGuiApplication::platformName
-*/
-#ifdef Q_QDOC
-QGuiApplication::QGuiApplication(int &argc, char **argv)
-#else
 QGuiApplication::QGuiApplication(int &argc, char **argv, int flags)
-#endif
     : QCoreApplication(*new QGuiApplicationPrivate(argc, argv, flags))
 {
     d_func()->init();
@@ -612,29 +381,16 @@ QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags
 {
     self = this;
     application_type = QCoreApplicationPrivate::Gui;
-#ifndef QT_NO_SESSIONMANAGER
     is_session_restored = false;
     is_saving_session = false;
-#endif
 }
 
-/*!
-    \property QGuiApplication::applicationDisplayName
-    \brief the user-visible name of this application
-    \since 5.0
-
-    This name is shown to the user, for instance in window titles.
-    It can be translated, if necessary.
-
-    If not set, the application display name defaults to the application name.
-
-    \sa applicationName
-*/
 void QGuiApplication::setApplicationDisplayName(const QString &name)
 {
     if (!QGuiApplicationPrivate::displayName) {
         QGuiApplicationPrivate::displayName = new QString(name);
-        if (qGuiApp) {
+        if (qGuiApp) 
+		{
             disconnect(qGuiApp, &QGuiApplication::applicationNameChanged,
                     qGuiApp, &QGuiApplication::applicationDisplayNameChanged);
 
@@ -653,22 +409,7 @@ QString QGuiApplication::applicationDisplayName()
     return QGuiApplicationPrivate::displayName ? *QGuiApplicationPrivate::displayName : applicationName();
 }
 
-/*!
-    \property QGuiApplication::desktopFileName
-    \brief the base name of the desktop entry for this application
-    \since 5.7
 
-    This is the file name, without the full path, of the desktop entry
-    that represents this application according to the freedesktop desktop
-    entry specification.
-
-    This property gives a precise indication of what desktop entry represents
-    the application and it is needed by the windowing system to retrieve
-    such information without resorting to imprecise heuristics.
-
-    The latest version of the freedesktop desktop entry specification can be obtained
-    \l{http://standards.freedesktop.org/desktop-entry-spec/latest/}{here}.
-*/
 void QGuiApplication::setDesktopFileName(const QString &name)
 {
     if (!QGuiApplicationPrivate::desktopFileName)
@@ -681,10 +422,7 @@ QString QGuiApplication::desktopFileName()
     return QGuiApplicationPrivate::desktopFileName ? *QGuiApplicationPrivate::desktopFileName : QString();
 }
 
-/*!
-    Modal window are organized in a stack. This function returns the modal
-    window at the top of the stack.
-*/
+
 QWindow *QGuiApplication::modalWindow()
 {    
     if (QGuiApplicationPrivate::self->modalWindowList.isEmpty())
@@ -824,37 +562,13 @@ bool QGuiApplicationPrivate::isWindowBlocked(QWindow *window, QWindow **blocking
     return false;
 }
 
-/*!
-    Returns the QWindow that receives events tied to focus,
-    such as key events.
-*/
+
 QWindow *QGuiApplication::focusWindow()
 {
     return QGuiApplicationPrivate::focus_window;
 }
 
-/*!
-    \fn QGuiApplication::focusObjectChanged(QObject *focusObject)
 
-    This signal is emitted when final receiver of events tied to focus is changed.
-    \a focusObject is the new receiver.
-
-    \sa focusObject()
-*/
-
-/*!
-    \fn QGuiApplication::focusWindowChanged(QWindow *focusWindow)
-
-    This signal is emitted when the focused window changes.
-    \a focusWindow is the new focused window.
-
-    \sa focusWindow()
-*/
-
-/*!
-    Returns the QObject in currently active window that will be final receiver of events
-    tied to focus, such as key events.
- */
 QObject *QGuiApplication::focusObject()
 {
     if (focusWindow())
@@ -862,27 +576,13 @@ QObject *QGuiApplication::focusObject()
     return 0;
 }
 
-/*!
-    \fn QGuiApplication::allWindows()
 
-    Returns a list of all the windows in the application.
-
-    The list is empty if there are no windows.
-
-    \sa topLevelWindows()
- */
 QWindowList QGuiApplication::allWindows()
 {
     return QGuiApplicationPrivate::window_list;
 }
 
-/*!
-    \fn QGuiApplication::topLevelWindows()
 
-    Returns a list of the top-level windows in the application.
-
-    \sa allWindows()
- */
 QWindowList QGuiApplication::topLevelWindows()
 {
     const QWindowList &list = QGuiApplicationPrivate::window_list;
@@ -925,49 +625,6 @@ QList<QScreen *> QGuiApplication::screens()
     return QGuiApplicationPrivate::screen_list;
 }
 
-/*!
-    \fn void QGuiApplication::screenAdded(QScreen *screen)
-
-    This signal is emitted whenever a new screen \a screen has been added to the system.
-
-    \sa screens(), primaryScreen, screenRemoved()
-*/
-
-/*!
-    \fn void QGuiApplication::screenRemoved(QScreen *screen)
-
-    This signal is emitted whenever a \a screen is removed from the system. It
-    provides an opportunity to manage the windows on the screen before Qt falls back
-    to moving them to the primary screen.
-
-    \sa screens(), screenAdded(), QObject::destroyed(), QWindow::setScreen()
-
-    \since 5.4
-*/
-
-
-/*!
-    \property QGuiApplication::primaryScreen
-
-    \brief the primary (or default) screen of the application.
-
-    This will be the screen where QWindows are initially shown, unless otherwise specified.
-
-    The primaryScreenChanged signal was introduced in Qt 5.6.
-
-    \sa screens()
-*/
-
-/*!
-    Returns the highest screen device pixel ratio found on
-    the system. This is the ratio between physical pixels and
-    device-independent pixels.
-
-    Use this function only when you don't know which window you are targeting.
-    If you do know the target window, use QWindow::devicePixelRatio() instead.
-
-    \sa QWindow::devicePixelRatio()
-*/
 qreal QGuiApplication::devicePixelRatio() const
 {
     // Cache topDevicePixelRatio, iterate through the screen list once only.
@@ -983,9 +640,7 @@ qreal QGuiApplication::devicePixelRatio() const
     return topDevicePixelRatio;
 }
 
-/*!
-    Returns the top level window at the given position \a pos, if any.
-*/
+
 QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
 {
     const QList<QScreen *> screens = QGuiApplication::screens();
@@ -1021,41 +676,6 @@ QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
     }
     return Q_NULLPTR;
 }
-
-/*!
-    \property QGuiApplication::platformName
-    \brief The name of the underlying platform plugin.
-
-    The QPA platform plugins are located in \c {qtbase\src\plugins\platforms}.
-    At the time of writing, the following platform plugin names are supported:
-
-    \list
-        \li \c android
-        \li \c cocoa is a platform plugin for \macos.
-        \li \c directfb
-        \li \c eglfs is a platform plugin for running Qt5 applications on top of
-            EGL and  OpenGL ES 2.0 without an actual windowing system (like X11
-            or Wayland). For more information, see \l{EGLFS}.
-        \li \c ios (also used for tvOS)
-        \li \c kms is an experimental platform plugin using kernel modesetting
-            and \l{http://dri.freedesktop.org/wiki/DRM}{DRM} (Direct Rendering
-            Manager).
-        \li \c linuxfb writes directly to the framebuffer. For more information,
-            see \l{LinuxFB}.
-        \li \c minimal is provided as an examples for developers who want to
-            write their own platform plugins. However, you can use the plugin to
-            run GUI applications in environments without a GUI, such as servers.
-        \li \c minimalegl is an example plugin.
-        \li \c offscreen
-        \li \c openwfd
-        \li \c qnx
-        \li \c windows
-        \li \c xcb is the X11 plugin used on regular desktop Linux platforms.
-    \endlist
-
-    For more information about the platform plugins for embedded Linux devices,
-    see \l{Qt for Embedded Linux}.
-*/
 
 QString QGuiApplication::platformName()
 {
@@ -1242,12 +862,7 @@ void QGuiApplicationPrivate::createPlatformIntegration()
         forcedWindowIcon = QDir::isAbsolutePath(icon) ? QIcon(icon) : QIcon::fromTheme(icon);
 }
 
-/*!
-    Called from QCoreApplication::init()
 
-    Responsible for creating an event dispatcher when QCoreApplication
-    decides that it needs one (because a custom one has not been set).
-*/
 void QGuiApplicationPrivate::createEventDispatcher()
 {
     Q_ASSERT(!eventDispatcher);
@@ -1276,10 +891,6 @@ void QGuiApplicationPrivate::eventDispatcherReady()
 
 void QGuiApplicationPrivate::init()
 {
-#if defined(Q_OS_MACOS)
-    QMacAutoReleasePool pool;
-#endif
-
     QCoreApplicationPrivate::init();
 
     QCoreApplicationPrivate::is_app_running = false; // Starting up.
@@ -1287,10 +898,8 @@ void QGuiApplicationPrivate::init()
     bool loadTestability = false;
     QList<QByteArray> pluginList;
     // Get command line params
-#ifndef QT_NO_SESSIONMANAGER
     QString session_id;
     QString session_key;
-# if defined(Q_OS_WIN)
     wchar_t guidstr[40];
     GUID guid;
     CoCreateGuid(&guid);
@@ -1299,8 +908,7 @@ void QGuiApplicationPrivate::init()
     CoCreateGuid(&guid);
     StringFromGUID2(guid, guidstr, 40);
     session_key = QString::fromWCharArray(guidstr);
-# endif
-#endif
+
     QString s;
     int j = argc ? 1 : 0;
     for (int i=1; i<argc; i++) {
@@ -1318,19 +926,6 @@ void QGuiApplicationPrivate::init()
                 pluginList << argv[i];
         } else if (strcmp(arg, "-reverse") == 0) {
             force_reverse = true;
-#ifdef Q_OS_MAC
-        } else if (strncmp(arg, "-psn_", 5) == 0) {
-            // eat "-psn_xxxx" on Mac, which is passed when starting an app from Finder.
-            // special hack to change working directory (for an app bundle) when running from finder
-            if (QDir::currentPath() == QLatin1String("/")) {
-                QCFType<CFURLRef> bundleURL(CFBundleCopyBundleURL(CFBundleGetMainBundle()));
-                QString qbundlePath = QCFString(CFURLCopyFileSystemPath(bundleURL,
-                                                                        kCFURLPOSIXPathStyle));
-                if (qbundlePath.endsWith(QLatin1String(".app")))
-                    QDir::setCurrent(qbundlePath.section(QLatin1Char('/'), 0, -2));
-            }
-#endif
-#ifndef QT_NO_SESSIONMANAGER
         } else if (strcmp(arg, "-session") == 0 && i < argc - 1) {
             ++i;
             if (argv[i] && *argv[i]) {
@@ -1342,7 +937,6 @@ void QGuiApplicationPrivate::init()
                 }
                 is_session_restored = true;
             }
-#endif
         } else if (strcmp(arg, "-testability") == 0) {
             loadTestability = true;
         } else if (strncmp(arg, "-style=", 7) == 0) {
@@ -1375,20 +969,16 @@ void QGuiApplicationPrivate::init()
 
     mouse_double_click_distance = platformTheme()->themeHint(QPlatformTheme::MouseDoubleClickDistance).toInt();
 
-#ifndef QT_NO_CURSOR
+
     QCursorData::initialize();
-#endif
 
     // trigger registering of QVariant's GUI types
     qRegisterGuiVariant();
 
-#ifndef QT_NO_ANIMATION
     // trigger registering of animation interpolators
     qRegisterGuiGetInterpolator();
-#endif
 
     // set a global share context when enabled unless there is already one
-#ifndef QT_NO_OPENGL
     if (qApp->testAttribute(Qt::AA_ShareOpenGLContexts) && !qt_gl_global_share_context()) {
         QOpenGLContext *ctx = new QOpenGLContext;
         ctx->setFormat(QSurfaceFormat::defaultFormat());
@@ -1396,7 +986,6 @@ void QGuiApplicationPrivate::init()
         qt_gl_set_global_share_context(ctx);
         ownGlobalShareContext = true;
     }
-#endif
 
     QWindowSystemInterfacePrivate::eventTime.start();
 
@@ -1405,10 +994,8 @@ void QGuiApplicationPrivate::init()
     QWindowSystemInterface::flushWindowSystemEvents();
 
     Q_Q(QGuiApplication);
-#ifndef QT_NO_SESSIONMANAGER
     // connect to the session manager
     session_manager = new QSessionManager(q, session_id, session_key);
-#endif
 
 #if QT_CONFIG(library)
     if (qEnvironmentVariableIntValue("QT_LOAD_TESTABILITY") > 0)
@@ -1491,24 +1078,6 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
     screen_list.clear();
 }
 
-#if 0
-#ifndef QT_NO_CURSOR
-QCursor *overrideCursor();
-void setOverrideCursor(const QCursor &);
-void changeOverrideCursor(const QCursor &);
-void restoreOverrideCursor();
-#endif
-
-static QFont font();
-static QFont font(const QWidget*);
-static QFont font(const char *className);
-static void setFont(const QFont &, const char* className = 0);
-static QFontMetrics fontMetrics();
-
-#ifndef QT_NO_CLIPBOARD
-static QClipboard *clipboard();
-#endif
-#endif
 
 /*!
     Returns the current state of the modifier keys on the keyboard. The current
@@ -1618,14 +1187,10 @@ QFunctionPointer QGuiApplication::platformFunction(const QByteArray &function)
 */
 int QGuiApplication::exec()
 {
-#ifndef QT_NO_ACCESSIBILITY
-    QAccessible::setRootObject(qApp);
-#endif
     return QCoreApplication::exec();
 }
 
-/*! \reimp
-*/
+
 bool QGuiApplication::notify(QObject *object, QEvent *event)
 {
     if (object->isWindowType())
@@ -1633,8 +1198,7 @@ bool QGuiApplication::notify(QObject *object, QEvent *event)
     return QCoreApplication::notify(object, event);
 }
 
-/*! \reimp
-*/
+
 bool QGuiApplication::event(QEvent *e)
 {
     if(e->type() == QEvent::LanguageChange) {

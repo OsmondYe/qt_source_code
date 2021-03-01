@@ -52,6 +52,44 @@ class  QApplicationPrivate : public QGuiApplicationPrivate
 {
     //Q_DECLARE_PUBLIC(QApplication)
 public:
+	// Maintain a list of all scenes to ensure font and palette propagation to
+	// all scenes.
+	QList<QGraphicsScene *> scene_list;
+
+
+	QBasicTimer toolTipWakeUp, toolTipFallAsleep;
+	QPoint toolTipPos, toolTipGlobalPos, hoverGlobalPos;
+	QPointer<QWidget> toolTipWidget;
+
+	static QSize app_strut;
+	static QWidgetList *popupWidgets;
+	static QStyle *app_style;
+	static bool overrides_native_style;
+	static QPalette *sys_pal;
+	static QPalette *set_pal;
+	static QFont *sys_font;
+    static QFont *set_font;
+    static QWidget *main_widget;
+    static QWidget *focus_widget;
+    static QWidget *hidden_focus_widget;
+    static QWidget *active_window;
+
+    static int  wheel_scroll_lines;
+    static QPointer<QWidget> wheel_widget;
+
+    static int enabledAnimations; // Combination of QPlatformTheme::UiEffect
+    static bool widgetCount; // Coupled with -widgetcount switch
+    static QWidget *oldEditFocus;
+    static Qt::NavigationMode navigationMode;
+
+    static QString styleSheet;
+
+    static QPointer<QWidget> leaveAfterRelease;
+	    QGestureManager *gestureManager;
+    QWidget *gestureWidget;
+	
+
+public:
     QApplicationPrivate(int &argc, char **argv, int flags);
     ~QApplicationPrivate();
 
@@ -94,41 +132,11 @@ public:
     void openPopup(QWidget *popup);
     static void setFocusWidget(QWidget *focus, Qt::FocusReason reason);
     static QWidget *focusNextPrevChild_helper(QWidget *toplevel, bool next,
-                                              bool *wrappingOccurred = 0);
-    // Maintain a list of all scenes to ensure font and palette propagation to
-    // all scenes.
-    QList<QGraphicsScene *> scene_list;
-
-
-    QBasicTimer toolTipWakeUp, toolTipFallAsleep;
-    QPoint toolTipPos, toolTipGlobalPos, hoverGlobalPos;
-    QPointer<QWidget> toolTipWidget;
-
-    static QSize app_strut;
-    static QWidgetList *popupWidgets;
-    static QStyle *app_style;
-    static bool overrides_native_style;
-    static QPalette *sys_pal;
-    static QPalette *set_pal;
-
+                                             bool *wrappingOccurred = 0);
 protected:
     void notifyThemeChanged() ;
-
     void notifyDragStarted(const QDrag *) ;
 public:
-    static QFont *sys_font;
-    static QFont *set_font;
-    static QWidget *main_widget;
-    static QWidget *focus_widget;
-    static QWidget *hidden_focus_widget;
-    static QWidget *active_window;
-
-    static int  wheel_scroll_lines;
-    static QPointer<QWidget> wheel_widget;
-
-    static int enabledAnimations; // Combination of QPlatformTheme::UiEffect
-    static bool widgetCount; // Coupled with -widgetcount switch
-
     static void setSystemPalette(const QPalette &pal);
     static void setPalette_helper(const QPalette &palette, const char* className, bool clearWidgetPaletteHash);
     static void initializeWidgetPaletteHash();
@@ -136,14 +144,7 @@ public:
     static void setSystemFont(const QFont &font);
 
     static QApplicationPrivate *instance() { return self; }
-
-
-    static QWidget *oldEditFocus;
-    static Qt::NavigationMode navigationMode;
-
-    static QString styleSheet;
-
-    static QPointer<QWidget> leaveAfterRelease;
+	
     static QWidget *pickMouseReceiver(QWidget *candidate, const QPoint &windowPos, QPoint *pos,
                                       QEvent::Type type, Qt::MouseButtons buttons,
                                       QWidget *buttonDown, QWidget *alienWidget);
@@ -169,12 +170,6 @@ public:
                                           nativeResourceForWindow(QByteArrayLiteral("handle"), window));
         return 0;
     }
-
-
-
-    QGestureManager *gestureManager;
-    QWidget *gestureWidget;
-
     static bool updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent);
     void initializeMultitouch();
     void initializeMultitouch_sys();
@@ -197,8 +192,6 @@ private:
 
     static void giveFocusAccordingToFocusPolicy(QWidget *w, QEvent *event, QPoint localPos);
     static bool shouldSetFocus(QWidget *w, Qt::FocusPolicy policy);
-
-
     static bool isAlien(QWidget *);
 };
 

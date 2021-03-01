@@ -27,8 +27,70 @@ class QInputDeviceManager;
 
 class  QGuiApplicationPrivate : public QCoreApplicationPrivate
 {
-    Q_DECLARE_PUBLIC(QGuiApplication)
+    //Q_DECLARE_PUBLIC(QGuiApplication)
 public:
+
+	static QPlatformTheme *platform_theme;
+    static Qt::KeyboardModifiers modifier_buttons;
+    static Qt::MouseButtons mouse_buttons;
+
+    static QPlatformIntegration *platform_integration;
+    static QIcon *app_icon;
+    static QString *platform_name;
+    static QString *displayName;
+    static QString *desktopFileName;
+	static Qt::MouseButtons buttons;
+    static ulong mousePressTime;
+    static Qt::MouseButton mousePressButton;
+    static int mousePressX;
+    static int mousePressY;
+    static int mouse_double_click_distance;
+    static QPointF lastCursorPosition;
+    static QWindow *currentMouseWindow;
+    static QWindow *currentMousePressWindow;
+    static Qt::ApplicationState applicationState;
+    static bool highDpiScalingUpdated;
+	static QClipboard *qt_clipboard;
+    static QPalette *app_pal;
+    static QWindowList window_list;
+    static QWindow *focus_window;
+
+    QList<QCursor> cursor_list;
+    static QList<QScreen *> screen_list;
+    static QFont *app_font;
+    static QString styleOverride;
+    static QStyleHints *styleHints;
+    static bool obey_desktop_settings;
+    QInputMethod *inputMethod;
+
+    QString firstWindowTitle;
+    QIcon forcedWindowIcon;
+
+    static QList<QObject *> generic_plugin_list;
+
+    QShortcutMap shortcutMap;
+
+    static bool is_fallback_session_management_enabled;
+    QSessionManager *session_manager;
+    bool is_session_restored;
+    bool is_saving_session;
+
+	static QGuiApplicationPrivate *self;
+    static QTouchDevice *m_fakeTouchDevice;
+    static int m_fakeMouseSourcePointId;
+    QAtomicPointer<QColorProfile> m_a8ColorProfile;
+    QAtomicPointer<QColorProfile> m_a32ColorProfile;
+
+    bool ownGlobalShareContext;
+
+    static QInputDeviceManager *m_inputDeviceManager;
+	QWindowList modalWindowList;
+	static QVector<TabletPointData> tabletDevicePoints;
+	QHash<ActiveTouchPointsKey, ActiveTouchPointsValue> activeTouchPoints;
+    QEvent::Type lastTouchType;
+	QHash<QWindow *, SynthesizedMouseData> synthesizedMousePoints;
+
+
     QGuiApplicationPrivate(int &argc, char **argv, int flags);
     ~QGuiApplicationPrivate();
 
@@ -46,16 +108,9 @@ public:
     bool shouldQuitInternal(const QWindowList &processedWindows);
     virtual bool tryCloseAllWindows();
 
-    static Qt::KeyboardModifiers modifier_buttons;
-    static Qt::MouseButtons mouse_buttons;
-
-    static QPlatformIntegration *platform_integration;
-
     static QPlatformIntegration *platformIntegration()
     { return platform_integration; }
-
-    static QPlatformTheme *platform_theme;
-
+    
     static QPlatformTheme *platformTheme()
     { return platform_theme; }
 
@@ -141,29 +196,11 @@ public:
 
     static QGuiApplicationPrivate *instance() { return self; }
 
-    static QIcon *app_icon;
-    static QString *platform_name;
-    static QString *displayName;
-    static QString *desktopFileName;
-
-    QWindowList modalWindowList;
     static void showModalWindow(QWindow *window);
     static void hideModalWindow(QWindow *window);
     static void updateBlockedStatus(QWindow *window);
     virtual bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = 0) const;
     virtual bool popupActive() { return false; }
-
-    static Qt::MouseButtons buttons;
-    static ulong mousePressTime;
-    static Qt::MouseButton mousePressButton;
-    static int mousePressX;
-    static int mousePressY;
-    static int mouse_double_click_distance;
-    static QPointF lastCursorPosition;
-    static QWindow *currentMouseWindow;
-    static QWindow *currentMousePressWindow;
-    static Qt::ApplicationState applicationState;
-    static bool highDpiScalingUpdated;
 
     struct TabletPointData {
         TabletPointData(qint64 devId = 0) : deviceId(devId), state(Qt::NoButton), target(Q_NULLPTR) {}
@@ -171,44 +208,11 @@ public:
         Qt::MouseButtons state;
         QWindow *target;
     };
-    static QVector<TabletPointData> tabletDevicePoints;
+    
     static TabletPointData &tabletDevicePoint(qint64 deviceId);
 
-
-    static QClipboard *qt_clipboard;
-
-    static QPalette *app_pal;
-
-    static QWindowList window_list;
-    static QWindow *focus_window;
-
-
-    QList<QCursor> cursor_list;
-
-    static QList<QScreen *> screen_list;
-
-    static QFont *app_font;
-
-    static QString styleOverride;
-    static QStyleHints *styleHints;
-    static bool obey_desktop_settings;
-    QInputMethod *inputMethod;
-
-    QString firstWindowTitle;
-    QIcon forcedWindowIcon;
-
-    static QList<QObject *> generic_plugin_list;
-
-    QShortcutMap shortcutMap;
-
-
-    static bool is_fallback_session_management_enabled;
-    QSessionManager *session_manager;
-    bool is_session_restored;
-    bool is_saving_session;
     void commitData();
     void saveState();
-
 
     struct ActiveTouchPointsKey {
         ActiveTouchPointsKey(QTouchDevice *dev, int id) : device(dev), touchPointId(id) { }
@@ -220,8 +224,7 @@ public:
         QPointer<QObject> target;
         QTouchEvent::TouchPoint touchPoint;
     };
-    QHash<ActiveTouchPointsKey, ActiveTouchPointsValue> activeTouchPoints;
-    QEvent::Type lastTouchType;
+
     struct SynthesizedMouseData {
         SynthesizedMouseData(const QPointF &p, const QPointF &sp, QWindow *w)
             : pos(p), screenPos(sp), window(w) { }
@@ -229,7 +232,6 @@ public:
         QPointF screenPos;
         QPointer<QWindow> window;
     };
-    QHash<QWindow *, SynthesizedMouseData> synthesizedMousePoints;
 
     static int mouseEventCaps(QMouseEvent *event);
     static QVector2D mouseEventVelocity(QMouseEvent *event);
@@ -264,15 +266,7 @@ protected:
 private:
     friend class QDragManager;
 
-    static QGuiApplicationPrivate *self;
-    static QTouchDevice *m_fakeTouchDevice;
-    static int m_fakeMouseSourcePointId;
-    QAtomicPointer<QColorProfile> m_a8ColorProfile;
-    QAtomicPointer<QColorProfile> m_a32ColorProfile;
 
-    bool ownGlobalShareContext;
-
-    static QInputDeviceManager *m_inputDeviceManager;
 };
 
  uint qHash(const QGuiApplicationPrivate::ActiveTouchPointsKey &k);
