@@ -46,9 +46,9 @@ FontHash *qt_app_fonts_hash();
 typedef QHash<QByteArray, QPalette> PaletteHash;
 PaletteHash *qt_app_palettes_hash();
 
-#define QApplicationPrivateBase QGuiApplicationPrivate
 
-class  QApplicationPrivate : public QApplicationPrivateBase
+
+class  QApplicationPrivate : public QGuiApplicationPrivate
 {
     //Q_DECLARE_PUBLIC(QApplication)
 public:
