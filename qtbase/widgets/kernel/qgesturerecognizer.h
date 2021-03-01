@@ -48,7 +48,6 @@
 QT_BEGIN_NAMESPACE
 
 
-class QObject;
 class QEvent;
 class QGesture;
 class Q_WIDGETS_EXPORT QGestureRecognizer

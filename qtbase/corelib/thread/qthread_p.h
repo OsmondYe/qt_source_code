@@ -39,8 +39,7 @@ inline bool operator<(const QPostEvent &first, const QPostEvent &second)
     return first.priority > second.priority;
 }
 
-// This class holds the list of posted events.
-//  The list has to be kept sorted by priority
+
 class QPostEventList : public QVector<QPostEvent>
 {
 public:
@@ -86,7 +85,7 @@ class  QDaemonThread : public QThread
 {
 public:
     QDaemonThread(QObject *parent = 0);
-    ~QDaemonThread();
+    ~QDaemonThread(){}
 };
 
 class QThreadPrivate : public QObjectPrivate
@@ -123,7 +122,7 @@ public:
 
 #endif // Q_OS_UNIX
 
-#ifdef Q_OS_WIN
+
     static unsigned int __stdcall start(void *);
     static void finish(void *, bool lockAnyway=true);
 
@@ -131,7 +130,7 @@ public:
     unsigned int id;
     int waiters;
     bool terminationEnabled, terminatePending;
-#endif // Q_OS_WIN
+
     QThreadData *data;
 
     static void createEventDispatcher(QThreadData *data);

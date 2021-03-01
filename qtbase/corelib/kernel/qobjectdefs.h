@@ -21,8 +21,6 @@ typedef QArrayData QByteArrayData;
 
 // The following macros are our "extensions" to C++
 // They are used, strictly speaking, only by the moc.
-
-#ifndef Q_MOC_RUN
 #ifndef QT_NO_META_MACROS
 # if defined(QT_NO_KEYWORDS)
 #  define QT_NO_EMIT
@@ -85,30 +83,6 @@ typedef QArrayData QByteArrayData;
 # define QT_TR_FUNCTIONS
 #endif
 
-// ### Qt6: remove
-#define Q_OBJECT_CHECK  /* empty, unused since Qt 5.2 */
-
-#if defined(Q_CC_INTEL)
-// Cannot redefine the visibility of a method in an exported class
-# define Q_DECL_HIDDEN_STATIC_METACALL
-#else
-# define Q_DECL_HIDDEN_STATIC_METACALL Q_DECL_HIDDEN
-#endif
-
-#if defined(Q_CC_CLANG) && Q_CC_CLANG >= 306
-#  define Q_OBJECT_NO_OVERRIDE_WARNING      QT_WARNING_DISABLE_CLANG("-Winconsistent-missing-override")
-#elif defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && Q_CC_GNU >= 501
-#  define Q_OBJECT_NO_OVERRIDE_WARNING      QT_WARNING_DISABLE_GCC("-Wsuggest-override")
-#else
-#  define Q_OBJECT_NO_OVERRIDE_WARNING
-#endif
-
-#if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && Q_CC_GNU >= 600
-#  define Q_OBJECT_NO_ATTRIBUTES_WARNING    QT_WARNING_DISABLE_GCC("-Wattributes")
-#else
-#  define Q_OBJECT_NO_ATTRIBUTES_WARNING
-#endif
-
 /* qmake ignore Q_OBJECT */
 #define Q_OBJECT \
 public: \
@@ -129,7 +103,6 @@ private: \
 /* qmake ignore Q_OBJECT */
 #define Q_OBJECT_FAKE Q_OBJECT QT_ANNOTATE_CLASS(qt_fake, "")
 
-#ifndef QT_NO_META_MACROS
 /* qmake ignore Q_GADGET */
 #define Q_GADGET \
 public: \
@@ -150,42 +123,9 @@ private: \
     QT_ANNOTATE_CLASS(qt_qnamespace, "") \
     /*end*/
 
-#endif // QT_NO_META_MACROS
-
-#else // Q_MOC_RUN
-#define slots slots
-#define signals signals
-#define Q_SLOTS Q_SLOTS
-#define Q_SIGNALS Q_SIGNALS
-#define Q_CLASSINFO(name, value) Q_CLASSINFO(name, value)
-#define Q_INTERFACES(x) Q_INTERFACES(x)
-#define Q_PROPERTY(text) Q_PROPERTY(text)
-#define Q_PRIVATE_PROPERTY(d, text) Q_PRIVATE_PROPERTY(d, text)
-#define Q_REVISION(v) Q_REVISION(v)
-#define Q_OVERRIDE(text) Q_OVERRIDE(text)
-#define Q_ENUMS(x) Q_ENUMS(x)
-#define Q_FLAGS(x) Q_FLAGS(x)
-#define Q_ENUM(x) Q_ENUM(x)
-#define Q_FLAGS(x) Q_FLAGS(x)
- /* qmake ignore Q_OBJECT */
-#define Q_OBJECT Q_OBJECT
- /* qmake ignore Q_OBJECT */
-#define Q_OBJECT_FAKE Q_OBJECT_FAKE
- /* qmake ignore Q_GADGET */
-#define Q_GADGET Q_GADGET
-#define Q_SCRIPTABLE Q_SCRIPTABLE
-#define Q_INVOKABLE Q_INVOKABLE
-#define Q_SIGNAL Q_SIGNAL
-#define Q_SLOT Q_SLOT
-#endif //Q_MOC_RUN
 
 
-
-
-#define Q_GADGET
-
-
-Q_CORE_EXPORT const char *qFlagLocation(const char *method);
+const char *qFlagLocation(const char *method);
 
 #ifndef QT_NO_META_MACROS
 #ifndef QT_NO_DEBUG
@@ -211,14 +151,14 @@ Q_CORE_EXPORT const char *qFlagLocation(const char *method);
 #define Q_ARG(type, data) QArgument<type >(#type, data)
 #define Q_RETURN_ARG(type, data) QReturnArgument<type >(#type, data)
 
-class QObject;
+
 class QMetaMethod;
 class QMetaEnum;
 class QMetaProperty;
 class QMetaClassInfo;
 
 
-class Q_CORE_EXPORT QGenericArgument
+class  QGenericArgument
 {
 public:
     inline QGenericArgument(const char *aName = Q_NULLPTR, const void *aData = Q_NULLPTR)
@@ -231,7 +171,7 @@ private:
     const char *_name;
 };
 
-class Q_CORE_EXPORT QGenericReturnArgument: public QGenericArgument
+class QGenericReturnArgument: public QGenericArgument
 {
 public:
     inline QGenericReturnArgument(const char *aName = Q_NULLPTR, void *aData = Q_NULLPTR)
@@ -266,19 +206,18 @@ public:
         {}
 };
 
-struct Q_CORE_EXPORT QMetaObject
+struct QMetaObject
 {
+	// oyue define a class ??? but no any details
     class Connection;
     const char *className() const;
     const QMetaObject *superClass() const;
 
-    bool inherits(const QMetaObject *metaObject) const Q_DECL_NOEXCEPT;
+    bool inherits(const QMetaObject *metaObject) const ;
     QObject *cast(QObject *obj) const;
     const QObject *cast(const QObject *obj) const;
 
-#ifndef QT_NO_TRANSLATION
     QString tr(const char *s, const char *c, int n = -1) const;
-#endif // QT_NO_TRANSLATION
 
     int methodOffset() const;
     int enumeratorOffset() const;
@@ -434,7 +373,7 @@ struct Q_CORE_EXPORT QMetaObject
     } d;
 };
 
-class Q_CORE_EXPORT QMetaObject::Connection {
+class  QMetaObject::Connection {
     void *d_ptr; //QObjectPrivate::Connection*
     explicit Connection(void *data) : d_ptr(data) {  }
     friend class QObject;
@@ -453,11 +392,9 @@ public:
     operator RestrictedBool() const { return d_ptr && isConnected_helper() ? &Connection::d_ptr : Q_NULLPTR; }
 #endif
 
-#ifdef Q_COMPILER_RVALUE_REFS
     inline Connection(Connection &&o) : d_ptr(o.d_ptr) { o.d_ptr = Q_NULLPTR; }
-    inline Connection &operator=(Connection &&other)
-    { qSwap(d_ptr, other.d_ptr); return *this; }
-#endif
+    inline Connection &operator=(Connection &&other)    { qSwap(d_ptr, other.d_ptr); return *this; }
+	
 };
 
 inline const QMetaObject *QMetaObject::superClass() const

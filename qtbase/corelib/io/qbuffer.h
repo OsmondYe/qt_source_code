@@ -46,7 +46,6 @@
 QT_BEGIN_NAMESPACE
 
 
-class QObject;
 class QBufferPrivate;
 
 class Q_CORE_EXPORT QBuffer : public QIODevice

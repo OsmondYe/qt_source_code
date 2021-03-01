@@ -1,42 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtCore module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #include "qthread.h"
 #include "qthread_p.h"
 #include "qthreadstorage.h"
@@ -46,47 +7,16 @@
 #include <qpointer.h>
 
 #include <private/qcoreapplication_p.h>
-#ifndef Q_OS_WINRT
 #include <private/qeventdispatcher_win_p.h>
-#else
-#include <private/qeventdispatcher_winrt_p.h>
-#endif
+
 
 #include <qt_windows.h>
 
-#ifndef Q_OS_WINRT
-#  ifndef _MT
-#    define _MT
-#  endif // _MT
-#  include <process.h>
-#endif // Q_OS_WINRT
+#include <process.h>
 
-#ifndef QT_NO_THREAD
+
 QT_BEGIN_NAMESPACE
 
-#ifdef Q_OS_WINRT
-inline DWORD qWinRTTlsAlloc() {
-    return FlsAlloc(0);
-}
-
-inline bool qWinRTTlsFree(DWORD dwTlsIndex) {
-    return FlsFree(dwTlsIndex);
-}
-
-inline LPVOID qWinRTTlsGetValue(DWORD dwTlsIndex) {
-    return FlsGetValue(dwTlsIndex);
-}
-
-inline bool qWinRTTlsSetValue(DWORD dwTlsIndex, LPVOID lpTlsValue) {
-    return FlsSetValue(dwTlsIndex, lpTlsValue);
-}
-
-#define TlsAlloc qWinRTTlsAlloc
-#define TlsFree qWinRTTlsFree
-#define TlsSetValue qWinRTTlsSetValue
-#define TlsGetValue qWinRTTlsGetValue
-
-#endif // Q_OS_WINRT
 
 void qt_watch_adopted_thread(const HANDLE adoptedThreadHandle, QThread *qthread);
 DWORD WINAPI qt_adopted_thread_watcher_function(LPVOID);
@@ -295,9 +225,9 @@ DWORD WINAPI qt_adopted_thread_watcher_function(LPVOID)
 
 #if !defined(QT_NO_DEBUG) && defined(Q_CC_MSVC) && !defined(Q_OS_WINRT)
 
-#ifndef Q_OS_WIN64
-#  define ULONG_PTR DWORD
-#endif
+
+#define ULONG_PTR DWORD
+
 
 typedef struct tagTHREADNAME_INFO
 {
@@ -325,11 +255,9 @@ void qt_set_thread_name(HANDLE threadId, LPCSTR threadName)
 }
 #endif // !QT_NO_DEBUG && Q_CC_MSVC && !Q_OS_WINRT
 
-/**************************************************************************
- ** QThreadPrivate
- *************************************************************************/
 
-#endif // QT_NO_THREAD
+
+
 
 void QThreadPrivate::createEventDispatcher(QThreadData *data)
 {
@@ -342,9 +270,9 @@ void QThreadPrivate::createEventDispatcher(QThreadData *data)
     theEventDispatcher->startingUp();
 }
 
-#ifndef QT_NO_THREAD
 
-unsigned int __stdcall QT_ENSURE_STACK_ALIGNED_FOR_SSE QThreadPrivate::start(void *arg)
+
+unsigned int __stdcall  QThreadPrivate::start(void *arg)
 {
     QThread *thr = reinterpret_cast<QThread *>(arg);
     QThreadData *data = QThreadData::get2(thr);
@@ -418,33 +346,22 @@ void QThreadPrivate::finish(void *arg, bool lockAnyway)
     d->id = 0;
 }
 
-/**************************************************************************
- ** QThread
- *************************************************************************/
 
-Qt::HANDLE QThread::currentThreadId() Q_DECL_NOTHROW
+Qt::HANDLE QThread::currentThreadId() 
 {
     return reinterpret_cast<Qt::HANDLE>(quintptr(GetCurrentThreadId()));
 }
 
-int QThread::idealThreadCount() Q_DECL_NOTHROW
+int QThread::idealThreadCount() 
 {
     SYSTEM_INFO sysinfo;
-#ifndef Q_OS_WINRT
     GetSystemInfo(&sysinfo);
-#else
-    GetNativeSystemInfo(&sysinfo);
-#endif
     return sysinfo.dwNumberOfProcessors;
 }
 
 void QThread::yieldCurrentThread()
 {
-#if !defined(Q_OS_WINRT)
     SwitchToThread();
-#else
-    ::Sleep(0);
-#endif
 }
 
 void QThread::sleep(unsigned long secs)
@@ -575,10 +492,9 @@ void QThread::terminate()
         return;
     }
 
-    // Calling ExitThread() in setTerminationEnabled is all we can do on WinRT
-#ifndef Q_OS_WINRT
+
     TerminateThread(d->handle, 0);
-#endif
+
     QThreadPrivate::finish(this, false);
 }
 
@@ -598,11 +514,8 @@ bool QThread::wait(unsigned long time)
     locker.mutex()->unlock();
 
     bool ret = false;
-#ifndef Q_OS_WINRT
-    switch (WaitForSingleObject(d->handle, time)) {
-#else
+
     switch (WaitForSingleObjectEx(d->handle, time, false)) {
-#endif
     case WAIT_OBJECT_0:
         ret = true;
         break;
@@ -699,4 +612,3 @@ void QThreadPrivate::setPriority(QThread::Priority threadPriority)
 }
 
 QT_END_NAMESPACE
-#endif // QT_NO_THREAD

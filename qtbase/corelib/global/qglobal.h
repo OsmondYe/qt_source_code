@@ -665,7 +665,9 @@ for (auto _container_ = QtPrivate::qMakeForeachContainer(container); \
 #endif
 
 template <typename T> static inline T *qGetPtrHelper(T *ptr) { return ptr; }
-template <typename Wrapper> static inline typename Wrapper::pointer qGetPtrHelper(const Wrapper &p) { return p.data(); }
+
+template <typename Wrapper> 
+static inline typename Wrapper::pointer qGetPtrHelper(const Wrapper &p) { return p.data(); }
 
 #define Q_DECLARE_PRIVATE(Class) \
     inline Class##Private* d_func() { return reinterpret_cast<Class##Private *>(qGetPtrHelper(d_ptr)); } \

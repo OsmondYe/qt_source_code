@@ -165,16 +165,6 @@ QMetaObject *QObjectData::dynamicMetaObject() const
 QObjectPrivate::QObjectPrivate(int version)
     : threadData(0), connectionLists(0), senders(0), currentSender(0), currentChildBeingDeleted(0)
 {
-#ifdef QT_BUILD_INTERNAL
-    // Don't check the version parameter in internal builds.
-    // This allows incompatible versions to be loaded, possibly for testing.
-    Q_UNUSED(version);
-#else
-    if (Q_UNLIKELY(version != QObjectPrivateVersion))
-        qFatal("Cannot mix incompatible Qt library (version 0x%x) with this library (version 0x%x)",
-                version, QObjectPrivateVersion);
-#endif
-
     // QObjectData initialization
     q_ptr = 0;
     parent = 0;                                 // no parent yet. It is set by setParent()
@@ -3666,33 +3656,7 @@ int QObjectPrivate::signalIndex(const char *signalName,
     return relative_index + QMetaObjectPrivate::signalOffset(base);
 }
 
-/*****************************************************************************
-  Properties
- *****************************************************************************/
 
-#ifndef QT_NO_PROPERTIES
-
-/*!
-  Sets the value of the object's \a name property to \a value.
-
-  If the property is defined in the class using Q_PROPERTY then
-  true is returned on success and false otherwise. If the property
-  is not defined using Q_PROPERTY, and therefore not listed in the
-  meta-object, it is added as a dynamic property and false is returned.
-
-  Information about all available properties is provided through the
-  metaObject() and dynamicPropertyNames().
-
-  Dynamic properties can be queried again using property() and can be
-  removed by setting the property value to an invalid QVariant.
-  Changing the value of a dynamic property causes a QDynamicPropertyChangeEvent
-  to be sent to the object.
-
-  \b{Note:} Dynamic properties starting with "_q_" are reserved for internal
-  purposes.
-
-  \sa property(), metaObject(), dynamicPropertyNames(), QMetaProperty::write()
-*/
 bool QObject::setProperty(const char *name, const QVariant &value)
 {
     QObjectPrivate * const d = d_func();
@@ -3784,7 +3748,7 @@ QList<QByteArray> QObject::dynamicPropertyNames() const
     return QList<QByteArray>();
 }
 
-#endif // QT_NO_PROPERTIES
+
 
 
 /*****************************************************************************

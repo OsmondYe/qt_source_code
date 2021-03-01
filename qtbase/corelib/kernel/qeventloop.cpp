@@ -1,42 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtCore module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #include "qeventloop.h"
 
 #include "qabstracteventdispatcher.h"
@@ -50,51 +11,9 @@
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \class QEventLoop
-    \inmodule QtCore
-    \brief The QEventLoop class provides a means of entering and leaving an event loop.
 
-    At any time, you can create a QEventLoop object and call exec()
-    on it to start a local event loop. From within the event loop,
-    calling exit() will force exec() to return.
 
-    \sa QAbstractEventDispatcher
-*/
 
-/*!
-    \enum QEventLoop::ProcessEventsFlag
-
-    This enum controls the types of events processed by the
-    processEvents() functions.
-
-    \value AllEvents All events. Note that
-    \l{QEvent::DeferredDelete}{DeferredDelete} events are processed
-    specially. See QObject::deleteLater() for more details.
-
-    \value ExcludeUserInputEvents Do not process user input events,
-    such as ButtonPress and KeyPress. Note that the events are not
-    discarded; they will be delivered the next time processEvents() is
-    called without the ExcludeUserInputEvents flag.
-
-    \value ExcludeSocketNotifiers Do not process socket notifier
-    events. Note that the events are not discarded; they will be
-    delivered the next time processEvents() is called without the
-    ExcludeSocketNotifiers flag.
-
-    \value WaitForMoreEvents Wait for events if no pending events are
-    available.
-
-    \omitvalue X11ExcludeTimers
-    \omitvalue EventLoopExec
-    \omitvalue DialogExec
-
-    \sa processEvents()
-*/
-
-/*!
-    Constructs an event loop object with the given \a parent.
-*/
 QEventLoop::QEventLoop(QObject *parent)
     : QObject(*new QEventLoopPrivate, parent)
 {

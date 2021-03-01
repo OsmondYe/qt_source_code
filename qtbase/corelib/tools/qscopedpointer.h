@@ -53,14 +53,17 @@ class QObject;
 typedef QScopedPointerObjectDeleteLater<QObject> QScopedPointerDeleteLater;
 #endif
 
+//
 template <typename T, typename Cleanup = QScopedPointerDeleter<T> >
 class QScopedPointer
 {
     typedef T *QScopedPointer:: *RestrictedBool;
+	Q_DISABLE_COPY(QScopedPointer)
+protected:
+    T *d;
+
 public:
-    explicit QScopedPointer(T *p = Q_NULLPTR) Q_DECL_NOTHROW : d(p)
-    {
-    }
+    explicit QScopedPointer(T *p = Q_NULLPTR)  : d(p)    {    }
 
     inline ~QScopedPointer()
     {
@@ -73,12 +76,12 @@ public:
         return *d;
     }
 
-    T *operator->() const Q_DECL_NOTHROW
+    T *operator->() const 
     {
         return d;
     }
 
-    bool operator!() const Q_DECL_NOTHROW
+    bool operator!() const 
     {
         return !d;
     }
@@ -89,12 +92,12 @@ public:
     }
 
 
-    T *data() const Q_DECL_NOTHROW
+    T *data() const 
     {
         return d;
     }
 
-    bool isNull() const Q_DECL_NOTHROW
+    bool isNull() const 
     {
         return !d;
     }
@@ -108,25 +111,21 @@ public:
         Cleanup::cleanup(oldD);
     }
 
-    T *take() Q_DECL_NOTHROW
+    T *take() 
     {
         T *oldD = d;
         d = Q_NULLPTR;
         return oldD;
     }
 
-    void swap(QScopedPointer<T, Cleanup> &other) Q_DECL_NOTHROW
+    void swap(QScopedPointer<T, Cleanup> &other) 
     {
         qSwap(d, other.d);
     }
 
     typedef T *pointer;
 
-protected:
-    T *d;
 
-private:
-    Q_DISABLE_COPY(QScopedPointer)
 };
 
 template <class T, class Cleanup>

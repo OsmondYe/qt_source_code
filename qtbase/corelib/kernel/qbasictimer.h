@@ -46,7 +46,6 @@
 QT_BEGIN_NAMESPACE
 
 
-class QObject;
 
 class Q_CORE_EXPORT QBasicTimer
 {

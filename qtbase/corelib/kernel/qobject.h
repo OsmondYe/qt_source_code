@@ -65,7 +65,48 @@ public:
 
 class  QObject
 {
-	 QObjectPrivate* d_func();
+	//Q_OBJECT
+//----------------------------------------------------------
+// will be expanded as 
+public:     
+     
+    static const QMetaObject staticMetaObject; 
+    virtual const QMetaObject *metaObject() const; 
+    virtual void *qt_metacast(const char *); 
+    virtual int qt_metacall(QMetaObject::Call, int, void **); 
+    static inline QString tr(const char *s, const char *c = Q_NULLPTR, int n = -1) 
+        { return staticMetaObject.tr(s, c, n); } 
+    static inline QString trUtf8(const char *s, const char *c = Q_NULLPTR, int n = -1) 
+        { return staticMetaObject.tr(s, c, n); } 
+private:      
+    static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **);      
+    struct QPrivateSignal {}; 
+    QT_ANNOTATE_CLASS(qt_qobject, "")
+
+// end enpandsion of the macro O_OBJECT
+//----------------------------------------------------------
+
+	
+    //Q_PROPERTY(QString objectName READ objectName WRITE setObjectName NOTIFY objectNameChanged)
+    //Q_DECLARE_PRIVATE(QObject)    
+	QObjectPrivate* d_func() { return reinterpret_cast<QObjectPrivate *>(qGetPtrHelper(d_ptr)); } 
+
+protected:
+    QScopedPointer<QObjectData> d_ptr;
+
+    static const QMetaObject staticQtMetaObject;
+    friend inline const QMetaObject *qt_getQtMetaObject() { return &QObject::staticQtMetaObject; }
+
+    friend struct QMetaObject;
+    friend struct QMetaObjectPrivate;
+    friend class QMetaCallEvent;
+    friend class QApplication;
+    friend class QApplicationPrivate;
+    friend class QCoreApplication;
+    friend class QCoreApplicationPrivate;
+    friend class QWidget;
+    friend class QThreadData;
+
 
 public:
      explicit QObject(QObject *parent=Q_NULLPTR);
@@ -373,24 +414,10 @@ protected:
 protected:
     QObject(QObjectPrivate &dd, QObject *parent = Q_NULLPTR);
 
-protected:
-    QScopedPointer<QObjectData> d_ptr;
 
-    static const QMetaObject staticQtMetaObject;
-    friend inline const QMetaObject *qt_getQtMetaObject() ;
-
-    friend struct QMetaObject;
-    friend struct QMetaObjectPrivate;
-    friend class QMetaCallEvent;
-    friend class QApplication;
-    friend class QApplicationPrivate;
-    friend class QCoreApplication;
-    friend class QCoreApplicationPrivate;
-    friend class QWidget;
-    friend class QThreadData;
 
 private:
-    Q_DISABLE_COPY(QObject)
+    //Q_DISABLE_COPY(QObject)
     Q_PRIVATE_SLOT(d_func(), void _q_reregisterTimers(void *))
 
 private:
@@ -408,41 +435,19 @@ inline QMetaObject::Connection QObject::connect(const QObject *asender, const ch
                                             const char *amember, Qt::ConnectionType atype) const
 { return connect(asender, asignal, this, amember, atype); }
 
-inline const QMetaObject *qt_getQtMetaObject() Q_DECL_NOEXCEPT
-{ return &QObject::staticQtMetaObject; }
 
-#ifndef QT_NO_USERDATA
-class Q_CORE_EXPORT QObjectUserData {
+
+class  QObjectUserData {
 public:
     virtual ~QObjectUserData();
 };
-#endif
+
 
 #ifdef Q_QDOC
 T qFindChild(const QObject *o, const QString &name = QString());
 QList<T> qFindChildren(const QObject *oobj, const QString &name = QString());
 QList<T> qFindChildren(const QObject *o, const QRegExp &re);
 #endif
-#if QT_DEPRECATED_SINCE(5, 0)
-template<typename T>
-inline QT_DEPRECATED T qFindChild(const QObject *o, const QString &name = QString())
-{ return o->findChild<T>(name); }
-
-template<typename T>
-inline QT_DEPRECATED QList<T> qFindChildren(const QObject *o, const QString &name = QString())
-{
-    return o->findChildren<T>(name);
-}
-
-#ifndef QT_NO_REGEXP
-template<typename T>
-inline QT_DEPRECATED QList<T> qFindChildren(const QObject *o, const QRegExp &re)
-{
-    return o->findChildren<T>(re);
-}
-#endif
-
-#endif //QT_DEPRECATED
 
 template <class T>
 inline T qobject_cast(QObject *object)
@@ -466,19 +471,7 @@ inline T qobject_cast(const QObject *object)
 template <class T> inline const char * qobject_interface_iid()
 { return Q_NULLPTR; }
 
-#ifndef Q_MOC_RUN
-#  define Q_DECLARE_INTERFACE(IFace, IId) \
-    template <> inline const char *qobject_interface_iid<IFace *>() \
-    { return IId; } \
-    template <> inline IFace *qobject_cast<IFace *>(QObject *object) \
-    { return reinterpret_cast<IFace *>((object ? object->qt_metacast(IId) : Q_NULLPTR)); } \
-    template <> inline IFace *qobject_cast<IFace *>(const QObject *object) \
-    { return reinterpret_cast<IFace *>((object ? const_cast<QObject *>(object)->qt_metacast(IId) : Q_NULLPTR)); }
-#endif // Q_MOC_RUN
 
-#ifndef QT_NO_DEBUG_STREAM
-Q_CORE_EXPORT QDebug operator<<(QDebug, const QObject *);
-#endif
 
 class QSignalBlocker
 {
