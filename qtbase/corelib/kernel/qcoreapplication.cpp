@@ -340,29 +340,9 @@ void QCoreApplicationPrivate::cleanupThreadData()
 void QCoreApplicationPrivate::createEventDispatcher()
 {
     Q_Q(QCoreApplication);
-#if defined(Q_OS_UNIX)
-#  if defined(Q_OS_DARWIN)
-    bool ok = false;
-    int value = qEnvironmentVariableIntValue("QT_EVENT_DISPATCHER_CORE_FOUNDATION", &ok);
-    if (ok && value > 0)
-        eventDispatcher = new QEventDispatcherCoreFoundation(q);
-    else
-        eventDispatcher = new QEventDispatcherUNIX(q);
-#  elif !defined(QT_NO_GLIB)
-    if (qEnvironmentVariableIsEmpty("QT_NO_GLIB") && QEventDispatcherGlib::versionSupported())
-        eventDispatcher = new QEventDispatcherGlib(q);
-    else
-        eventDispatcher = new QEventDispatcherUNIX(q);
-#  else
-        eventDispatcher = new QEventDispatcherUNIX(q);
-#  endif
-#elif defined(Q_OS_WINRT)
-    eventDispatcher = new QEventDispatcherWinRT(q);
-#elif defined(Q_OS_WIN)
-    eventDispatcher = new QEventDispatcherWin32(q);
-#else
-#  error "QEventDispatcher not yet ported to this platform"
-#endif
+	// oye, deleted other platforms like Unix Glib WinRT
+	eventDispatcher = new QEventDispatcherWin32(q);
+
 }
 
 void QCoreApplicationPrivate::eventDispatcherReady()
@@ -971,14 +951,18 @@ void QCoreApplication::exit(int returnCode)
 
 void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
 {
+	// sanity check
     if (receiver == 0) {
         qWarning("QCoreApplication::postEvent: Unexpected null receiver");
         delete event;
         return;
     }
 
+	// get t_data throught receiver, not current app's thread
+	// sicne the receiver can be moved to another thread
     QThreadData * volatile * pdata = &receiver->d_func()->threadData;
     QThreadData *data = *pdata;
+	// sanity check
     if (!data) {
         // posting during destruction? just delete the event to prevent a leak
         delete event;
@@ -1050,19 +1034,15 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
         dispatcher->wakeUp();
 }
 
-/*!
-  \internal
-  Returns \c true if \a event was compressed away (possibly deleted) and should not be added to the list.
-*/
-bool QCoreApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventList *postedEvents)
+
+bool QCoreApplication::compressEvent(QEvent *event, 
+         QObject *receiver, QPostEventList *postedEvents) override
 {
-#ifdef Q_OS_WIN
-    Q_ASSERT(event);
-    Q_ASSERT(receiver);
-    Q_ASSERT(postedEvents);
 
     // compress posted timers to this object.
-    if (event->type() == QEvent::Timer && receiver->d_func()->postedEvents > 0) {
+    if (event->type() == QEvent::Timer && receiver->d_func()->postedEvents > 0) 
+	{
+	
         int timerId = ((QTimerEvent *) event)->timerId();
         for (int i=0; i<postedEvents->size(); ++i) {
             const QPostEvent &e = postedEvents->at(i);
@@ -1074,7 +1054,7 @@ bool QCoreApplication::compressEvent(QEvent *event, QObject *receiver, QPostEven
         }
         return false;
     }
-#endif
+
 
     if (event->type() == QEvent::DeferredDelete) {
         if (receiver->d_ptr->deleteLaterCalled) {

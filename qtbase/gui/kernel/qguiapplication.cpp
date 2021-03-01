@@ -1,43 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtGui module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #include "qguiapplication.h"
 
 #include "private/qguiapplication_p.h"
@@ -95,20 +55,18 @@
 
 #include <QtGui/QPixmap>
 
-#ifndef QT_NO_CLIPBOARD
+
 #include <QtGui/QClipboard>
-#endif
+
 
 #if QT_CONFIG(library)
 #include <QtCore/QLibrary>
 #endif
 
-#if defined(Q_OS_MAC)
-#  include "private/qcore_mac_p.h"
-#elif defined(Q_OS_WIN)
-#  include <QtCore/qt_windows.h>
-#  include <QtCore/QLibraryInfo>
-#endif // Q_OS_WIN
+
+#include <QtCore/qt_windows.h>
+#include <QtCore/QLibraryInfo>
+
 
 #include <ctype.h>
 
@@ -122,7 +80,7 @@ QT_BEGIN_NAMESPACE
         return __VA_ARGS__; \
     }
 
-Q_GUI_EXPORT bool qt_is_gui_used = true;
+bool qt_is_gui_used = true;
 
 Qt::MouseButtons QGuiApplicationPrivate::mouse_buttons = Qt::NoButton;
 Qt::KeyboardModifiers QGuiApplicationPrivate::modifier_buttons = Qt::NoModifier;
@@ -724,22 +682,11 @@ QString QGuiApplication::desktopFileName()
 }
 
 /*!
-    Returns the most recently shown modal window. If no modal windows are
-    visible, this function returns zero.
-
-    A modal window is a window which has its
-    \l{QWindow::modality}{modality} property set to Qt::WindowModal
-    or Qt::ApplicationModal. A modal window must be closed before the user can
-    continue with other parts of the program.
-
     Modal window are organized in a stack. This function returns the modal
     window at the top of the stack.
-
-    \sa Qt::WindowModality, QWindow::setModality()
 */
 QWindow *QGuiApplication::modalWindow()
-{
-    CHECK_QAPP_INSTANCE(Q_NULLPTR)
+{    
     if (QGuiApplicationPrivate::self->modalWindowList.isEmpty())
         return 0;
     return QGuiApplicationPrivate::self->modalWindowList.first();
@@ -1696,10 +1643,8 @@ bool QGuiApplication::event(QEvent *e)
     return QCoreApplication::event(e);
 }
 
-/*!
-    \internal
-*/
-bool QGuiApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventList *postedEvents)
+
+bool QGuiApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventList *postedEvents) override
 {
     return QCoreApplication::compressEvent(event, receiver, postedEvents);
 }

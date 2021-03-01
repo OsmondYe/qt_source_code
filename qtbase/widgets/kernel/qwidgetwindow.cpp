@@ -144,14 +144,7 @@ QWidgetWindow::~QWidgetWindow()
 {
 }
 
-#ifndef QT_NO_ACCESSIBILITY
-QAccessibleInterface *QWidgetWindow::accessibleRoot() const
-{
-    if (m_widget)
-        return QAccessible::queryAccessibleInterface(m_widget);
-    return 0;
-}
-#endif
+
 
 QObject *QWidgetWindow::focusObject() const
 {

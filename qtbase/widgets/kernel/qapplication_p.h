@@ -50,7 +50,7 @@ PaletteHash *qt_app_palettes_hash();
 
 class  QApplicationPrivate : public QApplicationPrivateBase
 {
-    Q_DECLARE_PUBLIC(QApplication)
+    //Q_DECLARE_PUBLIC(QApplication)
 public:
     QApplicationPrivate(int &argc, char **argv, int flags);
     ~QApplicationPrivate();

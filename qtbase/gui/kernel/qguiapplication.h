@@ -188,7 +188,7 @@ Q_SIGNALS:
 
 protected:
     bool event(QEvent *) Q_DECL_OVERRIDE;
-    bool compressEvent(QEvent *, QObject *receiver, QPostEventList *) Q_DECL_OVERRIDE;
+    bool compressEvent(QEvent *, QObject *receiver, QPostEventList *) override;
 
     QGuiApplication(QGuiApplicationPrivate &p);
 

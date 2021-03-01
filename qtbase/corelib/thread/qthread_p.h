@@ -51,7 +51,7 @@ public:
     // insertionOffset == set by sendPostedEvents to tell postEvent() where to start insertions
     int insertionOffset;
 
-    QMutex mutex;
+    QMutex mutex;  // this list will be protected by mutex,
 
     inline QPostEventList()
         : QVector<QPostEvent>(), recursion(0), startOffset(0), insertionOffset(0)

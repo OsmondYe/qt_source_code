@@ -1,4 +1,7 @@
 
+typedef WId int;
+
+
 QT_BEGIN_NAMESPACE
 
 

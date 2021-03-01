@@ -154,184 +154,6 @@ void QApplicationPrivate::createEventDispatcher()
     QGuiApplicationPrivate::createEventDispatcher();
 }
 
-/*!
-    \class QApplication
-    \brief The QApplication class manages the GUI application's control
-    flow and main settings.
-
-    \inmodule QtWidgets
-
-    QApplication specializes QGuiApplication with some functionality needed
-    for QWidget-based applications. It handles widget specific initialization,
-    finalization.
-
-    For any GUI application using Qt, there is precisely \b one QApplication
-    object, no matter whether the application has 0, 1, 2 or more windows at
-    any given time. For non-QWidget based Qt applications, use QGuiApplication instead,
-    as it does not depend on the \l QtWidgets library.
-
-    Some GUI applications provide a special batch mode ie. provide command line
-    arguments for executing tasks without manual intervention. In such non-GUI
-    mode, it is often sufficient to instantiate a plain QCoreApplication to
-    avoid unnecessarily initializing resources needed for a graphical user
-    interface. The following example shows how to dynamically create an
-    appropriate type of application instance:
-
-    \snippet code/src_gui_kernel_qapplication.cpp 0
-
-    The QApplication object is accessible through the instance() function that
-    returns a pointer equivalent to the global qApp pointer.
-
-    QApplication's main areas of responsibility are:
-        \list
-            \li  It initializes the application with the user's desktop settings
-                such as palette(), font() and doubleClickInterval(). It keeps
-                track of these properties in case the user changes the desktop
-                globally, for example through some kind of control panel.
-
-            \li  It performs event handling, meaning that it receives events
-                from the underlying window system and dispatches them to the
-                relevant widgets. By using sendEvent() and postEvent() you can
-                send your own events to widgets.
-
-            \li  It parses common command line arguments and sets its internal
-                state accordingly. See the \l{QApplication::QApplication()}
-                {constructor documentation} below for more details.
-
-            \li  It defines the application's look and feel, which is
-                encapsulated in a QStyle object. This can be changed at runtime
-                with setStyle().
-
-            \li  It specifies how the application is to allocate colors. See
-                setColorSpec() for details.
-
-            \li  It provides localization of strings that are visible to the
-                user via translate().
-
-            \li  It provides some magical objects like the desktop() and the
-                clipboard().
-
-            \li  It knows about the application's windows. You can ask which
-                widget is at a certain position using widgetAt(), get a list of
-                topLevelWidgets() and closeAllWindows(), etc.
-
-            \li  It manages the application's mouse cursor handling, see
-                setOverrideCursor()
-        \endlist
-
-    Since the QApplication object does so much initialization, it \e{must} be
-    created before any other objects related to the user interface are created.
-    QApplication also deals with common command line arguments. Hence, it is
-    usually a good idea to create it \e before any interpretation or
-    modification of \c argv is done in the application itself.
-
-    \table
-    \header
-        \li{2,1} Groups of functions
-
-        \row
-        \li  System settings
-        \li  desktopSettingsAware(),
-            setDesktopSettingsAware(),
-            cursorFlashTime(),
-            setCursorFlashTime(),
-            doubleClickInterval(),
-            setDoubleClickInterval(),
-            setKeyboardInputInterval(),
-            wheelScrollLines(),
-            setWheelScrollLines(),
-            palette(),
-            setPalette(),
-            font(),
-            setFont(),
-            fontMetrics().
-
-        \row
-        \li  Event handling
-        \li  exec(),
-            processEvents(),
-            exit(),
-            quit().
-            sendEvent(),
-            postEvent(),
-            sendPostedEvents(),
-            removePostedEvents(),
-            hasPendingEvents(),
-            notify().
-
-        \row
-        \li  GUI Styles
-        \li  style(),
-            setStyle().
-
-        \row
-        \li  Color usage
-        \li  colorSpec(),
-            setColorSpec().
-
-        \row
-        \li  Text handling
-        \li  installTranslator(),
-            removeTranslator()
-            translate().
-
-        \row
-        \li  Widgets
-        \li  allWidgets(),
-            topLevelWidgets(),
-            desktop(),
-            activePopupWidget(),
-            activeModalWidget(),
-            clipboard(),
-            focusWidget(),
-            activeWindow(),
-            widgetAt().
-
-        \row
-        \li  Advanced cursor handling
-        \li  overrideCursor(),
-            setOverrideCursor(),
-            restoreOverrideCursor().
-
-        \row
-        \li  Miscellaneous
-        \li  closeAllWindows(),
-            startingUp(),
-            closingDown().
-    \endtable
-
-    \sa QCoreApplication, QAbstractEventDispatcher, QEventLoop, QSettings
-*/
-
-// ### fixme: Qt 6: Remove ColorSpec and accessors.
-/*!
-    \enum QApplication::ColorSpec
-    \obsolete
-
-    \value NormalColor the default color allocation policy
-    \value CustomColor the same as NormalColor for X11; allocates colors
-    to a palette on demand under Windows
-    \value ManyColor the right choice for applications that use thousands of
-    colors
-
-    See setColorSpec() for full details.
-*/
-
-/*!
-    \fn QApplication::setGraphicsSystem(const QString &)
-    \obsolete
-
-    This call has no effect.
-
-    Use the QPA framework instead.
-*/
-
-/*!
-    \fn QWidget *QApplication::topLevelAt(const QPoint &point)
-
-    Returns the top-level widget at the given \a point; returns 0 if
-    there is no such widget.
-*/
 QWidget *QApplication::topLevelAt(const QPoint &pos)
 {
     if (const QWindow *window = QGuiApplication::topLevelAt(pos)) {
@@ -341,26 +163,19 @@ QWidget *QApplication::topLevelAt(const QPoint &pos)
     return 0;
 }
 
-/*!
-    \fn QWidget *QApplication::topLevelAt(int x, int y)
 
-    \overload
 
-    Returns the top-level widget at the point (\a{x}, \a{y}); returns
-    0 if there is no such widget.
-*/
-
-void qt_init(QApplicationPrivate *priv, int type
-   );
+void qt_init(QApplicationPrivate *priv, int type  );
 void qt_init_tooltip_palette();
 void qt_cleanup();
 
 QStyle *QApplicationPrivate::app_style = 0;        // default application style
 bool QApplicationPrivate::overrides_native_style = false; // whether native QApplication style is
                                                           // overridden, i.e. not native
-#ifndef QT_NO_STYLE_STYLESHEET
+
 QString QApplicationPrivate::styleSheet;           // default application stylesheet
-#endif
+
+
 QPointer<QWidget> QApplicationPrivate::leaveAfterRelease = 0;
 
 QPalette *QApplicationPrivate::sys_pal = 0;        // default system palette
@@ -391,7 +206,7 @@ inline bool QApplicationPrivate::isAlien(QWidget *widget)
     return widget && !widget->isWindow();
 }
 
-bool Q_WIDGETS_EXPORT qt_tab_all_widgets()
+bool  qt_tab_all_widgets()
 {
     return QGuiApplication::styleHints()->tabFocusBehavior() == Qt::TabFocusAllControls;
 }
@@ -469,50 +284,6 @@ void QApplicationPrivate::process_cmdline()
     }
 }
 
-/*!
-    Initializes the window system and constructs an application object with
-    \a argc command line arguments in \a argv.
-
-    \warning The data referred to by \a argc and \a argv must stay valid for
-    the entire lifetime of the QApplication object. In addition, \a argc must
-    be greater than zero and \a argv must contain at least one valid character
-    string.
-
-    The global \c qApp pointer refers to this application object. Only one
-    application object should be created.
-
-    This application object must be constructed before any \l{QPaintDevice}
-    {paint devices} (including widgets, pixmaps, bitmaps etc.).
-
-    \note \a argc and \a argv might be changed as Qt removes command line
-    arguments that it recognizes.
-
-    All Qt programs automatically support the following command line options:
-    \list
-        \li  -style= \e style, sets the application GUI style. Possible values
-            depend on your system configuration. If you compiled Qt with
-            additional styles or have additional styles as plugins these will
-            be available to the \c -style command line option.  You can also
-            set the style for all Qt applications by setting the
-            \c QT_STYLE_OVERRIDE environment variable.
-        \li  -style \e style, is the same as listed above.
-        \li  -stylesheet= \e stylesheet, sets the application \l styleSheet. The
-            value must be a path to a file that contains the Style Sheet.
-            \note Relative URLs in the Style Sheet file are relative to the
-            Style Sheet file's path.
-        \li  -stylesheet \e stylesheet, is the same as listed above.
-        \li  -widgetcount, prints debug message at the end about number of
-            widgets left undestroyed and maximum number of widgets existed at
-            the same time
-        \li  -reverse, sets the application's layout direction to
-            Qt::RightToLeft
-        \li  -qmljsdebugger=, activates the QML/JS debugger with a specified port.
-            The value must be of format port:1234[,block], where block is optional
-            and will make the application wait until a debugger connects to it.
-    \endlist
-
-    \sa QCoreApplication::arguments()
-*/
 
 QApplication::QApplication(int &argc, char **argv, int _internal)
 
@@ -527,9 +298,6 @@ QApplication::QApplication(int &argc, char **argv, int _internal)
 */
 void QApplicationPrivate::init()
 {
-#if defined(Q_OS_MACOS)
-    QMacAutoReleasePool pool;
-#endif
 
     QGuiApplicationPrivate::init();
 
@@ -708,20 +476,6 @@ void QApplicationPrivate::initializeWidgetFontHash()
   Functions returning the active popup and modal widgets.
  *****************************************************************************/
 
-/*!
-    Returns the active popup widget.
-
-    A popup widget is a special top-level widget that sets the \c
-    Qt::WType_Popup widget flag, e.g. the QMenu widget. When the application
-    opens a popup widget, all events are sent to the popup. Normal widgets and
-    modal widgets cannot be accessed before the popup widget is closed.
-
-    Only other popup widgets may be opened when a popup widget is shown. The
-    popup widgets are organized in a stack. This function returns the active
-    popup widget at the top of the stack.
-
-    \sa activeModalWidget(), topLevelWidgets()
-*/
 
 QWidget *QApplication::activePopupWidget()
 {
@@ -730,30 +484,12 @@ QWidget *QApplication::activePopupWidget()
 }
 
 
-/*!
-    Returns the active modal widget.
-
-    A modal widget is a special top-level widget which is a subclass of QDialog
-    that specifies the modal parameter of the constructor as true. A modal
-    widget must be closed before the user can continue with other parts of the
-    program.
-
-    Modal widgets are organized in a stack. This function returns the active
-    modal widget at the top of the stack.
-
-    \sa activePopupWidget(), topLevelWidgets()
-*/
-
 QWidget *QApplication::activeModalWidget()
 {
     QWidgetWindow *widgetWindow = qobject_cast<QWidgetWindow *>(modalWindow());
     return widgetWindow ? widgetWindow->widget() : 0;
 }
 
-/*!
-    Cleans up any window system resources that were allocated by this
-    application. Sets the global variable \c qApp to 0.
-*/
 
 QApplication::~QApplication()
 {
@@ -803,10 +539,10 @@ QApplication::~QApplication()
     delete QApplicationPrivate::app_style;
     QApplicationPrivate::app_style = 0;
 
-#ifndef QT_NO_DRAGANDDROP
+
     if (qt_is_gui_used)
         delete QDragManager::self();
-#endif
+
 
     d->cleanupMultitouch();
 
@@ -827,9 +563,8 @@ QApplication::~QApplication()
 #endif
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
-// #fixme: Remove.
+
+
 static HDC         displayDC        = 0;                // display device context
 
 Q_WIDGETS_EXPORT HDC qt_win_display_dc()                        // get display DC
@@ -839,8 +574,7 @@ Q_WIDGETS_EXPORT HDC qt_win_display_dc()                        // get display D
         displayDC = GetDC(0);
     return displayDC;
 }
-#endif
-#endif
+
 
 void qt_cleanup()
 {
@@ -848,26 +582,15 @@ void qt_cleanup()
     QColormap::cleanup();
 
     QApplicationPrivate::active_window = 0; //### this should not be necessary
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+
     if (displayDC) {
         ReleaseDC(0, displayDC);
         displayDC = 0;
     }
-#endif
-#endif
+
 }
 
-/*!
-    \fn QWidget *QApplication::widgetAt(const QPoint &point)
 
-    Returns the widget at global screen position \a point, or 0 if there is no
-    Qt widget there.
-
-    This function can be slow.
-
-    \sa QCursor::pos(), QWidget::grabMouse(), QWidget::grabKeyboard()
-*/
 QWidget *QApplication::widgetAt(const QPoint &p)
 {
     QWidget *window = QApplication::topLevelAt(p);
@@ -905,19 +628,8 @@ QWidget *QApplication::widgetAt(const QPoint &p)
     return window;
 }
 
-/*!
-    \fn QWidget *QApplication::widgetAt(int x, int y)
 
-    \overload
-
-    Returns the widget at global screen position (\a x, \a y), or 0 if there is
-    no Qt widget there.
-*/
-
-/*!
-    \internal
-*/
-bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventList *postedEvents)
+bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventList *postedEvents) override
 {
     if ((event->type() == QEvent::UpdateRequest
           || event->type() == QEvent::LayoutRequest
@@ -1214,80 +926,6 @@ QStyle* QApplication::setStyle(const QString& style)
     return s;
 }
 
-/*!
-    Returns the color specification.
-    \obsolete
-
-    \sa QApplication::setColorSpec()
-*/
-
-int QApplication::colorSpec()
-{
-    return QApplication::NormalColor;
-}
-
-/*!
-    Sets the color specification for the application to \a spec.
-    \obsolete
-
-    This call has no effect.
-
-    The color specification controls how the application allocates colors when
-    run on a display with a limited amount of colors, e.g. 8 bit / 256 color
-    displays.
-
-    The color specification must be set before you create the QApplication
-    object.
-
-    The options are:
-    \list
-        \li  QApplication::NormalColor. This is the default color allocation
-            strategy. Use this option if your application uses buttons, menus,
-            texts and pixmaps with few colors. With this option, the
-            application uses system global colors. This works fine for most
-            applications under X11, but on the Windows platform, it may cause
-            dithering of non-standard colors.
-        \li  QApplication::CustomColor. Use this option if your application
-            needs a small number of custom colors. On X11, this option is the
-            same as NormalColor. On Windows, Qt creates a Windows palette, and
-            allocates colors to it on demand.
-        \li  QApplication::ManyColor. Use this option if your application is
-            very color hungry, e.g., it requires thousands of colors. \br
-            Under X11 the effect is:
-            \list
-                \li  For 256-color displays which have at best a 256 color true
-                    color visual, the default visual is used, and colors are
-                    allocated from a color cube. The color cube is the 6x6x6
-                    (216 color) "Web palette" (the red, green, and blue
-                    components always have one of the following values: 0x00,
-                    0x33, 0x66, 0x99, 0xCC, or 0xFF), but the number of colors
-                    can be changed by the \e -ncols option. The user can force
-                    the application to use the true color visual with the
-                    \l{QApplication::QApplication()}{-visual} option.
-                \li  For 256-color displays which have a true color visual with
-                    more than 256 colors, use that visual. Silicon Graphics X
-                    servers this feature, for example. They provide an 8 bit
-                    visual by default but can deliver true color when asked.
-            \endlist
-            On Windows, Qt creates a Windows palette, and fills it with a color
-            cube.
-    \endlist
-
-    Be aware that the CustomColor and ManyColor choices may lead to colormap
-    flashing: The foreground application gets (most) of the available colors,
-    while the background windows will look less attractive.
-
-    Example:
-
-    \snippet code/src_gui_kernel_qapplication.cpp 2
-
-    \sa colorSpec()
-*/
-
-void QApplication::setColorSpec(int spec)
-{
-    Q_UNUSED(spec)
-}
 
 /*!
     \property QApplication::globalStrut
@@ -1695,18 +1333,6 @@ QWidgetList QApplication::topLevelWidgets()
     return list;
 }
 
-/*!
-    Returns a list of all the widgets in the application.
-
-    The list is empty (QList::isEmpty()) if there are no widgets.
-
-    \note Some of the widgets may be hidden.
-
-    Example:
-    \snippet code/src_gui_kernel_qapplication.cpp 5
-
-    \sa topLevelWidgets(), QWidget::isVisible()
-*/
 
 QWidgetList QApplication::allWidgets()
 {
