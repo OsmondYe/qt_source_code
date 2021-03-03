@@ -13,7 +13,6 @@
 
 typedef struct tagMSG MSG;
 
-QT_BEGIN_NAMESPACE
 
 class QCoreApplicationPrivate;
 class QTextCodec;
@@ -63,7 +62,13 @@ public:
     static void exit(int retcode=0);
 
 	// oye:  old friend
-    static bool sendEvent(QObject *receiver, QEvent *event);
+	// oye, send Qt defined event
+    static bool sendEvent(QObject *receiver, QEvent *event){  
+		if (event) 
+			event->spont = false; 
+		return notifyInternal2(receiver, event); 
+	}
+	//
     static void postEvent(QObject *receiver, QEvent *event, int priority = Qt::NormalEventPriority);
 	
     static void sendPostedEvents(QObject *receiver = Q_NULLPTR, int event_type = 0);
@@ -146,8 +151,7 @@ private:
     friend class QClassFactory;
 };
 
-inline bool QCoreApplication::sendEvent(QObject *receiver, QEvent *event)
-{  if (event) event->spont = false; return notifyInternal2(receiver, event); }
+
 
 inline bool QCoreApplication::sendSpontaneousEvent(QObject *receiver, QEvent *event)
 { if (event) event->spont = true; return notifyInternal2(receiver, event); }
@@ -171,13 +175,10 @@ typedef void (*QtCleanUpFunction)();
  void qRemovePostRoutine(QtCleanUpFunction);
  QString qAppName();                // get application name
 
-#define Q_COREAPP_STARTUP_FUNCTION(AFUNC) \
-    static void AFUNC ## _ctor_function() {  \
-        qAddPreRoutine(AFUNC);        \
-    }                                 \
-    Q_CONSTRUCTOR_FUNCTION(AFUNC ## _ctor_function)
+#define Q_COREAPP_STARTUP_FUNCTION(AFUNC) 
 
 
-QT_END_NAMESPACE
+
+
 
 #endif // QCOREAPPLICATION_H

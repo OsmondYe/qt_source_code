@@ -517,7 +517,6 @@ void QMenuPrivate::hideMenu(QMenu *menu)
 {
     if (!menu)
         return;
-#if QT_CONFIG(effects)
     QSignalBlocker blocker(menu);
     aboutToHide = true;
     // Flash item which is about to trigger (if any).
@@ -539,7 +538,6 @@ void QMenuPrivate::hideMenu(QMenu *menu)
 
     aboutToHide = false;
     blocker.unblock();
-#endif // QT_CONFIG(effects)
     if (activeMenu == menu)
         activeMenu = 0;
     menu->d_func()->causedPopup.action = 0;

@@ -7,7 +7,7 @@
 #include "QtCore/qbasictimer.h"
 #include "private/qwidget_p.h"
 
-QT_BEGIN_NAMESPACE
+
 
 class QAbstractButtonPrivate : public QWidgetPrivate
 {
@@ -61,6 +61,5 @@ public:
 
 };
 
-QT_END_NAMESPACE
 
 #endif // QABSTRACTBUTTON_P_H

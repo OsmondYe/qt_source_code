@@ -57,7 +57,7 @@ public:
     uint isWindow : 1; //for QWindow
     uint deleteLaterCalled : 1;
     uint unused : 24;
-    int postedEvents;                     // oye
+    int postedEvents;                     // oye  how many Events has been posted
     QDynamicMetaObjectData *metaObject;
     QMetaObject *dynamicMetaObject() const;
 };
@@ -65,9 +65,8 @@ public:
 
 class  QObject
 {
-	//Q_OBJECT
 //----------------------------------------------------------
-// will be expanded as 
+// Q_OBJECT will be expanded as 
 public:     
      
     static const QMetaObject staticMetaObject; 

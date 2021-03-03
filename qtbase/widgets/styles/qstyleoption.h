@@ -1,42 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWidgets module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #ifndef QSTYLEOPTION_H
 #define QSTYLEOPTION_H
 
@@ -66,12 +27,8 @@
 #   include <QtCore/qabstractitemmodel.h>
 #endif
 
-QT_BEGIN_NAMESPACE
 
-
-class QDebug;
-
-class Q_WIDGETS_EXPORT QStyleOption
+class QStyleOption
 {
 public:
     enum OptionType {
@@ -97,7 +54,8 @@ public:
     QRect rect;
     QFontMetrics fontMetrics;
     QPalette palette;
-    QObject *styleObject;
+	
+    QObject *styleObject;  // oye, which widget you on the style
 
     QStyleOption(int version = QStyleOption::Version, int type = SO_Default);
     QStyleOption(const QStyleOption &other);
@@ -108,7 +66,7 @@ public:
     QStyleOption &operator=(const QStyleOption &other);
 };
 
-class Q_WIDGETS_EXPORT QStyleOptionFocusRect : public QStyleOption
+class  QStyleOptionFocusRect : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_FocusRect };
@@ -123,7 +81,7 @@ protected:
     QStyleOptionFocusRect(int version);
 };
 
-class Q_WIDGETS_EXPORT QStyleOptionFrame : public QStyleOption
+class  QStyleOptionFrame : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_Frame };
@@ -153,7 +111,7 @@ typedef Q_DECL_DEPRECATED QStyleOptionFrame QStyleOptionFrameV2;
 typedef Q_DECL_DEPRECATED QStyleOptionFrame QStyleOptionFrameV3;
 
 #if QT_CONFIG(tabwidget)
-class Q_WIDGETS_EXPORT QStyleOptionTabWidgetFrame : public QStyleOption
+class  QStyleOptionTabWidgetFrame : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_TabWidgetFrame };
@@ -181,7 +139,7 @@ typedef Q_DECL_DEPRECATED QStyleOptionTabWidgetFrame QStyleOptionTabWidgetFrameV
 
 
 #if QT_CONFIG(tabbar)
-class Q_WIDGETS_EXPORT QStyleOptionTabBarBase : public QStyleOption
+class  QStyleOptionTabBarBase : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_TabBarBase };
@@ -202,7 +160,7 @@ protected:
 typedef Q_DECL_DEPRECATED QStyleOptionTabBarBase QStyleOptionTabBarBaseV2;
 #endif // QT_CONFIG(tabbar)
 
-class Q_WIDGETS_EXPORT QStyleOptionHeader : public QStyleOption
+class  QStyleOptionHeader : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_Header };
@@ -230,15 +188,15 @@ protected:
     QStyleOptionHeader(int version);
 };
 
-class Q_WIDGETS_EXPORT QStyleOptionButton : public QStyleOption
+class  QStyleOptionButton : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_Button };
     enum StyleOptionVersion { Version = 1 };
 
-    enum ButtonFeature { None = 0x00, Flat = 0x01, HasMenu = 0x02, DefaultButton = 0x04,
+    enum ButtonFeatures { None = 0x00, Flat = 0x01, HasMenu = 0x02, DefaultButton = 0x04,
                          AutoDefaultButton = 0x08, CommandLinkButton = 0x10  };
-    Q_DECLARE_FLAGS(ButtonFeatures, ButtonFeature)
+    //Q_DECLARE_FLAGS(ButtonFeatures, ButtonFeature)
 
     ButtonFeatures features;
     QString text;
@@ -255,7 +213,7 @@ protected:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionButton::ButtonFeatures)
 
 #if QT_CONFIG(tabbar)
-class Q_WIDGETS_EXPORT QStyleOptionTab : public QStyleOption
+class  QStyleOptionTab : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_Tab };
@@ -298,7 +256,7 @@ typedef Q_DECL_DEPRECATED QStyleOptionTab QStyleOptionTabV3;
 
 #ifndef QT_NO_TOOLBAR
 
-class Q_WIDGETS_EXPORT QStyleOptionToolBar : public QStyleOption
+class  QStyleOptionToolBar : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_ToolBar };
@@ -323,7 +281,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionToolBar::ToolBarFeatures)
 
 #endif // QT_NO_TOOLBAR
 
-class Q_WIDGETS_EXPORT QStyleOptionProgressBar : public QStyleOption
+class  QStyleOptionProgressBar : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_ProgressBar };
@@ -348,7 +306,7 @@ protected:
 
 typedef Q_DECL_DEPRECATED QStyleOptionProgressBar QStyleOptionProgressBarV2;
 
-class Q_WIDGETS_EXPORT QStyleOptionMenuItem : public QStyleOption
+class  QStyleOptionMenuItem : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_MenuItem };
@@ -376,7 +334,7 @@ protected:
     QStyleOptionMenuItem(int version);
 };
 
-class Q_WIDGETS_EXPORT QStyleOptionDockWidget : public QStyleOption
+class  QStyleOptionDockWidget : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_DockWidget };
@@ -399,7 +357,7 @@ typedef Q_DECL_DEPRECATED QStyleOptionDockWidget QStyleOptionDockWidgetV2;
 
 #if QT_CONFIG(itemviews)
 
-class Q_WIDGETS_EXPORT QStyleOptionViewItem : public QStyleOption
+class  QStyleOptionViewItem : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_ViewItem };
@@ -454,7 +412,7 @@ typedef Q_DECL_DEPRECATED QStyleOptionViewItem QStyleOptionViewItemV4;
 
 #endif // QT_CONFIG(itemviews)
 
-class Q_WIDGETS_EXPORT QStyleOptionToolBox : public QStyleOption
+class  QStyleOptionToolBox : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_ToolBox };
@@ -479,7 +437,7 @@ protected:
 typedef Q_DECL_DEPRECATED QStyleOptionToolBox QStyleOptionToolBoxV2;
 
 #if QT_CONFIG(rubberband)
-class Q_WIDGETS_EXPORT QStyleOptionRubberBand : public QStyleOption
+class  QStyleOptionRubberBand : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_RubberBand };
@@ -497,7 +455,7 @@ protected:
 #endif // QT_CONFIG(rubberband)
 
 // -------------------------- Complex style options -------------------------------
-class Q_WIDGETS_EXPORT QStyleOptionComplex : public QStyleOption
+class  QStyleOptionComplex : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_Complex };
@@ -511,7 +469,7 @@ public:
 };
 
 #if QT_CONFIG(slider)
-class Q_WIDGETS_EXPORT QStyleOptionSlider : public QStyleOptionComplex
+class  QStyleOptionSlider : public QStyleOptionComplex
 {
 public:
     enum StyleOptionType { Type = SO_Slider };
@@ -539,7 +497,7 @@ protected:
 #endif // QT_CONFIG(slider)
 
 #if QT_CONFIG(spinbox)
-class Q_WIDGETS_EXPORT QStyleOptionSpinBox : public QStyleOptionComplex
+class  QStyleOptionSpinBox : public QStyleOptionComplex
 {
 public:
     enum StyleOptionType { Type = SO_SpinBox };
@@ -557,7 +515,7 @@ protected:
 };
 #endif // QT_CONFIG(spinbox)
 
-class Q_WIDGETS_EXPORT QStyleOptionToolButton : public QStyleOptionComplex
+class  QStyleOptionToolButton : public QStyleOptionComplex
 {
 public:
     enum StyleOptionType { Type = SO_ToolButton };
@@ -585,7 +543,7 @@ protected:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionToolButton::ToolButtonFeatures)
 
-class Q_WIDGETS_EXPORT QStyleOptionComboBox : public QStyleOptionComplex
+class  QStyleOptionComboBox : public QStyleOptionComplex
 {
 public:
     enum StyleOptionType { Type = SO_ComboBox };
@@ -605,7 +563,7 @@ protected:
     QStyleOptionComboBox(int version);
 };
 
-class Q_WIDGETS_EXPORT QStyleOptionTitleBar : public QStyleOptionComplex
+class  QStyleOptionTitleBar : public QStyleOptionComplex
 {
 public:
     enum StyleOptionType { Type = SO_TitleBar };
@@ -623,7 +581,7 @@ protected:
     QStyleOptionTitleBar(int version);
 };
 
-class Q_WIDGETS_EXPORT QStyleOptionGroupBox : public QStyleOptionComplex
+class  QStyleOptionGroupBox : public QStyleOptionComplex
 {
 public:
     enum StyleOptionType { Type = SO_GroupBox };
@@ -642,7 +600,7 @@ protected:
     QStyleOptionGroupBox(int version);
 };
 
-class Q_WIDGETS_EXPORT QStyleOptionSizeGrip : public QStyleOptionComplex
+class  QStyleOptionSizeGrip : public QStyleOptionComplex
 {
 public:
     enum StyleOptionType { Type = SO_SizeGrip };
@@ -656,7 +614,7 @@ protected:
     QStyleOptionSizeGrip(int version);
 };
 
-class Q_WIDGETS_EXPORT QStyleOptionGraphicsItem : public QStyleOption
+class  QStyleOptionGraphicsItem : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_GraphicsItem };
@@ -698,7 +656,7 @@ T qstyleoption_cast(QStyleOption *opt)
 }
 
 // -------------------------- QStyleHintReturn -------------------------------
-class Q_WIDGETS_EXPORT QStyleHintReturn {
+class  QStyleHintReturn {
 public:
     enum HintReturnType {
         SH_Default=0xf000, SH_Mask, SH_Variant
@@ -714,7 +672,7 @@ public:
     int type;
 };
 
-class Q_WIDGETS_EXPORT QStyleHintReturnMask : public QStyleHintReturn {
+class  QStyleHintReturnMask : public QStyleHintReturn {
 public:
     enum StyleOptionType { Type = SH_Mask };
     enum StyleOptionVersion { Version = 1 };
@@ -725,7 +683,7 @@ public:
     QRegion region;
 };
 
-class Q_WIDGETS_EXPORT QStyleHintReturnVariant : public QStyleHintReturn {
+class  QStyleHintReturnVariant : public QStyleHintReturn {
 public:
     enum StyleOptionType { Type = SH_Variant };
     enum StyleOptionVersion { Version = 1 };
@@ -757,10 +715,10 @@ T qstyleoption_cast(QStyleHintReturn *hint)
 }
 
 #if !defined(QT_NO_DEBUG_STREAM)
-Q_WIDGETS_EXPORT QDebug operator<<(QDebug debug, const QStyleOption::OptionType &optionType);
-Q_WIDGETS_EXPORT QDebug operator<<(QDebug debug, const QStyleOption &option);
+ QDebug operator<<(QDebug debug, const QStyleOption::OptionType &optionType);
+ QDebug operator<<(QDebug debug, const QStyleOption &option);
 #endif
 
-QT_END_NAMESPACE
+
 
 #endif // QSTYLEOPTION_H

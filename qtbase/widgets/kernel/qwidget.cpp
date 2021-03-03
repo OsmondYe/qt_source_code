@@ -264,7 +264,7 @@ void QWidget::setEditFocus(bool on)
 
 bool QWidget::autoFillBackground() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     return d->extra && d->extra->autoFillBackground;
 }
 
@@ -1882,7 +1882,7 @@ WId QWidget::effectiveWinId() const
 */
 QWindow *QWidget::windowHandle() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     QTLWExtra *extra = d->maybeTopData();
     if (extra)
         return extra->window;
@@ -1909,7 +1909,7 @@ QWindow *QWidget::windowHandle() const
 */
 QString QWidget::styleSheet() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     if (!d->extra)
         return QString();
     return d->extra->styleSheet;
@@ -1950,7 +1950,7 @@ void QWidget::setStyleSheet(const QString& styleSheet)
 
 QStyle *QWidget::style() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
 
     if (d->extra && d->extra->style)
         return d->extra->style;
@@ -2597,7 +2597,7 @@ void QWidget::removeAction(QAction *action)
 */
 QList<QAction*> QWidget::actions() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     return d->actions;
 }
 #endif // QT_NO_ACTION
@@ -2757,7 +2757,7 @@ void QWidget::setDisabled(bool disable)
 */
 QRect QWidget::frameGeometry() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     if (isWindow() && ! (windowType() == Qt::Popup)) {
         QRect fs = d->frameStrut();
         return QRect(data->crect.x() - fs.left(),
@@ -2783,7 +2783,7 @@ QRect QWidget::frameGeometry() const
 */
 int QWidget::x() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     if (isWindow() && ! (windowType() == Qt::Popup))
         return data->crect.x() - d->frameStrut().left();
     return data->crect.x();
@@ -2803,7 +2803,7 @@ int QWidget::x() const
 */
 int QWidget::y() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     if (isWindow() && ! (windowType() == Qt::Popup))
         return data->crect.y() - d->frameStrut().top();
     return data->crect.y();
@@ -2812,7 +2812,7 @@ int QWidget::y() const
 
 QPoint QWidget::pos() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     QPoint result = data->crect.topLeft();
     if (isWindow() && ! (windowType() == Qt::Popup))
         if (!d->maybeTopData() || !d->maybeTopData()->posIncludesFrame)
@@ -2822,7 +2822,7 @@ QPoint QWidget::pos() const
 
 QRect QWidget::normalGeometry() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     if (!d->extra || !d->extra->topextra)
         return QRect();
 
@@ -2847,7 +2847,7 @@ QRect QWidget::normalGeometry() const
 
 QRect QWidget::childrenRect() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     QRect r(0, 0, 0, 0);
     for (int i = 0; i < d->children.size(); ++i) {
         QWidget *w = qobject_cast<QWidget *>(d->children.at(i));
@@ -2871,7 +2871,7 @@ QRect QWidget::childrenRect() const
 
 QRegion QWidget::childrenRegion() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     QRegion r;
     for (int i = 0; i < d->children.size(); ++i) {
         QWidget *w = qobject_cast<QWidget *>(d->children.at(i));
@@ -2906,7 +2906,7 @@ QRegion QWidget::childrenRegion() const
 
 QSize QWidget::minimumSize() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     return d->extra ? QSize(d->extra->minw, d->extra->minh) : QSize(0, 0);
 }
 
@@ -2928,7 +2928,7 @@ QSize QWidget::minimumSize() const
 
 QSize QWidget::maximumSize() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     return d->extra ? QSize(d->extra->maxw, d->extra->maxh)
                  : QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
 }
@@ -3007,7 +3007,7 @@ QSize QWidget::maximumSize() const
 */
 QSize QWidget::sizeIncrement() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     return (d->extra && d->extra->topextra)
         ? QSize(d->extra->topextra->incw, d->extra->topextra->inch)
         : QSize(0, 0);
@@ -3028,7 +3028,7 @@ QSize QWidget::sizeIncrement() const
 
 QSize QWidget::baseSize() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     return (d->extra != 0 && d->extra->topextra != 0)
         ? QSize(d->extra->topextra->basew, d->extra->topextra->baseh)
         : QSize(0, 0);
@@ -3419,16 +3419,12 @@ QPoint QWidget::mapFromParent(const QPoint &pos) const
 
 
 /*!
-    Returns the window for this widget, i.e. the next ancestor widget
-    that has (or could have) a window-system frame.
+    Returns the window for this widget, 
 
     If the widget is a window, the widget itself is returned.
 
     Typical usage is changing the window title:
 
-    \snippet code/src_gui_kernel_qwidget.cpp 3
-
-    \sa isWindow()
 */
 
 QWidget *QWidget::window() const
@@ -3530,7 +3526,7 @@ void QWidget::setBackgroundRole(QPalette::ColorRole role)
  */
 QPalette::ColorRole QWidget::foregroundRole() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     QPalette::ColorRole rl = QPalette::ColorRole(d->fg_role);
     if (rl != QPalette::NoRole)
         return rl;
@@ -4063,7 +4059,7 @@ void QWidget::unsetLayoutDirection()
 #ifndef QT_NO_CURSOR
 QCursor QWidget::cursor() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     if (testAttribute(Qt::WA_SetCursor))
         return (d->extra && d->extra->curs)
             ? *d->extra->curs
@@ -4379,7 +4375,7 @@ QPixmap QWidget::grab(const QRect &rectangle)
 #if QT_CONFIG(graphicseffect)
 QGraphicsEffect *QWidget::graphicsEffect() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     return d->graphicsEffect;
 }
 #endif // QT_CONFIG(graphicseffect)
@@ -5072,7 +5068,7 @@ void QWidget::setLocale(const QLocale &locale)
 
 QLocale QWidget::locale() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
 
     return d->locale;
 }
@@ -5120,7 +5116,7 @@ void QWidget::unsetLocale()
 */
 QString QWidget::windowTitle() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     if (d->extra && d->extra->topextra) {
         if (!d->extra->topextra->caption.isEmpty())
             return d->extra->topextra->caption;
@@ -5360,7 +5356,7 @@ void QWidgetPrivate::setWindowIcon_sys()
 
 QString QWidget::windowIconText() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     return (d->extra && d->extra->topextra) ? d->extra->topextra->iconText : QString();
 }
 
@@ -5390,7 +5386,7 @@ QString QWidget::windowIconText() const
 
 QString QWidget::windowFilePath() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     return (d->extra && d->extra->topextra) ? d->extra->topextra->filePath : QString();
 }
 
@@ -5440,7 +5436,7 @@ void QWidgetPrivate::setWindowFilePath_sys(const QString &filePath)
 
 QString QWidget::windowRole() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     return (d->extra && d->extra->topextra) ? d->extra->topextra->role : QString();
 }
 
@@ -5531,35 +5527,24 @@ void QWidget::setFocusProxy(QWidget * w)
 
 QWidget * QWidget::focusProxy() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     return d->extra ? (QWidget *)d->extra->focus_proxy : 0;
 }
 
 
-/*!
-    \property QWidget::focus
-    \brief whether this widget (or its focus proxy) has the keyboard
-    input focus
 
-    By default, this property is \c false.
-
-    \note Obtaining the value of this property for a widget is effectively equivalent
-    to checking whether QApplication::focusWidget() refers to the widget.
-
-    \sa setFocus(), clearFocus(), setFocusPolicy(), QApplication::focusWidget()
-*/
+// oye whether QApplication::focusWidget() refers to the widget.
 bool QWidget::hasFocus() const
 {
     const QWidget* w = this;
     while (w->d_func()->extra && w->d_func()->extra->focus_proxy)
         w = w->d_func()->extra->focus_proxy;
-#if QT_CONFIG(graphicsview)
+	
     if (QWidget *window = w->window()) {
         QWExtra *e = window->d_func()->extra;
         if (e && e->proxyWidget && e->proxyWidget->hasFocus() && window->focusWidget() == w)
             return true;
     }
-#endif // QT_CONFIG(graphicsview)
     return (QApplication::focusWidget() == w);
 }
 
@@ -6195,7 +6180,7 @@ int QWidgetPrivate::pointToRect(const QPoint &p, const QRect &r)
 */
 QSize QWidget::frameSize() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     if (isWindow() && !(windowType() == Qt::Popup)) {
         QRect fs = d->frameStrut();
         return QSize(data->crect.width() + fs.left() + fs.right(),
@@ -6431,7 +6416,7 @@ QByteArray QWidget::saveGeometry() const
 #if 0 // Used to be included in Qt4 for Q_WS_MAC
     // We check if the window was maximized during this invocation. If so, we need to record the
     // starting position as 0,0.
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     QRect newFramePosition = frameGeometry();
     QRect newNormalPosition = normalGeometry();
     if(d->topData()->wasMaximized && !(windowState() & Qt::WindowMaximized)) {
@@ -6735,7 +6720,7 @@ QMargins operator|(const QMargins &m1, const QMargins &m2)
  */
 QMargins QWidget::contentsMargins() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     QMargins userMargins(d->leftmargin, d->topmargin, d->rightmargin, d->bottommargin);
     return testAttribute(Qt::WA_ContentsMarginsRespectsSafeArea) ?
         userMargins | d->safeAreaMargins() : userMargins;
@@ -7717,7 +7702,7 @@ bool QWidget::isVisibleTo(const QWidget *ancestor) const
 */
 QRegion QWidget::visibleRegion() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
 
     QRect clipRect = d->clipRect();
     if (clipRect.isEmpty())
@@ -7820,7 +7805,7 @@ void QWidget::adjustSize()
 
 QSize QWidget::sizeHint() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     if (d->layout)
         return d->layout->totalSizeHint();
     return QSize(-1, -1);
@@ -7847,7 +7832,7 @@ QSize QWidget::sizeHint() const
 */
 QSize QWidget::minimumSizeHint() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     if (d->layout)
         return d->layout->totalMinimumSize();
     return QSize(-1, -1);
@@ -9170,32 +9155,11 @@ bool QWidget::nativeEvent(const QByteArray &eventType, void *message, long *resu
     return false;
 }
 
-/*!
-    Ensures that the widget and its children have been polished by
-    QStyle (i.e., have a proper font and palette).
-
-    QWidget calls this function after it has been fully constructed
-    but before it is shown the very first time. You can call this
-    function if you want to ensure that the widget is polished before
-    doing an operation, e.g., the correct font size might be needed in
-    the widget's sizeHint() reimplementation. Note that this function
-    \e is called from the default implementation of sizeHint().
-
-    Polishing is useful for final initialization that must happen after
-    all constructors (from base classes as well as from subclasses)
-    have been called.
-
-    If you need to change some settings when a widget is polished,
-    reimplement event() and handle the QEvent::Polish event type.
-
-    \b{Note:} The function is declared const so that it can be called from
-    other const functions (e.g., sizeHint()).
-
-    \sa event()
-*/
+// oye, have a proper font and palette within the QStyle
+// oye: reimpl event(), hadnle QEvent::Polish
 void QWidget::ensurePolished() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
 
     const QMetaObject *m = metaObject();
     if (m == d->polished)
@@ -9229,7 +9193,7 @@ void QWidget::ensurePolished() const
 */
 QRegion QWidget::mask() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     return d->extra ? d->extra->mask : QRegion();
 }
 
@@ -9313,7 +9277,7 @@ QLayout *QWidget::takeLayout()
 */
 QSizePolicy QWidget::sizePolicy() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     return d->size_policy;
 }
 
@@ -9377,7 +9341,7 @@ int QWidget::heightForWidth(int w) const
 */
 bool QWidget::hasHeightForWidth() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     return d->layout ? d->layout->hasHeightForWidth() : d->size_policy.hasHeightForWidth();
 }
 
@@ -10417,7 +10381,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
  */
 bool QWidget::testAttribute_helper(Qt::WidgetAttribute attribute) const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     const int x = attribute - 8*sizeof(uint);
     const int int_off = x / (8*sizeof(uint));
     return (d->high_attributes[int_off] & (1<<(x-(int_off*8*sizeof(uint)))));
@@ -10450,7 +10414,7 @@ bool QWidget::testAttribute_helper(Qt::WidgetAttribute attribute) const
 */
 qreal QWidget::windowOpacity() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     return (isWindow() && d->maybeTopData()) ? d->maybeTopData()->opacity / 255. : 1.0;
 }
 
@@ -10576,7 +10540,7 @@ void QWidget::setToolTip(const QString &s)
 
 QString QWidget::toolTip() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     return d->toolTip;
 }
 
@@ -10599,7 +10563,7 @@ void QWidget::setToolTipDuration(int msec)
 
 int QWidget::toolTipDuration() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     return d->toolTipDuration;
 }
 
@@ -10623,7 +10587,7 @@ void QWidget::setStatusTip(const QString &s)
 
 QString QWidget::statusTip() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     return d->statusTip;
 }
 #endif // QT_CONFIG(statustip)
@@ -10646,7 +10610,7 @@ void QWidget::setWhatsThis(const QString &s)
 
 QString QWidget::whatsThis() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     return d->whatsThis;
 }
 #endif // QT_CONFIG(whatsthis)
@@ -10683,7 +10647,7 @@ void QWidget::setAccessibleName(const QString &name)
 
 QString QWidget::accessibleName() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     return d->accessibleName;
 }
 
@@ -10713,7 +10677,7 @@ void QWidget::setAccessibleDescription(const QString &description)
 
 QString QWidget::accessibleDescription() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     return d->accessibleDescription;
 }
 #endif // QT_NO_ACCESSIBILITY
@@ -11211,7 +11175,7 @@ void QWidget::setBackingStore(QBackingStore *store)
 */
 QBackingStore *QWidget::backingStore() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     QTLWExtra *extra = d->maybeTopData();
     if (extra && extra->backingStore)
         return extra->backingStore;
@@ -11349,7 +11313,7 @@ Q_WIDGETS_EXPORT QWidgetPrivate *qt_widget_private(QWidget *widget)
  */
 QGraphicsProxyWidget *QWidget::graphicsProxyWidget() const
 {
-    Q_D(const QWidget);
+    QWidgetPrivate * const d = d_func();
     if (d->extra) {
         return d->extra->proxyWidget;
     }

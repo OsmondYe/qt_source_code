@@ -35,7 +35,7 @@
 #include <stdlib.h>
 #include <algorithm>
 
-QT_BEGIN_NAMESPACE
+
 
 class QMutexUnlocker
 {
@@ -365,20 +365,7 @@ void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
 
 void QCoreApplicationPrivate::appendApplicationPathToLibraryPaths()
 {
-#if QT_CONFIG(library)
-    QStringList *app_libpaths = coreappdata()->app_libpaths.data();
-    if (!app_libpaths)
-        coreappdata()->app_libpaths.reset(app_libpaths = new QStringList);
-    QString app_location = QCoreApplication::applicationFilePath();
-    app_location.truncate(app_location.lastIndexOf(QLatin1Char('/')));
-#ifdef Q_OS_WINRT
-    if (app_location.isEmpty())
-        app_location.append(QLatin1Char('/'));
-#endif
-    app_location = QDir(app_location).canonicalPath();
-    if (QFile::exists(app_location) && !app_libpaths->contains(app_location))
-        app_libpaths->append(app_location);
-#endif
+	// oye delete
 }
 
 QString qAppName()
@@ -397,94 +384,6 @@ void QCoreApplicationPrivate::initLocale()
 
 }
 
-
-/*!
-
-    The QCoreApplication class provides an event loop for Qt
-    applications without UI.
-
-    This class is used by non-GUI applications to provide their event
-    loop. For non-GUI application that uses Qt, there should be exactly
-    one QCoreApplication object. For GUI applications, see
-    QGuiApplication. For applications that use the Qt Widgets module,
-    see QApplication.
-
-    QCoreApplication contains the main event loop, where all events
-    from the operating system (e.g., timer and network events) and
-    other sources are processed and dispatched. It also handles the
-    application's initialization and finalization, as well as
-    system-wide and application-wide settings.
-
-    \section1 The Event Loop and Event Handling
-
-    The event loop is started with a call to exec(). Long-running
-    operations can call processEvents() to keep the application
-    responsive.
-
-    In general, we recommend that you create a QCoreApplication,
-    QGuiApplication or a QApplication object in your \c main()
-    function as early as possible. exec() will not return until
-    the event loop exits; e.g., when quit() is called.
-
-    Several static convenience functions are also provided. The
-    QCoreApplication object is available from instance(). Events can
-    be sent with sendEvent() or posted to an event queue with postEvent().
-    Pending events can be removed with removePostedEvents() or dispatched
-    with sendPostedEvents().
-
-    The class provides a quit() slot and an aboutToQuit() signal.
-
-    \section1 Application and Library Paths
-
-    An application has an applicationDirPath() and an
-    applicationFilePath(). Library paths (see QLibrary) can be retrieved
-    with libraryPaths() and manipulated by setLibraryPaths(), addLibraryPath(),
-    and removeLibraryPath().
-
-    \section1 Internationalization and Translations
-
-    Translation files can be added or removed
-    using installTranslator() and removeTranslator(). Application
-    strings can be translated using translate(). The QObject::tr()
-    and QObject::trUtf8() functions are implemented in terms of
-    translate().
-
-    \section1 Accessing Command Line Arguments
-
-    The command line arguments which are passed to QCoreApplication's
-    constructor should be accessed using the arguments() function.
-
-    \note QCoreApplication removes option \c -qmljsdebugger="...". It parses the
-    argument of \c qmljsdebugger, and then removes this option plus its argument.
-
-    For more advanced command line option handling, create a QCommandLineParser.
-
-    \section1 Locale Settings
-
-    On Unix/Linux Qt is configured to use the system locale settings by
-    default. This can cause a conflict when using POSIX functions, for
-    instance, when converting between data types such as floats and
-    strings, since the notation may differ between locales. To get
-    around this problem, call the POSIX function \c{setlocale(LC_NUMERIC,"C")}
-    right after initializing QApplication, QGuiApplication or QCoreApplication
-    to reset the locale that is used for number formatting to "C"-locale.
-
-    \sa QGuiApplication, QAbstractEventDispatcher, QEventLoop,
-    {Semaphores Example}, {Wait Conditions Example}
-*/
-
-/*!
-    \fn static QCoreApplication *QCoreApplication::instance()
-
-    Returns a pointer to the application's QCoreApplication (or
-    QGuiApplication/QApplication) instance.
-
-    If no instance has been allocated, \c null is returned.
-*/
-
-/*!
-    \internal
- */
 QCoreApplication::QCoreApplication(QCoreApplicationPrivate &p)
     : QObject(p, 0)
 {
@@ -876,10 +775,10 @@ void QCoreApplication::exit(int returnCode)
     }
 }
 
-
+// public static
 void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
 {
-	// sanity check
+	// oye sanity check
     if (receiver == 0) {
         qWarning("QCoreApplication::postEvent: Unexpected null receiver");
         delete event;
@@ -890,14 +789,15 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
 	// sicne the receiver can be moved to another thread
     QThreadData * volatile * pdata = &receiver->d_func()->threadData;
     QThreadData *data = *pdata;
-	// sanity check
+
+	// oye sanity check
     if (!data) {
         // posting during destruction? just delete the event to prevent a leak
         delete event;
         return;
     }
 
-    // lock the post event mutex
+
     data->postEventList.mutex.lock();
 
     // if object has moved to another thread, follow it
@@ -917,8 +817,7 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
     QMutexUnlocker locker(&data->postEventList.mutex);
 
     // if this is one of the compressible events, do compression
-    if (receiver->d_func()->postedEvents
-        && self && self->compressEvent(event, receiver, &data->postEventList)) {
+    if (receiver->d_func()->postedEvents && self && self->compressEvent(event, receiver, &data->postEventList)) {
         return;
     }
 
@@ -1011,29 +910,9 @@ bool QCoreApplication::compressEvent(QEvent *event,
     return false;
 }
 
-/*!
-  Immediately dispatches all events which have been previously queued
-  with QCoreApplication::postEvent() and which are for the object \a receiver
-  and have the event type \a event_type.
-
-  Events from the window system are \e not dispatched by this
-  function, but by processEvents().
-
-  If \a receiver is null, the events of \a event_type are sent for all
-  objects. If \a event_type is 0, all the events are sent for \a receiver.
-
-  \note This method must be called from the thread in which its QObject
-  parameter, \a receiver, lives.
-
-  \sa flush(), postEvent()
-*/
 void QCoreApplication::sendPostedEvents(QObject *receiver, int event_type)
 {
-    // ### Qt 6: consider splitting this method into a public and a private
-    //           one, so that a user-invoked sendPostedEvents can be detected
-    //           and handled properly.
     QThreadData *data = QThreadData::current();
-
     QCoreApplicationPrivate::sendPostedEvents(receiver, event_type, data);
 }
 
@@ -1042,11 +921,6 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
                                                QThreadData *data)
 {
 	// oye sanith check
-    if (event_type == -1) {
-        // we were called by an obsolete event dispatcher.
-        event_type = 0;
-    }
-
     if (receiver && receiver->d_func()->threadData != data) {
         qWarning("QCoreApplication::sendPostedEvents: Cannot send "
                  "posted events for objects in another thread");
@@ -1166,7 +1040,6 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
         QObject * r = pe.receiver;
 
         --r->d_func()->postedEvents;
-        Q_ASSERT(r->d_func()->postedEvents >= 0);
 
         // next, update the data structure so that we're ready
         // for the next event.
@@ -1193,25 +1066,6 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
     cleanup.exceptionCaught = false;
 }
 
-/*!
-    \since 4.3
-
-    Removes all events of the given \a eventType that were posted
-    using postEvent() for \a receiver.
-
-    The events are \e not dispatched, instead they are removed from
-    the queue. You should never need to call this function. If you do
-    call it, be aware that killing events may cause \a receiver to
-    break one or more invariants.
-
-    If \a receiver is null, the events of \a eventType are removed for
-    all objects. If \a eventType is 0, all the events are removed for
-    \a receiver. You should never call this function with \a eventType
-    of 0. If you do call it in this way, be aware that killing events
-    may cause \a receiver to break one or more invariants.
-
-    \threadsafe
-*/
 
 void QCoreApplication::removePostedEvents(QObject *receiver, int eventType)
 {
@@ -2253,9 +2107,4 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
     mainThread->setEventDispatcher(eventDispatcher);
 }
 
-
-QT_END_NAMESPACE
-
-
-#include "moc_qcoreapplication.cpp"
 

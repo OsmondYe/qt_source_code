@@ -1,42 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWidgets module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qstyleoption.h"
 #include "qapplication.h"
@@ -48,108 +9,6 @@
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \class QStyleOption
-    \brief The QStyleOption class stores the parameters used by QStyle functions.
-
-    \ingroup appearance
-    \inmodule QtWidgets
-
-    QStyleOption and its subclasses contain all the information that
-    QStyle functions need to draw a graphical element.
-
-    For performance reasons, there are few member functions and the
-    access to the member variables is direct (i.e., using the \c . or
-    \c -> operator). This low-level feel makes the structures
-    straightforward to use and emphasizes that these are simply
-    parameters used by the style functions.
-
-    The caller of a QStyle function usually creates QStyleOption
-    objects on the stack. This combined with Qt's extensive use of
-    \l{implicit sharing} for types such as QString, QPalette, and
-    QColor ensures that no memory allocation needlessly takes place.
-
-    The following code snippet shows how to use a specific
-    QStyleOption subclass to paint a push button:
-
-    \snippet qstyleoption/main.cpp 0
-
-    In our example, the control is a QStyle::CE_PushButton, and
-    according to the QStyle::drawControl() documentation the
-    corresponding class is QStyleOptionButton.
-
-    When reimplementing QStyle functions that take a QStyleOption
-    parameter, you often need to cast the QStyleOption to a subclass.
-    For safety, you can use qstyleoption_cast() to ensure that the
-    pointer type is correct. For example:
-
-    \snippet qstyleoption/main.cpp 4
-
-    The qstyleoption_cast() function will return 0 if the object to
-    which \c option points is not of the correct type.
-
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
-
-    \sa QStyle, QStylePainter
-*/
-
-/*!
-    \enum QStyleOption::OptionType
-
-    This enum is used internally by QStyleOption, its subclasses, and
-    qstyleoption_cast() to determine the type of style option. In
-    general you do not need to worry about this unless you want to
-    create your own QStyleOption subclass and your own styles.
-
-    \value SO_Button \l QStyleOptionButton
-    \value SO_ComboBox \l QStyleOptionComboBox
-    \value SO_Complex \l QStyleOptionComplex
-    \value SO_Default QStyleOption
-    \value SO_DockWidget \l QStyleOptionDockWidget
-    \value SO_FocusRect \l QStyleOptionFocusRect
-    \value SO_Frame \l QStyleOptionFrame
-    \value SO_GraphicsItem \l QStyleOptionGraphicsItem
-    \value SO_GroupBox \l QStyleOptionGroupBox
-    \value SO_Header \l QStyleOptionHeader
-    \value SO_MenuItem \l QStyleOptionMenuItem
-    \value SO_ProgressBar \l QStyleOptionProgressBar
-    \value SO_RubberBand \l QStyleOptionRubberBand
-    \value SO_SizeGrip \l QStyleOptionSizeGrip
-    \value SO_Slider \l QStyleOptionSlider
-    \value SO_SpinBox \l QStyleOptionSpinBox
-    \value SO_Tab \l QStyleOptionTab
-    \value SO_TabBarBase \l QStyleOptionTabBarBase
-    \value SO_TabWidgetFrame \l QStyleOptionTabWidgetFrame
-    \value SO_TitleBar \l QStyleOptionTitleBar
-    \value SO_ToolBar \l QStyleOptionToolBar
-    \value SO_ToolBox \l QStyleOptionToolBox
-    \value SO_ToolButton \l QStyleOptionToolButton
-    \value SO_ViewItem \l QStyleOptionViewItem (used in Interviews)
-
-    The following values are used for custom controls:
-
-    \value SO_CustomBase Reserved for custom QStyleOptions;
-                         all custom controls values must be above this value
-    \value SO_ComplexCustomBase Reserved for custom QStyleOptions;
-                         all custom complex controls values must be above this value
-
-    \sa type
-*/
-
-/*!
-    Constructs a QStyleOption with the specified \a version and \a
-    type.
-
-    The version has no special meaning for QStyleOption; it can be
-    used by subclasses to distinguish between different version of
-    the same option type.
-
-    The \l state member variable is initialized to
-    QStyle::State_None.
-
-    \sa version, type
-*/
 
 QStyleOption::QStyleOption(int version, int type)
     : version(version), type(type), state(QStyle::State_None),
@@ -158,32 +17,11 @@ QStyleOption::QStyleOption(int version, int type)
 }
 
 
-/*!
-    Destroys this style option object.
-*/
 QStyleOption::~QStyleOption()
 {
 }
 
-/*!
-    \fn void QStyleOption::initFrom(const QWidget *widget)
-    \since 4.1
-
-    Initializes the \l state, \l direction, \l rect, \l palette, \l fontMetrics
-    and \l styleObject member variables based on the specified \a widget.
-
-    This is a convenience function; the member variables can also be
-    initialized manually.
-
-    \sa QWidget::layoutDirection(), QWidget::rect(),
-        QWidget::palette(), QWidget::fontMetrics()
-*/
-
-/*!
-    \obsolete
-
-    Use initFrom(\a widget) instead.
-*/
+// oye, some status must be fetched form widget
 void QStyleOption::init(const QWidget *widget)
 {
     QWidget *window = widget->window();
@@ -195,32 +33,14 @@ void QStyleOption::init(const QWidget *widget)
     if (window->testAttribute(Qt::WA_KeyboardFocusChange))
         state |= QStyle::State_KeyboardFocusChange;
     if (widget->underMouse())
-        state |= QStyle::State_MouseOver;
+        state |= QStyle::State_MouseOver;   // oye 根据鼠标hover来改变状态
     if (window->isActiveWindow())
         state |= QStyle::State_Active;
     if (widget->isWindow())
         state |= QStyle::State_Window;
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    extern bool qt_mac_can_clickThrough(const QWidget *w); //qwidget_mac.cpp
-    if (!(state & QStyle::State_Active) && !qt_mac_can_clickThrough(widget))
-        state &= ~QStyle::State_Enabled;
-#endif
-#if QT_CONFIG(style_mac)
-    switch (QMacStyle::widgetSizePolicy(widget)) {
-    case QMacStyle::SizeSmall:
-        state |= QStyle::State_Small;
-        break;
-    case QMacStyle::SizeMini:
-        state |= QStyle::State_Mini;
-        break;
-    default:
-        ;
-    }
-#endif
-#ifdef QT_KEYPAD_NAVIGATION
+
     if (widget->hasEditFocus())
         state |= QStyle::State_HasEditFocus;
-#endif
 
     direction = widget->layoutDirection();
     rect = widget->rect();
@@ -229,9 +49,7 @@ void QStyleOption::init(const QWidget *widget)
     styleObject = const_cast<QWidget*>(widget);
 }
 
-/*!
-   Constructs a copy of \a other.
-*/
+
 QStyleOption::QStyleOption(const QStyleOption &other)
     : version(Version), type(Type), state(other.state),
       direction(other.direction), rect(other.rect), fontMetrics(other.fontMetrics),
@@ -239,9 +57,7 @@ QStyleOption::QStyleOption(const QStyleOption &other)
 {
 }
 
-/*!
-    Assign \a other to this QStyleOption.
-*/
+
 QStyleOption &QStyleOption::operator=(const QStyleOption &other)
 {
     state = other.state;
@@ -253,142 +69,6 @@ QStyleOption &QStyleOption::operator=(const QStyleOption &other)
     return *this;
 }
 
-/*!
-    \enum QStyleOption::StyleOptionType
-
-    This enum is used to hold information about the type of the style option, and
-    is defined for each QStyleOption subclass.
-
-    \value Type The type of style option provided (\l{SO_Default} for
-           this class).
-
-    The type is used internally by QStyleOption, its subclasses, and
-    qstyleoption_cast() to determine the type of style option. In
-    general you do not need to worry about this unless you want to
-    create your own QStyleOption subclass and your own styles.
-
-    \sa StyleOptionVersion
-*/
-
-/*!
-    \enum QStyleOption::StyleOptionVersion
-
-    This enum is used to hold information about the version of the style option, and
-    is defined for each QStyleOption subclass.
-
-    \value Version 1
-
-    The version is used by QStyleOption subclasses to implement
-    extensions without breaking compatibility. If you use
-    qstyleoption_cast(), you normally do not need to check it.
-
-    \sa StyleOptionType
-*/
-
-/*!
-    \variable QStyleOption::palette
-    \brief the palette that should be used when painting the control
-
-    By default, the application's default palette is used.
-
-    \sa initFrom()
-*/
-
-/*!
-    \variable QStyleOption::direction
-    \brief the text layout direction that should be used when drawing text in the control
-
-    By default, the layout direction is Qt::LeftToRight.
-
-    \sa initFrom()
-*/
-
-/*!
-    \variable QStyleOption::fontMetrics
-    \brief the font metrics that should be used when drawing text in the control
-
-    By default, the application's default font is used.
-
-    \sa initFrom()
-*/
-
-/*!
-    \variable QStyleOption::styleObject
-    \brief the object being styled
-
-    The built-in styles support the following types: QWidget, QGraphicsObject and QQuickItem.
-
-    \sa initFrom()
-*/
-
-/*!
-    \variable QStyleOption::rect
-    \brief the area that should be used for various calculations and painting
-
-    This can have different meanings for different types of elements.
-    For example, for a \l QStyle::CE_PushButton element it would be
-    the rectangle for the entire button, while for a \l
-    QStyle::CE_PushButtonLabel element it would be just the area for
-    the push button label.
-
-    The default value is a null rectangle, i.e. a rectangle with both
-    the width and the height set to 0.
-
-    \sa initFrom()
-*/
-
-/*!
-    \variable QStyleOption::state
-    \brief the style flags that are used when drawing the control
-
-    The default value is QStyle::State_None.
-
-    \sa initFrom(), QStyle::drawPrimitive(), QStyle::drawControl(),
-    QStyle::drawComplexControl(), QStyle::State
-*/
-
-/*!
-    \variable QStyleOption::type
-    \brief the option type of the style option
-
-    The default value is SO_Default.
-
-    \sa OptionType
-*/
-
-/*!
-    \variable QStyleOption::version
-    \brief the version of the style option
-
-    This value can be used by subclasses to implement extensions
-    without breaking compatibility. If you use the qstyleoption_cast()
-    function, you normally do not need to check it.
-
-    The default value is 1.
-*/
-
-/*!
-    \class QStyleOptionFocusRect
-    \brief The QStyleOptionFocusRect class is used to describe the
-    parameters for drawing a focus rectangle with QStyle.
-
-    \inmodule QtWidgets
-
-    For performance reasons, the access to the member variables is
-    direct (i.e., using the \c . or \c -> operator). This low-level feel
-    makes the structures straightforward to use and emphasizes that
-    these are simply parameters used by the style functions.
-
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
-
-    \sa QStyleOption
-*/
-
-/*!
-    Constructs a QStyleOptionFocusRect, initializing the members
-    variables to their default values.
-*/
 
 QStyleOptionFocusRect::QStyleOptionFocusRect()
     : QStyleOption(Version, SO_FocusRect)
