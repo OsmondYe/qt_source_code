@@ -6,7 +6,34 @@
 QT_BEGIN_NAMESPACE
 
 
-class QEventLoopPrivate;
+class QEventLoopPrivate : public QObjectPrivate
+{
+    //Q_DECLARE_PUBLIC(QEventLoop)
+public:
+
+	QBasicAtomicInteger<int> exit; 
+	QBasicAtomicInteger<int> returnCode;
+	bool inExec;
+	QBasicAtomicInteger<int> quitLockRef;
+//////
+public:
+
+    QEventLoopPrivate() : inExec(false)
+    {
+        returnCode.store(-1);
+        exit.store(true);
+    }
+
+    void ref()    {        quitLockRef.ref();    }
+
+    void deref()
+    {
+        if (!quitLockRef.deref() && inExec) {
+            QCoreApplication::instance()->postEvent(q_ptr, new QEvent(QEvent::Quit));
+        }
+    }
+};
+
 
 class  QEventLoop : public QObject
 {
@@ -14,7 +41,7 @@ class  QEventLoop : public QObject
     //Q_DECLARE_PRIVATE(QEventLoop)
 
 public:
-    explicit QEventLoop(QObject *parent = Q_NULLPTR);
+    explicit QEventLoop(QObject *parent = NULL);
     ~QEventLoop();
 
     enum ProcessEventsFlag {

@@ -23,8 +23,8 @@ quint64 qt_msectime();
 
 class  QEventDispatcherWin32 : public QAbstractEventDispatcher
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QEventDispatcherWin32)
+    //Q_OBJECT
+    //Q_DECLARE_PRIVATE(QEventDispatcherWin32)
 
 protected:
     void createInternalHwnd();
@@ -32,11 +32,16 @@ protected:
     void uninstallMessageHook();
 
 public:
-    explicit QEventDispatcherWin32(QObject *parent = 0);
-    ~QEventDispatcherWin32();
-
+    explicit QEventDispatcherWin32(QObject *parent = 0)
+	 : QAbstractEventDispatcher(*new QEventDispatcherWin32Private, parent)
+	{
+	}
+    ~QEventDispatcherWin32(){}
+	
     bool processEvents(QEventLoop::ProcessEventsFlags flags);
     bool hasPendingEvents();
+    void interrupt();
+	
 
     void registerSocketNotifier(QSocketNotifier *notifier);
     void unregisterSocketNotifier(QSocketNotifier *notifier);
@@ -53,10 +58,10 @@ public:
     int remainingTime(int timerId);
 
     void wakeUp();
-    void interrupt();
-    void flush();
 
-    void startingUp();
+    void flush(){}
+
+    void startingUp(){ }
     void closingDown();
 
     bool event(QEvent *e);
@@ -64,7 +69,7 @@ public:
     HWND internalHwnd();
 
 protected:
-    QEventDispatcherWin32(QEventDispatcherWin32Private &dd, QObject *parent = 0);
+    QEventDispatcherWin32(QEventDispatcherWin32Private &dd, QObject *parent = 0): QAbstractEventDispatcher(dd, parent){ }
     virtual void sendPostedEvents();
     void doUnregisterSocketNotifier(QSocketNotifier *notifier);
 
@@ -112,10 +117,19 @@ typedef QHash<int, WinTimerInfo*> WinTimerDict; // fast dict of timers
 
 class  QEventDispatcherWin32Private : public QAbstractEventDispatcherPrivate
 {
-    Q_DECLARE_PUBLIC(QEventDispatcherWin32)
+   // Q_DECLARE_PUBLIC(QEventDispatcherWin32)
 public:
-    QEventDispatcherWin32Private();
-    ~QEventDispatcherWin32Private();
+    QEventDispatcherWin32Private(): 
+	  threadId(GetCurrentThreadId()), interrupt(false), closingDown(false), internalHwnd(0),
+      getMessageHook(0), serialNumber(0), lastSerialNumber(0), sendPostedEventsWindowsTimerId(0),
+      wakeUps(0)
+    , activateNotifiersPosted(false)
+	{
+	}
+    ~QEventDispatcherWin32Private(){
+    	if (internalHwnd)
+       	 	DestroyWindow(internalHwnd);
+	}
 
     DWORD threadId;
 
@@ -127,9 +141,11 @@ public:
     HHOOK getMessageHook;
 
     // for controlling when to send posted events
-    QAtomicInt serialNumber;
-    int lastSerialNumber, sendPostedEventsWindowsTimerId;
-    QAtomicInt wakeUps;
+    QAtomicInt serialNumber;  //oye every wakeUp it will ++;
+    int lastSerialNumber;
+	int sendPostedEventsWindowsTimerId;
+	
+    QAtomicInt wakeUps; // whether has wakeup [0,1]
 
     // timers
     WinTimerVec timerVec;
@@ -147,10 +163,13 @@ public:
     void postActivateSocketNotifiers();
     void doWsaAsyncSelect(int socket, long event);
 
-    QList<QWinEventNotifier *> winEventNotifierList;
+    QList<QWinEventNotifier *> winEventNotifierList;			// waitForXXX happens
     void activateEventNotifier(QWinEventNotifier * wen);
 
-    QList<MSG> queuedUserInputEvents;
+	// oye only occure in MSG_Process pump processEvents();
+	// store WM_Keyboard, WM_Mouse, WM_Touch WM_Gesture
+	// pure win32, 只是暂存了一下, 最终还是会走老win32的路去派发
+    QList<MSG> queuedUserInputEvents; 
     QList<MSG> queuedSocketEvents;
 };
 

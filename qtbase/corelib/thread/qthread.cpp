@@ -57,14 +57,13 @@ QThreadPrivate::QThreadPrivate(QThreadData *d)
     stackSize = 128 * 1024;
 
 
-#if defined (Q_OS_WIN)
     handle = 0;
     id = 0;
-#endif
+
     waiters = 0;
     terminationEnabled = true;
     terminatePending = false;
-#endif
+
 
     if (!data)
         data = new QThreadData;

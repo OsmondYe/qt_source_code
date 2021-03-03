@@ -13,10 +13,7 @@
 
 typedef struct tagMSG MSG;
 
-
-
 QT_BEGIN_NAMESPACE
-
 
 class QCoreApplicationPrivate;
 class QTextCodec;
@@ -28,10 +25,17 @@ class QAbstractNativeEventFilter;
 
 #define qApp QCoreApplication::instance()
 
+// Singlton
 class  QCoreApplication    : public QObject
 {
 
+protected:
+	QScopedPointer<QCoreApplicationPrivate> d_ptr; // oye, delegation to PrivateClass to impl
+private:
+	static QCoreApplication *self;  // oye, Singleton
+
 public:
+    static QCoreApplication *instance() { return self; }
     enum { ApplicationFlags = QT_VERSION };
 
     QCoreApplication(int &argc, char **argv      , int = ApplicationFlags );
@@ -52,11 +56,6 @@ public:
     static void setApplicationVersion(const QString &version);
     static QString applicationVersion();
 
-    static void setSetuidAllowed(bool allow);
-    static bool isSetuidAllowed();
-
-    static QCoreApplication *instance() { return self; }
-
 
     static int exec();
     static void processEvents(QEventLoop::ProcessEventsFlags flags = QEventLoop::AllEvents);
@@ -74,6 +73,7 @@ public:
     static void setEventDispatcher(QAbstractEventDispatcher *eventDispatcher);
 
     virtual bool notify(QObject *, QEvent *);
+	
 
     static bool startingUp();
     static bool closingDown();
@@ -124,17 +124,13 @@ protected:
     virtual bool compressEvent(QEvent *, QObject *receiver, QPostEventList *);
 
 protected:
-    QCoreApplication(QCoreApplicationPrivate &p);
-
-    QScopedPointer<QCoreApplicationPrivate> d_ptr;
+    QCoreApplication(QCoreApplicationPrivate &p);   
 
 private:
     static bool sendSpontaneousEvent(QObject *receiver, QEvent *event);
     static bool notifyInternal2(QObject *receiver, QEvent *);
 
-    static QCoreApplication *self;
-
-    Q_DISABLE_COPY(QCoreApplication)
+   // Q_DISABLE_COPY(QCoreApplication)
 
     friend class QApplication;
     friend class QApplicationPrivate;
@@ -156,13 +152,9 @@ inline bool QCoreApplication::sendEvent(QObject *receiver, QEvent *event)
 inline bool QCoreApplication::sendSpontaneousEvent(QObject *receiver, QEvent *event)
 { if (event) event->spont = true; return notifyInternal2(receiver, event); }
 
-#ifdef QT_NO_DEPRECATED
-#  define QT_DECLARE_DEPRECATED_TR_FUNCTIONS(context)
-#else
-#  define QT_DECLARE_DEPRECATED_TR_FUNCTIONS(context) \
-    QT_DEPRECATED static inline QString trUtf8(const char *sourceText, const char *disambiguation = Q_NULLPTR, int n = -1) \
-        { return QCoreApplication::translate(#context, sourceText, disambiguation, n); }
-#endif
+
+#define QT_DECLARE_DEPRECATED_TR_FUNCTIONS(context)
+
 
 #define Q_DECLARE_TR_FUNCTIONS(context) \
 public: \

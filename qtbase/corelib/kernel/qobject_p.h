@@ -58,7 +58,25 @@ class  QObjectPrivate : public QObjectData
 {
     //Q_DECLARE_PUBLIC(QObject)
     inline QObject* q_func() { return static_cast<Class *>(q_ptr); }
+public:
+    ExtraData *extraData;    // extra data set by the user
+    QThreadData *threadData; // id of the thread that owns the object
 
+    QObjectConnectionListVector *connectionLists;
+
+    Connection *senders;     // linked list of connections connected to this object
+    Sender *currentSender;   // object currently activating the object
+    mutable quint32 connectedSignals[2];
+
+    union {
+        QObject *currentChildBeingDeleted;
+        QAbstractDeclarativeData *declarativeData; //extra data used by the declarative module
+    };
+
+    // these objects are all used to indicate that a QObject was deleted
+    // plus QPointer, which keeps a separate list
+    QAtomicPointer<QtSharedPointer::ExternalRefCountData> sharedRefcount;
+	
 public:
     struct ExtraData
     {
@@ -172,24 +190,7 @@ public:
                                                const int *types, const QMetaObject *senderMetaObject);
     static QMetaObject::Connection connect(const QObject *sender, int signal_index, QtPrivate::QSlotObjectBase *slotObj, Qt::ConnectionType type);
     static bool disconnect(const QObject *sender, int signal_index, void **slot);
-public:
-    ExtraData *extraData;    // extra data set by the user
-    QThreadData *threadData; // id of the thread that owns the object
 
-    QObjectConnectionListVector *connectionLists;
-
-    Connection *senders;     // linked list of connections connected to this object
-    Sender *currentSender;   // object currently activating the object
-    mutable quint32 connectedSignals[2];
-
-    union {
-        QObject *currentChildBeingDeleted;
-        QAbstractDeclarativeData *declarativeData; //extra data used by the declarative module
-    };
-
-    // these objects are all used to indicate that a QObject was deleted
-    // plus QPointer, which keeps a separate list
-    QAtomicPointer<QtSharedPointer::ExternalRefCountData> sharedRefcount;
 };
 
 

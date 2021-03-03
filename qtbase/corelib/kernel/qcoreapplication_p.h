@@ -27,15 +27,17 @@ public:
 	
 	int &argc;
     char **argv;
-
     int origArgc;
     char **origArgv; // store unmodified arguments for QCoreApplication::arguments()
+    
     QString cachedApplicationDirPath;
-    static QString *cachedApplicationFilePath;
 	bool in_exec;
+	
     bool aboutToQuitEmitted;
     bool threadData_clean;
 
+
+    static QString *cachedApplicationFilePath;
     static QAbstractEventDispatcher *eventDispatcher;
     static bool is_app_running;
     static bool is_app_closing;

@@ -46,11 +46,14 @@ void QThreadData::clearCurrentThreadData()
     TlsSetValue(qt_current_thread_data_tls_index, 0);
 }
 
-QThreadData *QThreadData::current(bool createIfNecessary)
+// oye 
+// assume 2nd new thread first come here,
+QThreadData *QThreadData::current(bool createIfNecessary /*=true*/) // static
 {
     qt_create_tls();
     QThreadData *threadData = reinterpret_cast<QThreadData *>(TlsGetValue(qt_current_thread_data_tls_index));
-	// create a new one
+
+
     if (!threadData && createIfNecessary) {
         threadData = new QThreadData;
         // This needs to be called prior to new AdoptedThread() to
@@ -68,10 +71,12 @@ QThreadData *QThreadData::current(bool createIfNecessary)
         threadData->isAdopted = true;
         threadData->threadId.store(reinterpret_cast<Qt::HANDLE>(quintptr(GetCurrentThreadId())));
 
+		//
+		// oye intertwined with Thread and CoreApplicatoon
+		//
         if (!QCoreApplicationPrivate::theMainThread) {
             QCoreApplicationPrivate::theMainThread = threadData->thread.load();
-            // TODO: is there a way to reflect the branch's behavior using
-            // WinRT API?
+
         } else {
             HANDLE realHandle = INVALID_HANDLE_VALUE;
             DuplicateHandle(GetCurrentProcess(),
@@ -217,58 +222,17 @@ DWORD WINAPI qt_adopted_thread_watcher_function(LPVOID)
     return 0;
 }
 
-#if !defined(QT_NO_DEBUG) && defined(Q_CC_MSVC) && !defined(Q_OS_WINRT)
-
-
-#define ULONG_PTR DWORD
-
-
-typedef struct tagTHREADNAME_INFO
-{
-    DWORD dwType;      // must be 0x1000
-    LPCSTR szName;     // pointer to name (in user addr space)
-    HANDLE dwThreadID; // thread ID (-1=caller thread)
-    DWORD dwFlags;     // reserved for future use, must be zero
-} THREADNAME_INFO;
-
-void qt_set_thread_name(HANDLE threadId, LPCSTR threadName)
-{
-    THREADNAME_INFO info;
-    info.dwType = 0x1000;
-    info.szName = threadName;
-    info.dwThreadID = threadId;
-    info.dwFlags = 0;
-
-    __try
-    {
-        RaiseException(0x406D1388, 0, sizeof(info)/sizeof(DWORD), (const ULONG_PTR*)&info);
-    }
-    __except (EXCEPTION_CONTINUE_EXECUTION)
-    {
-    }
-}
-#endif // !QT_NO_DEBUG && Q_CC_MSVC && !Q_OS_WINRT
-
-
-
-
 
 void QThreadPrivate::createEventDispatcher(QThreadData *data)
 {
-#ifndef Q_OS_WINRT
     QEventDispatcherWin32 *theEventDispatcher = new QEventDispatcherWin32;
-#else
-    QEventDispatcherWinRT *theEventDispatcher = new QEventDispatcherWinRT;
-#endif
     data->eventDispatcher.storeRelease(theEventDispatcher);
     theEventDispatcher->startingUp();
 }
-
-
-
-unsigned int __stdcall  QThreadPrivate::start(void *arg)
+// in QThread::start it will call  beginthreadex as set QThreadPrivate::start as entry point
+unsigned int   QThreadPrivate::start(void *arg) // static function
 {
-    QThread *thr = reinterpret_cast<QThread *>(arg);
+    QThread *thr = reinterpret_cast<QThread *>(arg);// pass this to static function
     QThreadData *data = QThreadData::get2(thr);
 
     qt_create_tls();
@@ -287,13 +251,6 @@ unsigned int __stdcall  QThreadPrivate::start(void *arg)
     else
         createEventDispatcher(data);
 
-#if !defined(QT_NO_DEBUG) && defined(Q_CC_MSVC) && !defined(Q_OS_WINRT)
-    // sets the name of the current thread.
-    QByteArray objectName = thr->objectName().toLocal8Bit();
-    qt_set_thread_name((HANDLE)-1,
-                       objectName.isEmpty() ?
-                       thr->metaObject()->className() : objectName.constData());
-#endif
 
     emit thr->started(QThread::QPrivateSignal());
     QThread::setTerminationEnabled(true);
@@ -375,7 +332,7 @@ void QThread::usleep(unsigned long usecs)
 
 void QThread::start(Priority priority)
 {
-    Q_D(QThread);
+    QThreadPrivate * const d = d_func();
     QMutexLocker locker(&d->mutex);
 
     if (d->isInFinish) {
@@ -393,35 +350,11 @@ void QThread::start(Priority priority)
     d->returnCode = 0;
     d->interruptionRequested = false;
 
-    /*
-      NOTE: we create the thread in the suspended state, set the
-      priority and then resume the thread.
-
-      since threads are created with normal priority by default, we
-      could get into a case where a thread (with priority less than
-      NormalPriority) tries to create a new thread (also with priority
-      less than NormalPriority), but the newly created thread preempts
-      its 'parent' and runs at normal priority.
-    */
-#if defined(Q_CC_MSVC) && !defined(_DLL) // && !defined(Q_OS_WINRT)
-#  ifdef Q_OS_WINRT
-    // If you wish to accept the memory leaks, uncomment the part above.
-    // See:
-    //  https://support.microsoft.com/en-us/kb/104641
-    //  https://msdn.microsoft.com/en-us/library/kdzttdcb.aspx
-#    error "Microsoft documentation says this combination leaks memory every time a thread is started. " \
-    "Please change your build back to -MD/-MDd or, if you understand this issue and want to continue, " \
-    "edit this source file."
-#  endif
-    // MSVC -MT or -MTd build
+    // oye key: QThreadPrivate::start, CREATE_SUSPENDED
     d->handle = (Qt::HANDLE) _beginthreadex(NULL, d->stackSize, QThreadPrivate::start,
                                             this, CREATE_SUSPENDED, &(d->id));
-#else
-    // MSVC -MD or -MDd or MinGW build
-    d->handle = (Qt::HANDLE) CreateThread(NULL, d->stackSize, (LPTHREAD_START_ROUTINE)QThreadPrivate::start,
-                                            this, CREATE_SUSPENDED, reinterpret_cast<LPDWORD>(&d->id));
-#endif // Q_OS_WINRT
 
+	// sanity check
     if (!d->handle) {
         qErrnoWarning(errno, "QThread::start: Failed to create thread");
         d->running = false;
@@ -477,7 +410,7 @@ void QThread::start(Priority priority)
 
 void QThread::terminate()
 {
-    Q_D(QThread);
+    QThreadPrivate * const d = d_func();
     QMutexLocker locker(&d->mutex);
     if (!d->running)
         return;
@@ -485,16 +418,32 @@ void QThread::terminate()
         d->terminatePending = true;
         return;
     }
-
-
+	// WinAPI
     TerminateThread(d->handle, 0);
 
     QThreadPrivate::finish(this, false);
 }
 
+void QThread::setTerminationEnabled(bool enabled)
+{
+    QThread *thr = currentThread();
+    Q_ASSERT_X(thr != 0, "QThread::setTerminationEnabled()",
+               "Current thread was not started with QThread.");
+    QThreadPrivate *d = thr->d_func();
+    QMutexLocker locker(&d->mutex);
+    d->terminationEnabled = enabled;
+    if (enabled && d->terminatePending) {
+        QThreadPrivate::finish(thr, false);
+        locker.unlock(); // don't leave the mutex locked!
+        ExitThread(0);
+    }
+}
+
+
+
 bool QThread::wait(unsigned long time)
 {
-    Q_D(QThread);
+    QThreadPrivate * const d = d_func();
     QMutexLocker locker(&d->mutex);
 
     if (d->id == GetCurrentThreadId()) {
@@ -539,24 +488,7 @@ bool QThread::wait(unsigned long time)
     return ret;
 }
 
-void QThread::setTerminationEnabled(bool enabled)
-{
-    QThread *thr = currentThread();
-    Q_ASSERT_X(thr != 0, "QThread::setTerminationEnabled()",
-               "Current thread was not started with QThread.");
-    QThreadPrivate *d = thr->d_func();
-    QMutexLocker locker(&d->mutex);
-    d->terminationEnabled = enabled;
-    if (enabled && d->terminatePending) {
-        QThreadPrivate::finish(thr, false);
-        locker.unlock(); // don't leave the mutex locked!
-#ifndef Q_OS_WINRT
-        _endthreadex(0);
-#else
-        ExitThread(0);
-#endif
-    }
-}
+
 
 // Caller must hold the mutex
 void QThreadPrivate::setPriority(QThread::Priority threadPriority)

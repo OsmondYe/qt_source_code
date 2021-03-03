@@ -12,9 +12,10 @@ class QThreadData;
 class QThreadPrivate;
 class QAbstractEventDispatcher;
 
+// oye Thread holds eventDispatcher
 class  QThread : public QObject
 {
-    Q_OBJECT
+    //Q_OBJECT
 public:
     static Qt::HANDLE currentThreadId()  ;
     static QThread *currentThread();
@@ -27,11 +28,9 @@ public:
     enum Priority {
         IdlePriority,
 
-        LowestPriority,
-        LowPriority,
+        LowestPriority, LowPriority,
         NormalPriority,
-        HighPriority,
-        HighestPriority,
+        HighPriority,   HighestPriority,
 
         TimeCriticalPriority,
 
@@ -85,7 +84,7 @@ protected:
     QThread(QThreadPrivate &dd, QObject *parent = Q_NULLPTR);
 
 private:
-    Q_DECLARE_PRIVATE(QThread)
+    //Q_DECLARE_PRIVATE(QThread)
 
     friend class QCoreApplication;
     friend class QThreadData;

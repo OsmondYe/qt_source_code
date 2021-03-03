@@ -41,28 +41,6 @@ bool QEventLoop::processEvents(ProcessEventsFlags flags)
     return d->threadData->eventDispatcher.load()->processEvents(flags);
 }
 
-/*!
-    Enters the main event loop and waits until exit() is called.
-    Returns the value that was passed to exit().
-
-    If  flags are specified, only events of the types allowed by
-    the  flags will be processed.
-
-    It is necessary to call this function to start event handling. The
-    main event loop receives events from the window system and
-    dispatches these to the application widgets.
-
-    Generally speaking, no user interaction can take place before
-    calling exec(). As a special case, modal widgets like QMessageBox
-    can be used before calling exec(), because modal widgets
-    use their own local event loop.
-
-    To make your application perform idle processing , use a
-    QTimer with 0 timeout. More sophisticated idle processing schemes
-    can be achieved using processEvents().
-
-    \sa QCoreApplication::quit(), exit(), processEvents()
-*/
 int QEventLoop::exec(ProcessEventsFlags flags)
 {
     QEventLoopPrivate * const d = d_func();
@@ -114,29 +92,15 @@ int QEventLoop::exec(ProcessEventsFlags flags)
     if (app && app->thread() == thread())
         QCoreApplication::removePostedEvents(app, QEvent::Quit);
 
-    while (!d->exit.loadAcquire())
+	// oye:: exit() will set d->exit
+    while (!d->exit.loadAcquire())  
         processEvents(flags | WaitForMoreEvents | EventLoopExec);
 
     ref.exceptionCaught = false;
     return d->returnCode.load();
 }
 
-/*!
-    Process pending events that match \a flags for a maximum of \a
-    maxTime milliseconds, or until there are no more events to
-    process, whichever is shorter.
-    This function is especially useful if you have a long running
-    operation and want to show its progress without allowing user
-    input, i.e. by using the \l ExcludeUserInputEvents flag.
 
-    \b{Notes:}
-    \list
-    \li This function does not process events continuously; it
-       returns after all available events are processed.
-    \li Specifying the \l WaitForMoreEvents flag makes no sense
-       and will be ignored.
-    \endlist
-*/
 void QEventLoop::processEvents(ProcessEventsFlags flags, int maxTime)
 {
     QEventLoopPrivate * const d = d_func();
@@ -151,50 +115,28 @@ void QEventLoop::processEvents(ProcessEventsFlags flags, int maxTime)
     }
 }
 
-/*!
-    Tells the event loop to exit with a return code.
 
-    After this function has been called, the event loop returns from
-    the call to exec(). The exec() function returns \a returnCode.
-
-    By convention, a \a returnCode of 0 means success, and any non-zero
-    value indicates an error.
-
-    Note that unlike the C library function of the same name, this
-    function \e does return to the caller -- it is event processing that
-    stops.
-
-    \sa QCoreApplication::quit(), quit(), exec()
-*/
 void QEventLoop::exit(int returnCode)
 {
     QEventLoopPrivate * const d = d_func();
+	// oye:: objectPrivate holds the threadData;
     if (!d->threadData->eventDispatcher.load())
         return;
 
     d->returnCode.store(returnCode);
     d->exit.storeRelease(true);
-    d->threadData->eventDispatcher.load()->interrupt();
+	
+    d->threadData->eventDispatcher.load()->interrupt();  // oye : QEventDispatcherWin32::interrupt()
 }
 
-/*!
-    Returns \c true if the event loop is running; otherwise returns
-    false. The event loop is considered running from the time when
-    exec() is called until exit() is called.
 
-    \sa exec(), exit()
- */
 bool QEventLoop::isRunning() const
 {
     Q_D(const QEventLoop);
     return !d->exit.loadAcquire();
 }
 
-/*!
-    Wakes up the event loop.
 
-    \sa QAbstractEventDispatcher::wakeUp()
-*/
 void QEventLoop::wakeUp()
 {
     QEventLoopPrivate * const d = d_func();
@@ -204,26 +146,17 @@ void QEventLoop::wakeUp()
 }
 
 
-/*!
-    \reimp
-*/
 bool QEventLoop::event(QEvent *event)
 {
     if (event->type() == QEvent::Quit) {
-        quit();
+        quit(); // QEventLoop::exit(0)  to break the while_loop in exec
         return true;
     } else {
         return QObject::event(event);
     }
 }
 
-/*!
-    Tells the event loop to exit normally.
 
-    Same as exit(0).
-
-    \sa QCoreApplication::quit(), exit()
-*/
 void QEventLoop::quit()
 { exit(0); }
 

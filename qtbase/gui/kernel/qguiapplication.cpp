@@ -72,14 +72,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// Helper macro for static functions to check on the existence of the application class.
-#define CHECK_QAPP_INSTANCE(...) \
-    if (Q_LIKELY(QCoreApplication::instance())) { \
-    } else { \
-        qWarning("Must construct a QGuiApplication first."); \
-        return __VA_ARGS__; \
-    }
-
 bool qt_is_gui_used = true;
 
 Qt::MouseButtons QGuiApplicationPrivate::mouse_buttons = Qt::NoButton;
@@ -1115,7 +1107,7 @@ Qt::KeyboardModifiers QGuiApplication::keyboardModifiers()
 */
 Qt::KeyboardModifiers QGuiApplication::queryKeyboardModifiers()
 {
-    CHECK_QAPP_INSTANCE(Qt::KeyboardModifiers(0))
+    
     QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
     return pi->queryKeyboardModifiers();
 }
@@ -3009,7 +3001,7 @@ Qt::LayoutDirection QGuiApplication::layoutDirection()
 #ifndef QT_NO_CURSOR
 QCursor *QGuiApplication::overrideCursor()
 {
-    CHECK_QAPP_INSTANCE(Q_NULLPTR)
+    
     return qGuiApp->d_func()->cursor_list.isEmpty() ? 0 : &qGuiApp->d_func()->cursor_list.first();
 }
 
@@ -3023,7 +3015,7 @@ QCursor *QGuiApplication::overrideCursor()
  */
 void QGuiApplication::changeOverrideCursor(const QCursor &cursor)
 {
-    CHECK_QAPP_INSTANCE()
+   
     if (qGuiApp->d_func()->cursor_list.isEmpty())
         return;
     qGuiApp->d_func()->cursor_list.removeFirst();
@@ -3098,7 +3090,7 @@ static inline void applyWindowCursor(const QList<QWindow *> &l)
 */
 void QGuiApplication::setOverrideCursor(const QCursor &cursor)
 {
-    CHECK_QAPP_INSTANCE()
+    
     qGuiApp->d_func()->cursor_list.prepend(cursor);
     applyCursor(QGuiApplicationPrivate::window_list, cursor);
 }
@@ -3116,7 +3108,7 @@ void QGuiApplication::setOverrideCursor(const QCursor &cursor)
 */
 void QGuiApplication::restoreOverrideCursor()
 {
-    CHECK_QAPP_INSTANCE()
+    
     if (qGuiApp->d_func()->cursor_list.isEmpty())
         return;
     qGuiApp->d_func()->cursor_list.removeFirst();
@@ -3184,7 +3176,7 @@ bool QGuiApplication::desktopSettingsAware()
   */
 QInputMethod *QGuiApplication::inputMethod()
 {
-    CHECK_QAPP_INSTANCE(Q_NULLPTR)
+    
     if (!qGuiApp->d_func()->inputMethod)
         qGuiApp->d_func()->inputMethod = new QInputMethod();
     return qGuiApp->d_func()->inputMethod;

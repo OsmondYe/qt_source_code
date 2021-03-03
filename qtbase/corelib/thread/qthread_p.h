@@ -51,7 +51,7 @@ public:
     // insertionOffset == set by sendPostedEvents to tell postEvent() where to start insertions
     int insertionOffset;
 
-    QMutex mutex;  // this list will be protected by mutex,
+    QMutex mutex;  // oye this list will be protected by mutex,
 
     inline QPostEventList()
         : QVector<QPostEvent>(), recursion(0), startOffset(0), insertionOffset(0)
@@ -90,14 +90,9 @@ public:
 
 class QThreadPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QThread)
+    //Q_DECLARE_PUBLIC(QThread)
 
 public:
-    QThreadPrivate(QThreadData *d = 0);
-    ~QThreadPrivate();
-
-    void setPriority(QThread::Priority prio);
-
     mutable QMutex mutex;
     QAtomicInt quitLockRef;
 
@@ -112,33 +107,30 @@ public:
     uint stackSize;
     QThread::Priority priority;
 
-    static QThread *threadForId(int id);
-
-#ifdef Q_OS_UNIX
-    QWaitCondition thread_done;
-
-    static void *start(void *arg);
-    static void finish(void *);
-
-#endif // Q_OS_UNIX
-
-
-    static unsigned int __stdcall start(void *);
-    static void finish(void *, bool lockAnyway=true);
-
     Qt::HANDLE handle;
     unsigned int id;
     int waiters;
-    bool terminationEnabled, terminatePending;
-
+    bool terminationEnabled;
+	bool terminatePending;
     QThreadData *data;
+	
+public:
+	
+    QThreadPrivate(QThreadData *d = 0);
+    ~QThreadPrivate();
+
+    void setPriority(QThread::Priority prio);
+
+	
+    static QThread *threadForId(int id);
+
+	// oye: will be attached by _beginthreadex and send param as this
+    static unsigned int  start(void *);
+    static void finish(void *, bool lockAnyway=true);
 
     static void createEventDispatcher(QThreadData *data);
 
-    void ref()
-    {
-        quitLockRef.ref();
-    }
+    void ref()    {        quitLockRef.ref();    }
 
     void deref()
     {
@@ -149,9 +141,35 @@ public:
 };
 
 
-//oye:  thread local data
+//oye: each thread has this class with different class object by thread local data
 class QThreadData
 {
+private:
+    QAtomicInt _ref;
+
+public:
+    int loopLevel;
+    int scopeLevel;
+
+	// MSG 3tuple[ eventLoops, postEvetnList, eventDispather ] 
+    QStack<QEventLoop *> eventLoops;
+    QPostEventList postEventList;
+	// created by QThreadPrivate::createEventDispatcher()
+    QAtomicPointer<QAbstractEventDispatcher> eventDispatcher;    //using QEventDispatcherWin32 
+
+	// thread specifics
+    QAtomicPointer<QThread> thread;			// in QThread::QThread   d->data->thread = this;
+    QAtomicPointer<void> threadId;   							// GetCurrentThreadId
+    QVector<void *> tls;
+	
+    FlaggedDebugSignatures flaggedSignatures;
+
+    bool quitNow;
+    bool canWait;
+    bool isAdopted;  // true-> if called new QAdoptedThread(threadData);
+    bool requiresCoreApplication;
+	
+
 public:
     QThreadData(int initialRefCount = 1): _ref(initialRefCount), loopLevel(0), scopeLevel(0),
       eventDispatcher(0),
@@ -163,8 +181,7 @@ public:
 
     static  QThreadData *current(bool createIfNecessary = true);
     static void clearCurrentThreadData();
-    static QThreadData *get2(QThread *thread)
-    { Q_ASSERT_X(thread != 0, "QThread", "internal error"); return thread->d_func()->data; }
+    static QThreadData *get2(QThread *thread)  {  return thread->d_func()->data; }
 
 
     void ref(){(void) _ref.ref();} // _ref+1;
@@ -198,25 +215,7 @@ public:
         { return std::find(locations, locations + Count, method) != locations + Count; }
     };
 
-private:
-    QAtomicInt _ref;
 
-public:
-    int loopLevel;
-    int scopeLevel;
-
-    QStack<QEventLoop *> eventLoops;
-    QPostEventList postEventList;
-    QAtomicPointer<QThread> thread;
-    QAtomicPointer<void> threadId;
-    QAtomicPointer<QAbstractEventDispatcher> eventDispatcher;
-    QVector<void *> tls;
-    FlaggedDebugSignatures flaggedSignatures;
-
-    bool quitNow;
-    bool canWait;
-    bool isAdopted;
-    bool requiresCoreApplication;
 };
 
 class QScopedScopeLevelCounter

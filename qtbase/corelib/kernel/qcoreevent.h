@@ -13,6 +13,18 @@ class QEvent           // event base class
 {
     //Q_GADGET
     //QDOC_PROPERTY(bool accepted READ isAccepted WRITE setAccepted)
+
+protected:
+    QEventPrivate *d;
+    ushort t;
+
+private:
+    ushort posted : 1; 
+    ushort spont : 1;  		//oye spontaneous, true -> Event from win32_msg_queue || false -> Customized Defined Event
+    ushort m_accept : 1;	// oye whether user want this event
+    ushort reserved : 13;
+	
+
 public:
     enum Type {
         /*
@@ -266,15 +278,8 @@ public:
 
     static int registerEventType(int hint = -1) Q_DECL_NOTHROW;
 
-protected:
-    QEventPrivate *d;
-    ushort t;
 
-private:
-    ushort posted : 1;
-    ushort spont : 1;
-    ushort m_accept : 1;
-    ushort reserved : 13;
+	private:
 
     friend class QCoreApplication;
     friend class QCoreApplicationPrivate;

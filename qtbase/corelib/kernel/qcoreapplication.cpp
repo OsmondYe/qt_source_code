@@ -62,6 +62,7 @@ bool QCoreApplicationPrivate::setuidAllowed = false;
 QString *QCoreApplicationPrivate::cachedApplicationFilePath = 0;
 
 
+// oye, static functions exist in class, how to make sure they are called after the Singleton instanciated
 bool QCoreApplicationPrivate::checkInstance(const char *function)
 {
     bool b = (QCoreApplication::self != 0);
@@ -201,8 +202,9 @@ uint qGlobalPostedEventsCount()
 QAbstractEventDispatcher *QCoreApplicationPrivate::eventDispatcher = 0;
 
 
-
+// oye singleton
 QCoreApplication *QCoreApplication::self = 0;
+
 uint QCoreApplicationPrivate::attribs =
     (1 << Qt::AA_SynthesizeMouseForUnhandledTouchEvents) |
     (1 << Qt::AA_SynthesizeMouseForUnhandledTabletEvents);
@@ -218,7 +220,6 @@ struct QCoreApplicationData {
             QThreadData *data = QThreadData::get2(QCoreApplicationPrivate::theMainThread);
             data->deref(); // deletes the data and the adopted thread
         }
-
     }
 
     QString orgName, orgDomain;
@@ -237,23 +238,6 @@ struct QCoreApplicationData {
 
 static bool quitLockRefEnabled = true;
 
-
-// Check whether the command line arguments match those passed to main()
-// by comparing to the global __argv/__argc (MS extension).
-// Deep comparison is required since argv/argc is rebuilt by WinMain for
-// GUI apps or when using MinGW due to its globbing.
-static inline bool isArgvModified(int argc, char **argv)
-{
-    if (__argc != argc || !__argv /* wmain() */)
-        return true;
-    if (__argv == argv)
-        return false;
-    for (int a = 0; a < argc; ++a) {
-        if (argv[a] != __argv[a] && strcmp(argv[a], __argv[a]))
-            return true;
-    }
-    return false;
-}
 
 static inline bool contains(int argc, char **argv, const char *needle)
 {
@@ -285,16 +269,15 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
         argv = const_cast<char **>(&empty);
     }
 
-    if (!isArgvModified(argc, argv)) {
-        origArgc = argc;
-        origArgv = new char *[argc];
-        std::copy(argv, argv + argc, QT_MAKE_CHECKED_ARRAY_ITERATOR(origArgv, argc));
-    }
-
-
+    
+    origArgc = argc;
+    origArgv = new char *[argc];
+    std::copy(argv, argv + argc, QT_MAKE_CHECKED_ARRAY_ITERATOR(origArgv, argc));
+    
 
     QCoreApplicationPrivate::is_app_closing = false;
 
+	// oye, in QThreadData::current()->thread, it will set value to theMainThread
     QThread *cur = QThread::currentThread(); // note: this may end up setting theMainThread!
     if (cur != theMainThread)
         qWarning("WARNING: QApplication was not created in the main() thread.");
@@ -704,60 +687,7 @@ bool QCoreApplication::notifyInternal2(QObject *receiver, QEvent *event)
     return self->notify(receiver, event);
 }
 
-/*!
-  Sends \a event to \a receiver: \a {receiver}->event(\a event).
-  Returns the value that is returned from the receiver's event
-  handler. Note that this function is called for all events sent to
-  any object in any thread.
-
-  For certain types of events (e.g. mouse and key events),
-  the event will be propagated to the receiver's parent and so on up to
-  the top-level object if the receiver is not interested in the event
-  (i.e., it returns \c false).
-
-  There are five different ways that events can be processed;
-  reimplementing this virtual function is just one of them. All five
-  approaches are listed below:
-  \list 1
-  \li Reimplementing \l {QWidget::}{paintEvent()}, \l {QWidget::}{mousePressEvent()} and so
-  on. This is the most common, easiest, and least powerful way.
-
-  \li Reimplementing this function. This is very powerful, providing
-  complete control; but only one subclass can be active at a time.
-
-  \li Installing an event filter on QCoreApplication::instance(). Such
-  an event filter is able to process all events for all widgets, so
-  it's just as powerful as reimplementing notify(); furthermore, it's
-  possible to have more than one application-global event filter.
-  Global event filters even see mouse events for
-  \l{QWidget::isEnabled()}{disabled widgets}. Note that application
-  event filters are only called for objects that live in the main
-  thread.
-
-  \li Reimplementing QObject::event() (as QWidget does). If you do
-  this you get Tab key presses, and you get to see the events before
-  any widget-specific event filters.
-
-  \li Installing an event filter on the object. Such an event filter gets all
-  the events, including Tab and Shift+Tab key press events, as long as they
-  do not change the focus widget.
-  \endlist
-
-  \b{Future direction:} This function will not be called for objects that live
-  outside the main thread in Qt 6. Applications that need that functionality
-  should find other solutions for their event inspection needs in the meantime.
-  The change may be extended to the main thread, causing this function to be
-  deprecated.
-
-  \warning If you override this function, you must ensure all threads that
-  process events stop doing so before your application object begins
-  destruction. This includes threads started by other libraries that you may be
-  using, but does not apply to Qt's own threads.
-
-  \sa QObject::event(), installNativeEventFilter()
-*/
-
-bool QCoreApplication::notify(QObject *receiver, QEvent *event)
+bool QCoreApplication::notify(QObject *receiver, QEvent *event) // virtual base
 {
     // no events are delivered after ~QCoreApplication() has started
     if (QCoreApplicationPrivate::is_app_closing)
@@ -771,10 +701,6 @@ static bool doNotify(QObject *receiver, QEvent *event)
         qWarning("QCoreApplication::notify: Unexpected null receiver");
         return true;
     }
-
-#ifndef QT_NO_DEBUG
-    QCoreApplicationPrivate::checkReceiverThread(receiver);
-#endif
 
     return receiver->isWidgetType() ? false : QCoreApplicationPrivate::notify_helper(receiver, event);
 }
@@ -819,11 +745,7 @@ bool QCoreApplicationPrivate::sendThroughObjectEventFilters(QObject *receiver, Q
     return false;
 }
 
-/*!
-  \internal
 
-  Helper function called by QCoreApplicationPrivate::notify() and qapplication.cpp
- */
 bool QCoreApplicationPrivate::notify_helper(QObject *receiver, QEvent * event)
 {
     // send to all application event filters (only does anything in the main thread)
@@ -874,21 +796,27 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int m
 }
 
 // oye:: QEventLoop eventLoop and its exec();
-int QCoreApplication::exec()
+int QCoreApplication::exec()  // static
 {
+	// oye, checkInstance will make sure the singleton must be instanciated
+	// since exec is the static function
+	// sanity check
     if (!QCoreApplicationPrivate::checkInstance("exec"))
         return -1;
 
+	// sanity check
     QThreadData *threadData = self->d_func()->threadData;
     if (threadData != QThreadData::current()) {
         qWarning("%s::exec: Must be called from the main thread", self->metaObject()->className());
         return -1;
     }
+	// sanith check
     if (!threadData->eventLoops.isEmpty()) {
         qWarning("QCoreApplication::exec: The event loop is already running");
         return -1;
     }
 
+	// algo begins
     threadData->quitNow = false;
     QEventLoop eventLoop;
     self->d_func()->in_exec = true;
@@ -1109,9 +1037,11 @@ void QCoreApplication::sendPostedEvents(QObject *receiver, int event_type)
     QCoreApplicationPrivate::sendPostedEvents(receiver, event_type, data);
 }
 
+// static
 void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type,
                                                QThreadData *data)
 {
+	// oye sanith check
     if (event_type == -1) {
         // we were called by an obsolete event dispatcher.
         event_type = 0;
@@ -1123,6 +1053,7 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
         return;
     }
 
+	
     ++data->postEventList.recursion;
 
     QMutexLocker locker(&data->postEventList.mutex);
@@ -2076,26 +2007,6 @@ QStringList QCoreApplication::libraryPaths()
                 }
             }
         }
-
-#ifdef Q_OS_DARWIN
-        // Check the main bundle's PlugIns directory as this is a standard location for Apple OSes.
-        // Note that the QLibraryInfo::PluginsPath below will coincidentally be the same as this value
-        // but with a different casing, so it can't be relied upon when the underlying filesystem
-        // is case sensitive (and this is always the case on newer OSes like iOS).
-        if (CFBundleRef bundleRef = CFBundleGetMainBundle()) {
-            if (QCFType<CFURLRef> urlRef = CFBundleCopyBuiltInPlugInsURL(bundleRef)) {
-                if (QCFType<CFURLRef> absoluteUrlRef = CFURLCopyAbsoluteURL(urlRef)) {
-                    if (QCFString path = CFURLCopyFileSystemPath(absoluteUrlRef, kCFURLPOSIXPathStyle)) {
-                        if (QFile::exists(path)) {
-                            path = QDir(path).canonicalPath();
-                            if (!app_libpaths->contains(path))
-                                app_libpaths->append(path);
-                        }
-                    }
-                }
-            }
-        }
-#endif // Q_OS_DARWIN
 
         QString installPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
         if (QFile::exists(installPathPlugins)) {

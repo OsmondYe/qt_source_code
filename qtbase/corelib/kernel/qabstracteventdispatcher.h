@@ -12,29 +12,23 @@ class QSocketNotifier;
 
 class QWinEventNotifier;
 
-
-//for windows, using QEventDispatcherWin32 
+//oye for windows, using QEventDispatcherWin32 
 class QAbstractEventDispatcher : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QAbstractEventDispatcher)
-
+    //Q_DECLARE_PRIVATE(QAbstractEventDispatcher)
 public:
-    struct TimerInfo
-    {
+    struct TimerInfo    {
         int timerId;
         int interval;
         Qt::TimerType timerType;
 
         inline TimerInfo(int id, int i, Qt::TimerType t)
-            : timerId(id), interval(i), timerType(t)
-        { }
+            : timerId(id), interval(i), timerType(t)        { }
     };
-
+    static QAbstractEventDispatcher *instance(QThread *thread = Q_NULLPTR);
     explicit QAbstractEventDispatcher(QObject *parent = Q_NULLPTR);
     ~QAbstractEventDispatcher();
-
-    static QAbstractEventDispatcher *instance(QThread *thread = Q_NULLPTR);
 
     virtual bool processEvents(QEventLoop::ProcessEventsFlags flags) = 0;
     virtual bool hasPendingEvents() = 0; // ### Qt6: remove, mark final or make protected
@@ -50,10 +44,8 @@ public:
 
     virtual int remainingTime(int timerId) = 0;
 
-
     virtual bool registerEventNotifier(QWinEventNotifier *notifier) = 0;
     virtual void unregisterEventNotifier(QWinEventNotifier *notifier) = 0;
-
 
     virtual void wakeUp() = 0;
     virtual void interrupt() = 0;
@@ -71,8 +63,7 @@ Q_SIGNALS:
     void awake();
 
 protected:
-    QAbstractEventDispatcher(QAbstractEventDispatcherPrivate &,
-                             QObject *parent);
+    QAbstractEventDispatcher(QAbstractEventDispatcherPrivate &, QObject *parent);
 };
 
 QT_END_NAMESPACE
