@@ -908,19 +908,14 @@ QStyle* QApplication::setStyle(const QString& style)
 
 
 /*!
-    \property QApplication::globalStrut
-    \brief the minimum size that any GUI element that the user can interact
-           with should have
+    the minimum size that any GUI element that the user can interact with should have          
 
-    For example, no button should be resized to be smaller than the global
-    strut size. The strut size should be considered when reimplementing GUI
+    For example, no button should be resized to be smaller than the global  strut size. 
+
+    The strut size should be considered when reimplementing GUI
     controls that may be used on touch-screens or similar I/O devices.
 
-    Example:
-
-    \snippet code/src_gui_kernel_qapplication.cpp 3
-
-    By default, this property contains a QSize object with zero width and height.
+    By default [0,0]
 */
 QSize QApplication::globalStrut()
 {
@@ -2423,39 +2418,7 @@ int QApplication::startDragDistance()
     return QGuiApplication::styleHints()->startDragDistance();
 }
 
-/*!
-    Enters the main event loop and waits until exit() is called, then returns
-    the value that was set to exit() (which is 0 if exit() is called via
-    quit()).
 
-    It is necessary to call this function to start event handling. The main
-    event loop receives events from the window system and dispatches these to
-    the application widgets.
-
-    Generally, no user interaction can take place before calling exec(). As a
-    special case, modal widgets like QMessageBox can be used before calling
-    exec(), because modal widgets call exec() to start a local event loop.
-
-    To make your application perform idle processing, i.e., executing a special
-    function whenever there are no pending events, use a QTimer with 0 timeout.
-    More advanced idle processing schemes can be achieved using processEvents().
-
-    We recommend that you connect clean-up code to the
-    \l{QCoreApplication::}{aboutToQuit()} signal, instead of putting it in your
-    application's \c{main()} function. This is because, on some platforms the
-    QApplication::exec() call may not return. For example, on the Windows
-    platform, when the user logs off, the system terminates the process after Qt
-    closes all top-level windows. Hence, there is \e{no guarantee} that the
-    application will have time to exit its event loop and execute code at the
-    end of the \c{main()} function, after the QApplication::exec() call.
-
-    \sa quitOnLastWindowClosed, QCoreApplication::quit(), QCoreApplication::exit(),
-        QCoreApplication::processEvents(), QCoreApplication::exec()
-*/
-int QApplication::exec()
-{
-    return QGuiApplication::exec();
-}
 
 bool QApplicationPrivate::shouldQuit()
 {
@@ -2488,6 +2451,8 @@ static inline void closeAllPopups()
 // oye 800 line, SendEvent的核心处理逻辑在这里,
 bool QApplication::notify(QObject *receiver, QEvent *e) override
 {
+	// oye 根据Enum自己做强转    
+	//        Event::MouseButtonPress ->  QMouseEvent *me = static_cast<QMouseEvent*>(e);
     QApplicationPrivate * const d = d_func();
     // no events are delivered after ~QCoreApplication() has started
     if (QApplicationPrivate::is_app_closing)
@@ -2500,8 +2465,14 @@ bool QApplication::notify(QObject *receiver, QEvent *e) override
 	// current::thread == receiver->thread;
     d->checkReceiverThread(receiver);
 
+	// 窗口处理完后,没有返回,继续当做处理其他信息
     if (receiver->isWindowType())
         QGuiApplicationPrivate::sendQWindowEventToQPlatformWindow(static_cast<QWindow *>(receiver), e);
+
+
+	//
+	// algo preparation ,  
+	//
 
 	// 来自win32的消息
     if(e->spontaneous()) {
@@ -2549,70 +2520,67 @@ bool QApplication::notify(QObject *receiver, QEvent *e) override
 	        default:
 	            break;
         }
-    }
-
+    }// end e->spontaneous()
 
     // walk through parents and check for gestures
     if (d->gestureManager) {
         switch (e->type()) {
-        case QEvent::Paint:
-        case QEvent::MetaCall:
-        case QEvent::DeferredDelete:
-        case QEvent::DragEnter: case QEvent::DragMove: case QEvent::DragLeave:
-        case QEvent::Drop: case QEvent::DragResponse:
-        case QEvent::ChildAdded: case QEvent::ChildPolished:
-        case QEvent::ChildRemoved:
-        case QEvent::UpdateRequest:
-        case QEvent::UpdateLater:
-        case QEvent::LocaleChange:
-        case QEvent::Style:
-        case QEvent::IconDrag:
-        case QEvent::StyleChange:
-        case QEvent::GraphicsSceneDragEnter:
-        case QEvent::GraphicsSceneDragMove:
-        case QEvent::GraphicsSceneDragLeave:
-        case QEvent::GraphicsSceneDrop:
-        case QEvent::DynamicPropertyChange:
-        case QEvent::NetworkReplyUpdated:
-            break;
-        default:
-            if (d->gestureManager->thread() == QThread::currentThread()) {
-                if (receiver->isWidgetType()) {
-                    if (d->gestureManager->filterEvent(static_cast<QWidget *>(receiver), e))
-                        return true;
-                } else {
-                    // a special case for events that go to QGesture objects.
-                    // We pass the object to the gesture manager and it'll figure
-                    // out if it's QGesture or not.
-                    if (d->gestureManager->filterEvent(receiver, e))
-                        return true;
-                }
-            }
-            break;
+	        case QEvent::Paint:
+	        case QEvent::MetaCall:
+	        case QEvent::DeferredDelete:
+	        case QEvent::DragEnter: case QEvent::DragMove: case QEvent::DragLeave:
+	        case QEvent::Drop: case QEvent::DragResponse:
+	        case QEvent::ChildAdded: case QEvent::ChildPolished:
+	        case QEvent::ChildRemoved:
+	        case QEvent::UpdateRequest:
+	        case QEvent::UpdateLater:
+	        case QEvent::LocaleChange:
+	        case QEvent::Style:
+	        case QEvent::IconDrag:
+	        case QEvent::StyleChange:
+	        case QEvent::GraphicsSceneDragEnter:
+	        case QEvent::GraphicsSceneDragMove:
+	        case QEvent::GraphicsSceneDragLeave:
+	        case QEvent::GraphicsSceneDrop:
+	        case QEvent::DynamicPropertyChange:
+	        case QEvent::NetworkReplyUpdated:
+	            break;
+	        default:
+	            if (d->gestureManager->thread() == QThread::currentThread()) {
+	                if (receiver->isWidgetType()) {
+	                    if (d->gestureManager->filterEvent(static_cast<QWidget *>(receiver), e))
+	                        return true;
+	                } else {
+	                    // a special case for events that go to QGesture objects.
+	                    // We pass the object to the gesture manager and it'll figure
+	                    // out if it's QGesture or not.
+	                    if (d->gestureManager->filterEvent(receiver, e))
+	                        return true;
+	                }
+	            }
+	            break;
         }
-    }
-
+    }//end if (d->gestureManager)
+	// tooltip timer stop
     switch (e->type()) {
-    case QEvent::ApplicationDeactivate:
-        // Close all popups (triggers when switching applications
-        // by pressing ALT-TAB on Windows, which is not receive as key event.
-        closeAllPopups();
-        break;
-    case QEvent::Wheel: // User input and window activation makes tooltips sleep
-    case QEvent::ActivationChange:
-    case QEvent::KeyPress:
-    case QEvent::KeyRelease:
-    case QEvent::FocusOut:
-    case QEvent::FocusIn:
-    case QEvent::MouseButtonPress:
-    case QEvent::MouseButtonRelease:
-    case QEvent::MouseButtonDblClick:
-        d->toolTipFallAsleep.stop();
-        // fall-through
-    case QEvent::Leave:
-        d->toolTipWakeUp.stop();
-    default:
-        break;
+	    case QEvent::ApplicationDeactivate:
+	        closeAllPopups();
+	        break;
+	    case QEvent::Wheel: // User input and window activation makes tooltips sleep
+	    case QEvent::ActivationChange:
+	    case QEvent::KeyPress:
+	    case QEvent::KeyRelease:
+	    case QEvent::FocusOut:
+	    case QEvent::FocusIn:
+	    case QEvent::MouseButtonPress:
+	    case QEvent::MouseButtonRelease:
+	    case QEvent::MouseButtonDblClick:
+	        d->toolTipFallAsleep.stop();
+	        // fall-through
+	    case QEvent::Leave:
+	        d->toolTipWakeUp.stop();
+	    default:
+	        break;
     }
 
     switch (e->type()) {
@@ -2630,244 +2598,242 @@ bool QApplication::notify(QObject *receiver, QEvent *e) override
     }
 
     bool res = false;
+
+	
     if (!receiver->isWidgetType()) {
-        res = d->notify_helper(receiver, e);
-    } else switch (e->type()) {
-    case QEvent::ShortcutOverride:
-    case QEvent::KeyPress:
-    case QEvent::KeyRelease:
-        {
-            bool isWidget = receiver->isWidgetType();
-#if QT_CONFIG(graphicsview)
-            const bool isGraphicsWidget = !isWidget && qobject_cast<QGraphicsWidget *>(receiver);
-#endif
-            QKeyEvent* key = static_cast<QKeyEvent*>(e);
-            bool def = key->isAccepted();
-            QPointer<QObject> pr = receiver;
-            while (receiver) {
-                if (def)
-                    key->accept();
-                else
-                    key->ignore();
-                QWidget *w = isWidget ? static_cast<QWidget *>(receiver) : 0;
-#if QT_CONFIG(graphicsview)
-                QGraphicsWidget *gw = isGraphicsWidget ? static_cast<QGraphicsWidget *>(receiver) : 0;
-#endif
-                res = d->notify_helper(receiver, e);
+        res = d->notify_helper(receiver, e);		
+		return res; // 
+    } 
 
-                if ((res && key->isAccepted())
-                    /*
-                       QLineEdit will emit a signal on Key_Return, but
-                       ignore the event, and sometimes the connected
-                       slot deletes the QLineEdit (common in itemview
-                       delegates), so we have to check if the widget
-                       was destroyed even if the event was ignored (to
-                       prevent a crash)
+	//
+	// algo begins   KeyBoard, Mouse, wheel, contextmenu, tooltip, dragdrop, gesture
+	//    app会帮助额外先处理上述消息, 然后receiver再自己来
+	//			d->notify_helper(receiver, e);
+	switch (e->type()) {
+	    case QEvent::ShortcutOverride:
+	    case QEvent::KeyPress:
+	    case QEvent::KeyRelease:
+	        {
+	            bool isWidget = receiver->isWidgetType();
+	            const bool isGraphicsWidget = !isWidget && qobject_cast<QGraphicsWidget *>(receiver);
+	            QKeyEvent* key = static_cast<QKeyEvent*>(e);
+	            bool def = key->isAccepted();
+	            QPointer<QObject> pr = receiver;
+	            while (receiver) {
+	                if (def)
+	                    key->accept();
+	                else
+	                    key->ignore();
+	                QWidget *w = isWidget ? static_cast<QWidget *>(receiver) : 0;
+	                QGraphicsWidget *gw = isGraphicsWidget ? static_cast<QGraphicsWidget *>(receiver) : 0;
+	                res = d->notify_helper(receiver, e);
 
-                       note that we don't have to reset pw while
-                       propagating (because the original receiver will
-                       be destroyed if one of its ancestors is)
-                    */
-                    || !pr
-                    || (isWidget && (w->isWindow() || !w->parentWidget()))
-#if QT_CONFIG(graphicsview)
-                    || (isGraphicsWidget && (gw->isWindow() || !gw->parentWidget()))
-#endif
-                    ) {
-                    break;
-                }
+	                if ((res && key->isAccepted())
+	                    /*
+	                       QLineEdit will emit a signal on Key_Return, but
+	                       ignore the event, and sometimes the connected
+	                       slot deletes the QLineEdit (common in itemview
+	                       delegates), so we have to check if the widget
+	                       was destroyed even if the event was ignored (to
+	                       prevent a crash)
 
-#if QT_CONFIG(graphicsview)
-                receiver = w ? (QObject *)w->parentWidget() : (QObject *)gw->parentWidget();
-#else
-                receiver = w->parentWidget();
-#endif
-            }
-            qt_in_tab_key_event = false;
-        }
-        break;
-    case QEvent::MouseButtonPress:
-    case QEvent::MouseButtonRelease:
-    case QEvent::MouseButtonDblClick:
-    case QEvent::MouseMove:
-        {
-            QWidget* w = static_cast<QWidget *>(receiver);
+	                       note that we don't have to reset pw while
+	                       propagating (because the original receiver will
+	                       be destroyed if one of its ancestors is)
+	                    */
+	                    || !pr
+	                    || (isWidget && (w->isWindow() || !w->parentWidget()))
+	                    || (isGraphicsWidget && (gw->isWindow() || !gw->parentWidget()))
+	                    ) {
+	                    break;
+	                }
+	                receiver = w ? (QObject *)w->parentWidget() : (QObject *)gw->parentWidget();
+	            }
+	            qt_in_tab_key_event = false;
+	        }
+	        break;
+	    case QEvent::MouseButtonPress:
+	    case QEvent::MouseButtonRelease:
+	    case QEvent::MouseButtonDblClick:
+	    case QEvent::MouseMove:
+	        {
+	            QWidget* w = static_cast<QWidget *>(receiver);
 
-            QMouseEvent* mouse = static_cast<QMouseEvent*>(e);
-            QPoint relpos = mouse->pos();
+	            QMouseEvent* mouse = static_cast<QMouseEvent*>(e);
+	            QPoint relpos = mouse->pos();
 
-            if (e->spontaneous()) {
-                if (e->type() != QEvent::MouseMove)
-                    QApplicationPrivate::giveFocusAccordingToFocusPolicy(w, e, relpos);
+	            if (e->spontaneous()) {
+	                if (e->type() != QEvent::MouseMove)
+	                    QApplicationPrivate::giveFocusAccordingToFocusPolicy(w, e, relpos);
 
-                // ### Qt 5 These dynamic tool tips should be an OPT-IN feature. Some platforms
-                // like OS X (probably others too), can optimize their views by not
-                // dispatching mouse move events. We have attributes to control hover,
-                // and mouse tracking, but as long as we are deciding to implement this
-                // feature without choice of opting-in or out, you ALWAYS have to have
-                // tracking enabled. Therefore, the other properties give a false sense of
-                // performance enhancement.
-                if (e->type() == QEvent::MouseMove && mouse->buttons() == 0
-                    && w->rect().contains(relpos)) { // Outside due to mouse grab?
-                    d->toolTipWidget = w;
-                    d->toolTipPos = relpos;
-                    d->toolTipGlobalPos = mouse->globalPos();
-                    QStyle *s = d->toolTipWidget->style();
-                    int wakeDelay = s->styleHint(QStyle::SH_ToolTip_WakeUpDelay, 0, d->toolTipWidget, 0);
-                    d->toolTipWakeUp.start(d->toolTipFallAsleep.isActive() ? 20 : wakeDelay, this);
-                }
-            }
+	                // ### Qt 5 These dynamic tool tips should be an OPT-IN feature. Some platforms
+	                // like OS X (probably others too), can optimize their views by not
+	                // dispatching mouse move events. We have attributes to control hover,
+	                // and mouse tracking, but as long as we are deciding to implement this
+	                // feature without choice of opting-in or out, you ALWAYS have to have
+	                // tracking enabled. Therefore, the other properties give a false sense of
+	                // performance enhancement.
+	                if (e->type() == QEvent::MouseMove && mouse->buttons() == 0
+	                    && w->rect().contains(relpos)) { // Outside due to mouse grab?
+	                    d->toolTipWidget = w;
+	                    d->toolTipPos = relpos;
+	                    d->toolTipGlobalPos = mouse->globalPos();
+	                    QStyle *s = d->toolTipWidget->style();
+	                    int wakeDelay = s->styleHint(QStyle::SH_ToolTip_WakeUpDelay, 0, d->toolTipWidget, 0);
+	                    d->toolTipWakeUp.start(d->toolTipFallAsleep.isActive() ? 20 : wakeDelay, this);
+	                }
+	            }
 
-            bool eventAccepted = mouse->isAccepted();
+	            bool eventAccepted = mouse->isAccepted();
 
-            QPointer<QWidget> pw = w;
-            while (w) {
-                QMouseEvent me(mouse->type(), relpos, mouse->windowPos(), mouse->globalPos(),
-                               mouse->button(), mouse->buttons(), mouse->modifiers(), mouse->source());
-                me.spont = mouse->spontaneous();
-                me.setTimestamp(mouse->timestamp());
-                QGuiApplicationPrivate::setMouseEventFlags(&me, mouse->flags());
-                // throw away any mouse-tracking-only mouse events
-                if (!w->hasMouseTracking()
-                    && mouse->type() == QEvent::MouseMove && mouse->buttons() == 0) {
-                    // but still send them through all application event filters (normally done by notify_helper)
-                    d->sendThroughApplicationEventFilters(w, w == receiver ? mouse : &me);
-                    res = true;
-                } else {
-                    w->setAttribute(Qt::WA_NoMouseReplay, false);
-                    res = d->notify_helper(w, w == receiver ? mouse : &me);
-                    e->spont = false;
-                }
-                eventAccepted = (w == receiver ? mouse : &me)->isAccepted();
-                if (res && eventAccepted)
-                    break;
-                if (w->isWindow() || w->testAttribute(Qt::WA_NoMousePropagation))
-                    break;
-                relpos += w->pos();
-                w = w->parentWidget();
-            }
+	            QPointer<QWidget> pw = w;
+	            while (w) {
+	                QMouseEvent me(mouse->type(), relpos, mouse->windowPos(), mouse->globalPos(),
+	                               mouse->button(), mouse->buttons(), mouse->modifiers(), mouse->source());
+	                me.spont = mouse->spontaneous();
+	                me.setTimestamp(mouse->timestamp());
+	                QGuiApplicationPrivate::setMouseEventFlags(&me, mouse->flags());
+	                // throw away any mouse-tracking-only mouse events
+	                if (!w->hasMouseTracking()
+	                    && mouse->type() == QEvent::MouseMove && mouse->buttons() == 0) {
+	                    // but still send them through all application event filters (normally done by notify_helper)
+	                    d->sendThroughApplicationEventFilters(w, w == receiver ? mouse : &me);
+	                    res = true;
+	                } else {
+	                    w->setAttribute(Qt::WA_NoMouseReplay, false);
+	                    res = d->notify_helper(w, w == receiver ? mouse : &me);
+	                    e->spont = false;
+	                }
+	                eventAccepted = (w == receiver ? mouse : &me)->isAccepted();
+	                if (res && eventAccepted)
+	                    break;
+	                if (w->isWindow() || w->testAttribute(Qt::WA_NoMousePropagation))
+	                    break;
+	                relpos += w->pos();
+	                w = w->parentWidget();
+	            }
 
-            mouse->setAccepted(eventAccepted);
+	            mouse->setAccepted(eventAccepted);
 
-            if (e->type() == QEvent::MouseMove) {
-                if (!pw)
-                    break;
+	            if (e->type() == QEvent::MouseMove) {
+	                if (!pw)
+	                    break;
 
-                w = static_cast<QWidget *>(receiver);
-                relpos = mouse->pos();
-                QPoint diff = relpos - w->mapFromGlobal(d->hoverGlobalPos);
-                while (w) {
-                    if (w->testAttribute(Qt::WA_Hover) &&
-                        (!QApplication::activePopupWidget() || QApplication::activePopupWidget() == w->window())) {
-                        QHoverEvent he(QEvent::HoverMove, relpos, relpos - diff, mouse->modifiers());
-                        d->notify_helper(w, &he);
-                    }
-                    if (w->isWindow() || w->testAttribute(Qt::WA_NoMousePropagation))
-                        break;
-                    relpos += w->pos();
-                    w = w->parentWidget();
-                }
-            }
+	                w = static_cast<QWidget *>(receiver);
+	                relpos = mouse->pos();
+	                QPoint diff = relpos - w->mapFromGlobal(d->hoverGlobalPos);
+	                while (w) {
+	                    if (w->testAttribute(Qt::WA_Hover) &&
+	                        (!QApplication::activePopupWidget() || QApplication::activePopupWidget() == w->window())) {
+	                        QHoverEvent he(QEvent::HoverMove, relpos, relpos - diff, mouse->modifiers());
+	                        d->notify_helper(w, &he);
+	                    }
+	                    if (w->isWindow() || w->testAttribute(Qt::WA_NoMousePropagation))
+	                        break;
+	                    relpos += w->pos();
+	                    w = w->parentWidget();
+	                }
+	            }
 
-            d->hoverGlobalPos = mouse->globalPos();
-        }
-        break;
+	            d->hoverGlobalPos = mouse->globalPos();
+	        }
+	        break;
 #if QT_CONFIG(wheelevent)
-    case QEvent::Wheel:
-        {
-            QWidget* w = static_cast<QWidget *>(receiver);
+	    case QEvent::Wheel:
+	        {
+	            QWidget* w = static_cast<QWidget *>(receiver);
 
-            // QTBUG-40656, QTBUG-42731: ignore wheel events when a popup (QComboBox) is open.
-            if (const QWidget *popup = QApplication::activePopupWidget()) {
-                if (w->window() != popup)
-                    return true;
-            }
+	            // QTBUG-40656, QTBUG-42731: ignore wheel events when a popup (QComboBox) is open.
+	            if (const QWidget *popup = QApplication::activePopupWidget()) {
+	                if (w->window() != popup)
+	                    return true;
+	            }
 
-            QWheelEvent* wheel = static_cast<QWheelEvent*>(e);
-            const bool spontaneous = wheel->spontaneous();
-            const Qt::ScrollPhase phase = wheel->phase();
+	            QWheelEvent* wheel = static_cast<QWheelEvent*>(e);
+	            const bool spontaneous = wheel->spontaneous();
+	            const Qt::ScrollPhase phase = wheel->phase();
 
-            // Ideally, we should lock on a widget when it starts receiving wheel
-            // events. This avoids other widgets to start receiving those events
-            // as the mouse cursor hovers them. However, given the way common
-            // wheeled mice work, there's no certain way of connecting different
-            // wheel events as a stream. This results in the NoScrollPhase case,
-            // where we just send the event from the original receiver and up its
-            // hierarchy until the event gets accepted.
-            //
-            // In the case of more evolved input devices, like Apple's trackpad or
-            // Magic Mouse, we receive the scroll phase information. This helps us
-            // connect wheel events as a stream and therefore makes it easier to
-            // lock on the widget onto which the scrolling was initiated.
-            //
-            // We assume that, when supported, the phase cycle follows the pattern:
-            //
-            //         ScrollBegin (ScrollUpdate* ScrollEnd)+
-            //
-            // This means that we can have scrolling sequences (starting with ScrollBegin)
-            // or partial sequences (after a ScrollEnd and starting with ScrollUpdate).
-            // If wheel_widget is null because it was deleted, we also take the same
-            // code path as an initial sequence.
-            if (phase == Qt::NoScrollPhase || phase == Qt::ScrollBegin || !QApplicationPrivate::wheel_widget) {
+	            // Ideally, we should lock on a widget when it starts receiving wheel
+	            // events. This avoids other widgets to start receiving those events
+	            // as the mouse cursor hovers them. However, given the way common
+	            // wheeled mice work, there's no certain way of connecting different
+	            // wheel events as a stream. This results in the NoScrollPhase case,
+	            // where we just send the event from the original receiver and up its
+	            // hierarchy until the event gets accepted.
+	            //
+	            // In the case of more evolved input devices, like Apple's trackpad or
+	            // Magic Mouse, we receive the scroll phase information. This helps us
+	            // connect wheel events as a stream and therefore makes it easier to
+	            // lock on the widget onto which the scrolling was initiated.
+	            //
+	            // We assume that, when supported, the phase cycle follows the pattern:
+	            //
+	            //         ScrollBegin (ScrollUpdate* ScrollEnd)+
+	            //
+	            // This means that we can have scrolling sequences (starting with ScrollBegin)
+	            // or partial sequences (after a ScrollEnd and starting with ScrollUpdate).
+	            // If wheel_widget is null because it was deleted, we also take the same
+	            // code path as an initial sequence.
+	            if (phase == Qt::NoScrollPhase || phase == Qt::ScrollBegin || !QApplicationPrivate::wheel_widget) {
 
-                // A system-generated ScrollBegin event starts a new user scrolling
-                // sequence, so we reset wheel_widget in case no one accepts the event
-                // or if we didn't get (or missed) a ScrollEnd previously.
-                if (spontaneous && phase == Qt::ScrollBegin)
-                    QApplicationPrivate::wheel_widget = Q_NULLPTR;
+	                // A system-generated ScrollBegin event starts a new user scrolling
+	                // sequence, so we reset wheel_widget in case no one accepts the event
+	                // or if we didn't get (or missed) a ScrollEnd previously.
+	                if (spontaneous && phase == Qt::ScrollBegin)
+	                    QApplicationPrivate::wheel_widget = Q_NULLPTR;
 
-                const QPoint &relpos = wheel->pos();
+	                const QPoint &relpos = wheel->pos();
 
-                if (spontaneous && (phase == Qt::NoScrollPhase || phase == Qt::ScrollUpdate))
-                    QApplicationPrivate::giveFocusAccordingToFocusPolicy(w, e, relpos);
+	                if (spontaneous && (phase == Qt::NoScrollPhase || phase == Qt::ScrollUpdate))
+	                    QApplicationPrivate::giveFocusAccordingToFocusPolicy(w, e, relpos);
 
-                QWheelEvent we(relpos, wheel->globalPos(), wheel->pixelDelta(), wheel->angleDelta(), wheel->delta(), wheel->orientation(), wheel->buttons(),
-                               wheel->modifiers(), phase, wheel->source(), wheel->inverted());
-                bool eventAccepted;
-                do {
-                    we.spont = spontaneous && w == receiver;
-                    we.ignore();
-                    res = d->notify_helper(w, &we);
-                    eventAccepted = we.isAccepted();
-                    if (res && eventAccepted) {
-                        // A new scrolling sequence or partial sequence starts and w has accepted
-                        // the event. Therefore, we can set wheel_widget, but only if it's not
-                        // the end of a sequence.
-                        if (spontaneous && (phase == Qt::ScrollBegin || phase == Qt::ScrollUpdate))
-                            QApplicationPrivate::wheel_widget = w;
-                        break;
-                    }
-                    if (w->isWindow() || w->testAttribute(Qt::WA_NoMousePropagation))
-                        break;
+	                QWheelEvent we(relpos, wheel->globalPos(), wheel->pixelDelta(), wheel->angleDelta(), wheel->delta(), wheel->orientation(), wheel->buttons(),
+	                               wheel->modifiers(), phase, wheel->source(), wheel->inverted());
+	                bool eventAccepted;
+	                do {
+	                    we.spont = spontaneous && w == receiver;
+	                    we.ignore();
+	                    res = d->notify_helper(w, &we);
+	                    eventAccepted = we.isAccepted();
+	                    if (res && eventAccepted) {
+	                        // A new scrolling sequence or partial sequence starts and w has accepted
+	                        // the event. Therefore, we can set wheel_widget, but only if it's not
+	                        // the end of a sequence.
+	                        if (spontaneous && (phase == Qt::ScrollBegin || phase == Qt::ScrollUpdate))
+	                            QApplicationPrivate::wheel_widget = w;
+	                        break;
+	                    }
+	                    if (w->isWindow() || w->testAttribute(Qt::WA_NoMousePropagation))
+	                        break;
 
-                    we.p += w->pos();
-                    w = w->parentWidget();
-                } while (w);
-                wheel->setAccepted(eventAccepted);
-            } else if (!spontaneous) {
-                // wheel_widget may forward the wheel event to a delegate widget,
-                // either directly or indirectly (e.g. QAbstractScrollArea will
-                // forward to its QScrollBars through viewportEvent()). In that
-                // case, the event will not be spontaneous but synthesized, so
-                // we can send it straight to the receiver.
-                d->notify_helper(w, wheel);
-            } else {
-                // The phase is either ScrollUpdate or ScrollEnd, and wheel_widget
-                // is set. Since it accepted the wheel event previously, we continue
-                // sending those events until we get a ScrollEnd, which signifies
-                // the end of the natural scrolling sequence.
-                const QPoint &relpos = QApplicationPrivate::wheel_widget->mapFromGlobal(wheel->globalPos());
-                QWheelEvent we(relpos, wheel->globalPos(), wheel->pixelDelta(), wheel->angleDelta(), wheel->delta(), wheel->orientation(), wheel->buttons(),
-                               wheel->modifiers(), wheel->phase(), wheel->source());
-                we.spont = true;
-                we.ignore();
-                d->notify_helper(QApplicationPrivate::wheel_widget, &we);
-                wheel->setAccepted(we.isAccepted());
-                if (phase == Qt::ScrollEnd)
-                    QApplicationPrivate::wheel_widget = Q_NULLPTR;
-            }
-        }
-        break;
+	                    we.p += w->pos();
+	                    w = w->parentWidget();
+	                } while (w);
+	                wheel->setAccepted(eventAccepted);
+	            } else if (!spontaneous) {
+	                // wheel_widget may forward the wheel event to a delegate widget,
+	                // either directly or indirectly (e.g. QAbstractScrollArea will
+	                // forward to its QScrollBars through viewportEvent()). In that
+	                // case, the event will not be spontaneous but synthesized, so
+	                // we can send it straight to the receiver.
+	                d->notify_helper(w, wheel);
+	            } else {
+	                // The phase is either ScrollUpdate or ScrollEnd, and wheel_widget
+	                // is set. Since it accepted the wheel event previously, we continue
+	                // sending those events until we get a ScrollEnd, which signifies
+	                // the end of the natural scrolling sequence.
+	                const QPoint &relpos = QApplicationPrivate::wheel_widget->mapFromGlobal(wheel->globalPos());
+	                QWheelEvent we(relpos, wheel->globalPos(), wheel->pixelDelta(), wheel->angleDelta(), wheel->delta(), wheel->orientation(), wheel->buttons(),
+	                               wheel->modifiers(), wheel->phase(), wheel->source());
+	                we.spont = true;
+	                we.ignore();
+	                d->notify_helper(QApplicationPrivate::wheel_widget, &we);
+	                wheel->setAccepted(we.isAccepted());
+	                if (phase == Qt::ScrollEnd)
+	                    QApplicationPrivate::wheel_widget = Q_NULLPTR;
+	            }
+	        }
+	        break;
 #endif
 #ifndef QT_NO_CONTEXTMENU
     case QEvent::ContextMenu:
@@ -3193,34 +3159,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e) override
         break;
     }
 #endif // QT_NO_GESTURES
-#ifdef Q_OS_MAC
-    // Enable touch events on enter, disable on leave.
-    typedef void (*RegisterTouchWindowFn)(QWindow *,  bool);
-    case QEvent::Enter:
-        if (receiver->isWidgetType()) {
-            QWidget *w = static_cast<QWidget *>(receiver);
-            if (w->testAttribute(Qt::WA_AcceptTouchEvents)) {
-                RegisterTouchWindowFn registerTouchWindow = reinterpret_cast<RegisterTouchWindowFn>
-                        (platformNativeInterface()->nativeResourceFunctionForIntegration("registertouchwindow"));
-                if (registerTouchWindow)
-                    registerTouchWindow(w->window()->windowHandle(), true);
-            }
-        }
-        res = d->notify_helper(receiver, e);
-    break;
-    case QEvent::Leave:
-        if (receiver->isWidgetType()) {
-            QWidget *w = static_cast<QWidget *>(receiver);
-            if (w->testAttribute(Qt::WA_AcceptTouchEvents)) {
-                RegisterTouchWindowFn registerTouchWindow = reinterpret_cast<RegisterTouchWindowFn>
-                        (platformNativeInterface()->nativeResourceFunctionForIntegration("registertouchwindow"));
-                if (registerTouchWindow)
-                    registerTouchWindow(w->window()->windowHandle(), false);
-            }
-        }
-        res = d->notify_helper(receiver, e);
-    break;
-#endif
     default:
         res = d->notify_helper(receiver, e);
         break;
@@ -3231,35 +3169,41 @@ bool QApplication::notify(QObject *receiver, QEvent *e) override
 
 bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
 {
+	// oye 给APP基本的过滤器一个机会来处理event
     // send to all application event filters
     if (threadRequiresCoreApplication()
         && receiver->d_func()->threadData->thread == mainThread()
         && sendThroughApplicationEventFilters(receiver, e))
         return true;
 
+		
     if (receiver->isWidgetType()) {
         QWidget *widget = static_cast<QWidget *>(receiver);
-
-#if !defined(QT_NO_CURSOR)
+		
+		// oye:  根据鼠标是否在控件范围内,来设置控件属性 WA_UnderMouse
         // toggle HasMouse widget state on enter and leave
         if ((e->type() == QEvent::Enter || e->type() == QEvent::DragEnter) &&
             (!QApplication::activePopupWidget() || QApplication::activePopupWidget() == widget->window()))
             widget->setAttribute(Qt::WA_UnderMouse, true);
         else if (e->type() == QEvent::Leave || e->type() == QEvent::DragLeave)
             widget->setAttribute(Qt::WA_UnderMouse, false);
-#endif
-
+		
+		// oye receiver是Widget,那么拿出来widget的layout,
+		// 给layout一个机会来处理发给receiver的事件,
+		// 比如 QEvent::Resize:,QEvent::LayoutRequest:
         if (QLayout *layout=widget->d_func()->layout) {
             layout->widgetEvent(e);
         }
     }
 
+	
     // send to all receiver event filters
     if (sendThroughObjectEventFilters(receiver, e))
         return true;
 
     // deliver the event
-    bool consumed = receiver->event(e);
+    // oye 让receiver来处理此事件
+    bool consumed = receiver->event(e);  // 这里由会出发虚函数机制
     QCoreApplicationPrivate::setEventSpontaneous(e, false);
     return consumed;
 }

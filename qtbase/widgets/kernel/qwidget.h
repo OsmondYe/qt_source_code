@@ -32,6 +32,7 @@ class QWidgetPrivate;
 
 class  QWidget : public QObject, public QPaintDevice
 {
+	inline QWidgetPrivate* d_func() { return reinterpret_cast<QWidgetPrivate *>(qGetPtrHelper(d_ptr)); }
 public:
     enum RenderFlag {
         DrawWindowBackground = 0x1,
@@ -207,10 +208,6 @@ public:
     QString statusTip() const;
     void setWhatsThis(const QString &);
     QString whatsThis() const;
-    QString accessibleName() const;
-    void setAccessibleName(const QString &name);
-    QString accessibleDescription() const;
-    void setAccessibleDescription(const QString &description);
 
     void setLayoutDirection(Qt::LayoutDirection direction);
     Qt::LayoutDirection layoutDirection() const;
@@ -330,7 +327,7 @@ public:
     void getContentsMargins(int *left, int *top, int *right, int *bottom) const;
     QMargins contentsMargins() const;
 
-    QRect contentsRect() const;
+    QRect contentsRect() const; // oye  rect() - contentsMargins();
 
 public:
     QLayout *layout() const;

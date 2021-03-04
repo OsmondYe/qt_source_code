@@ -176,22 +176,19 @@ public:
         DirectionEast = 0x10,
         DirectionSouth = 0x02,
         DirectionWest = 0x20
-    };
-
-	
-	
+    };	
 		// Variables.
 		// Regular pointers (keep them together to avoid gaps on 64 bit architectures).
 		QWExtra *extra;
 		QWidget *focus_next;
 		QWidget *focus_prev;
 		QWidget *focus_child;
-		QLayout *layout;
+		QLayout *layout;      					//oye widget会绑定一个默认的layout, 每次消息泵过来,会给layout一个机会
 		QRegion *needsFlush;
 		QPaintDevice *redirectDev;
 		QWidgetItemV2 *widgetItem;
 		QPaintEngine *extraPaintEngine;
-		mutable const QMetaObject *polished;
+		mutable const QMetaObject *polished;  // ensurePolished里面看到
 		QGraphicsEffect *graphicsEffect;
 		// All widgets are added into the allWidgets set. Once
 		// they receive a window id they are also added to the mapper.

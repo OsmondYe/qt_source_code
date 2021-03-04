@@ -44,15 +44,15 @@ typedef QList<QObject*> QObjectList;
 class  QObjectData {
 public:
     virtual ~QObjectData() = 0;
-    QObject *q_ptr;
-    QObject *parent;
-    QObjectList children;
+    QObject *q_ptr;					// oye 所有Q_DECLARE_PUBLIC(QLayout)宏都会用到,指向外部实际Qtclass的指针
+    QObject *parent;				// oye widget之类的树形布局中
+    QObjectList children;  			// oye 用在widget上绝了, 控件内涵子控件
 
     uint isWidget : 1;
     uint blockSig : 1;
     uint wasDeleted : 1;
     uint isDeletingChildren : 1;
-    uint sendChildEvents : 1;
+    uint sendChildEvents : 1;				// oye, 关注下 SendEvent
     uint receiveChildEvents : 1;
     uint isWindow : 1; //for QWindow
     uint deleteLaterCalled : 1;
@@ -63,6 +63,10 @@ public:
 };
 
 
+/*
+	oye
+	- 先天的对象树思想, 需要有 parent() 方法
+*/
 class  QObject
 {
 //----------------------------------------------------------

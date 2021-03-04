@@ -16,6 +16,7 @@ class QSpacerItem;
 class QWidget;
 class QSize;
 
+// oye derived calss : QSpacerItem, QWidgetItem, QLayout
 class  QLayoutItem
 {
 public:
@@ -34,7 +35,7 @@ public:
     virtual void invalidate();
 
     virtual QWidget *widget();
-    virtual QLayout *layout();
+    virtual QLayout *layout();				// 基类定义类型探测
     virtual QSpacerItem *spacerItem();
 
     Qt::Alignment alignment() const { return align; }

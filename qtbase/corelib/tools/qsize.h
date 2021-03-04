@@ -7,7 +7,6 @@
 struct CGSize;
 
 
-
 class  QSize
 {
 public:
@@ -138,12 +137,12 @@ inline const QSize operator/(const QSize &s, qreal c)
     return QSize(qRound(s.wd/c), qRound(s.ht/c));
 }
 
-// oye
+// oye this and other 谁大用谁的
  inline QSize QSize::expandedTo(const QSize & otherSize) const 
 {
     return QSize(qMax(wd,otherSize.wd), qMax(ht,otherSize.ht));
 }
-
+// oye 谁小用谁的
  inline QSize QSize::boundedTo(const QSize & otherSize) const 
 {
     return QSize(qMin(wd,otherSize.wd), qMin(ht,otherSize.ht));

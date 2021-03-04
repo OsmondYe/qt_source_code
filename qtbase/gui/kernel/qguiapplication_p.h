@@ -31,9 +31,11 @@ class  QGuiApplicationPrivate : public QCoreApplicationPrivate
 public:
 
 	static QPlatformTheme *platform_theme;
+	// mouse, key touch, tablet
     static Qt::KeyboardModifiers modifier_buttons;
     static Qt::MouseButtons mouse_buttons;
 
+	
     static QPlatformIntegration *platform_integration;
     static QIcon *app_icon;
     static QString *platform_name;

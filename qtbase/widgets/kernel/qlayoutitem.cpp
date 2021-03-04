@@ -1,42 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWidgets module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #include "qlayout.h"
 
 #include "qapplication.h"
@@ -73,111 +34,6 @@ inline static QSize toLayoutItemSize(QWidgetPrivate *priv, const QSize &size)
 {
     return toLayoutItemRect(priv, QRect(QPoint(0, 0), size)).size();
 }
-
-/*!
-    \class QLayoutItem
-    \brief The QLayoutItem class provides an abstract item that a
-    QLayout manipulates.
-
-    \ingroup geomanagement
-    \inmodule QtWidgets
-
-    This is used by custom layouts.
-
-    Pure virtual functions are provided to return information about
-    the layout, including, sizeHint(), minimumSize(), maximumSize()
-    and expanding().
-
-    The layout's geometry can be set and retrieved with setGeometry()
-    and geometry(), and its alignment with setAlignment() and
-    alignment().
-
-    isEmpty() returns whether the layout item is empty. If the
-    concrete item is a QWidget, it can be retrieved using widget().
-    Similarly for layout() and spacerItem().
-
-    Some layouts have width and height interdependencies. These can
-    be expressed using hasHeightForWidth(), heightForWidth(), and
-    minimumHeightForWidth(). For more explanation see the \e{Qt
-    Quarterly} article
-    \l{http://doc.qt.io/archives/qq/qq04-height-for-width.html}{Trading
-    Height for Width}.
-
-    \sa QLayout
-*/
-
-/*!
-    \class QSpacerItem
-    \ingroup geomanagement
-    \brief The QSpacerItem class provides blank space in a layout.
-
-    \inmodule QtWidgets
-
-    Normally, you don't need to use this class directly. Qt's
-    built-in layout managers provide the following functions for
-    manipulating empty space in layouts:
-
-    \table
-    \header \li Class
-            \li Functions
-    \row    \li QHBoxLayout
-            \li \l{QBoxLayout::addSpacing()}{addSpacing()},
-               \l{QBoxLayout::addStretch()}{addStretch()},
-               \l{QBoxLayout::insertSpacing()}{insertSpacing()},
-               \l{QBoxLayout::insertStretch()}{insertStretch()}
-    \row    \li QGridLayout
-            \li \l{QGridLayout::setRowMinimumHeight()}{setRowMinimumHeight()},
-               \l{QGridLayout::setRowStretch()}{setRowStretch()},
-               \l{QGridLayout::setColumnMinimumWidth()}{setColumnMinimumWidth()},
-               \l{QGridLayout::setColumnStretch()}{setColumnStretch()}
-    \endtable
-
-    \sa QLayout, QWidgetItem, QLayoutItem::spacerItem()
-*/
-
-/*!
-    \class QWidgetItem
-    \ingroup geomanagement
-    \brief The QWidgetItem class is a layout item that represents a widget.
-
-    \inmodule QtWidgets
-
-    Normally, you don't need to use this class directly. Qt's
-    built-in layout managers provide the following functions for
-    manipulating widgets in layouts:
-
-    \table
-    \header \li Class
-            \li Functions
-    \row    \li QBoxLayout
-            \li \l{QBoxLayout::addWidget()}{addWidget()},
-               \l{QBoxLayout::insertWidget()}{insertWidget()},
-               \l{QBoxLayout::setStretchFactor()}{setStretchFactor()}
-    \row    \li QGridLayout
-            \li \l{QGridLayout::addWidget()}{addWidget()}
-    \row    \li QStackedLayout
-            \li \l{QStackedLayout::addWidget()}{addWidget()},
-               \l{QStackedLayout::insertWidget()}{insertWidget()},
-               \l{QStackedLayout::currentWidget()}{currentWidget()},
-               \l{QStackedLayout::setCurrentWidget()}{setCurrentWidget()},
-               \l{QStackedLayout::widget()}{widget()}
-    \endtable
-
-    \sa QLayout, QSpacerItem, QLayoutItem::widget()
-*/
-
-/*!
-    \fn QLayoutItem::QLayoutItem(Qt::Alignment alignment)
-
-    Constructs a layout item with an \a alignment.
-    Not all subclasses support alignment.
-*/
-
-/*!
-    \fn Qt::Alignment QLayoutItem::alignment() const
-
-    Returns the alignment of this item.
-*/
 
 /*!
     Sets the alignment of this item to \a alignment.
@@ -308,8 +164,6 @@ void QLayoutItem::invalidate()
 /*!
     If this item is a QLayout, it is returned as a QLayout; otherwise
     0 is returned. This function provides type-safe casting.
-
-    \sa spacerItem(), widget()
 */
 QLayout * QLayoutItem::layout()
 {
@@ -325,14 +179,6 @@ QLayout * QLayoutItem::layout()
 QSpacerItem * QLayoutItem::spacerItem()
 {
     return 0;
-}
-
-/*!
-    \reimp
-*/
-QLayout * QLayout::layout()
-{
-    return this;
 }
 
 /*!

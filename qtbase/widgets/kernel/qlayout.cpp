@@ -47,7 +47,7 @@ QLayout::QLayout()
 QLayout::QLayout(QLayoutPrivate &dd, QLayout *lay, QWidget *w)
     : QObject(dd, lay ? static_cast<QObject*>(lay) : static_cast<QObject*>(w))
 {
-    Q_D(QLayout);
+    QLayoutPrivate * const d = d_func();
     if (lay) {
         lay->addItem(this);
     } else if (w) {
@@ -98,13 +98,11 @@ void QLayoutPrivate::getMargin(int *result, int userMargin, QStyle::PixelMetric 
 
 QWidgetItem *QLayoutPrivate::createWidgetItem(const QLayout *layout, QWidget *widget)
 {
-
     return new QWidgetItemV2(widget);
 }
 
 QSpacerItem *QLayoutPrivate::createSpacerItem(const QLayout *layout, int w, int h, QSizePolicy::Policy hPolicy, QSizePolicy::Policy vPolicy)
 {
-
     return new QSpacerItem(w, h,  hPolicy, vPolicy);
 }
 
@@ -224,9 +222,7 @@ int QLayout::spacing() const
     }
 }
 
-/*!
-    \obsolete
-*/
+
 void QLayout::setMargin(int margin)
 {
     setContentsMargins(margin, margin, margin, margin);
@@ -243,30 +239,16 @@ void QLayout::setSpacing(int spacing)
         formlayout->setSpacing(spacing);
 #endif
     } else {
-        Q_D(QLayout);
+        QLayoutPrivate * const d = d_func();
         d->insideSpacing = spacing;
         invalidate();
     }
 }
 
-/*!
-    \since 4.3
 
-    Sets the \a left, \a top, \a right, and \a bottom margins to use
-    around the layout.
-
-    By default, QLayout uses the values provided by the style. On
-    most platforms, the margin is 11 pixels in all directions.
-
-    \sa getContentsMargins(), QStyle::pixelMetric(),
-        {QStyle::}{PM_LayoutLeftMargin},
-        {QStyle::}{PM_LayoutTopMargin},
-        {QStyle::}{PM_LayoutRightMargin},
-        {QStyle::}{PM_LayoutBottomMargin}
-*/
 void QLayout::setContentsMargins(int left, int top, int right, int bottom)
 {
-    Q_D(QLayout);
+    QLayoutPrivate * const d = d_func();
 
     if (d->userLeftMargin == left && d->userTopMargin == top &&
         d->userRightMargin == right && d->userBottomMargin == bottom)
@@ -279,16 +261,7 @@ void QLayout::setContentsMargins(int left, int top, int right, int bottom)
     invalidate();
 }
 
-/*!
-    \since 4.6
 
-    Sets the \a margins to use around the layout.
-
-    By default, QLayout uses the values provided by the style. On
-    most platforms, the margin is 11 pixels in all directions.
-
-    \sa contentsMargins()
-*/
 void QLayout::setContentsMargins(const QMargins &margins)
 {
     setContentsMargins(margins.left(), margins.top(), margins.right(), margins.bottom());
@@ -304,16 +277,7 @@ void QLayout::getContentsMargins(int *left, int *top, int *right, int *bottom) c
     d->getMargin(bottom, d->userBottomMargin, QStyle::PM_LayoutBottomMargin);
 }
 
-/*!
-    \since 4.6
 
-    Returns the margins used around the layout.
-
-    By default, QLayout uses the values provided by the style. On
-    most platforms, the margin is 11 pixels in all directions.
-
-    \sa setContentsMargins()
-*/
 QMargins QLayout::contentsMargins() const
 {
     int left, top, right, bottom;
@@ -321,14 +285,7 @@ QMargins QLayout::contentsMargins() const
     return QMargins(left, top, right, bottom);
 }
 
-/*!
-    \since 4.3
 
-    Returns the layout's geometry() rectangle, but taking into account the
-    contents margins.
-
-    \sa setContentsMargins(), getContentsMargins()
-*/
 QRect QLayout::contentsRect() const
 {
     Q_D(const QLayout);
@@ -338,15 +295,6 @@ QRect QLayout::contentsRect() const
 }
 
 
-/*!
-    Returns the parent widget of this layout, or 0 if this layout is
-    not installed on any widget.
-
-    If the layout is a sub-layout, this function returns the parent
-    widget of the parent layout.
-
-    \sa parent()
-*/
 QWidget *QLayout::parentWidget() const
 {
     Q_D(const QLayout);
@@ -357,7 +305,7 @@ QWidget *QLayout::parentWidget() const
                 qWarning("QLayout::parentWidget: A layout can only have another layout as a parent.");
                 return 0;
             }
-            return parentLayout->parentWidget();
+            return parentLayout->parentWidget();  // 递归寻找Widget
         } else {
             return 0;
         }
@@ -394,18 +342,14 @@ QSizePolicy::ControlTypes QLayout::controlTypes() const
     return types;
 }
 
-/*!
-    \reimp
-*/
-void QLayout::setGeometry(const QRect &r)
+
+void QLayout::setGeometry(const QRect &r) // virtual pure
 {
-    Q_D(QLayout);
+    QLayoutPrivate * const d = d_func();
     d->rect = r;
 }
 
-/*!
-    \reimp
-*/
+
 QRect QLayout::geometry() const
 {
     Q_D(const QLayout);
@@ -413,11 +357,11 @@ QRect QLayout::geometry() const
 }
 
 /*!
-    \reimp
+   oye 要求重绘
 */
 void QLayout::invalidate()
 {
-    Q_D(QLayout);
+    QLayoutPrivate * const d = d_func();
     d->rect = QRect();
     update();
 }
@@ -444,15 +388,19 @@ static bool removeWidgetRecursively(QLayoutItem *li, QObject *w)
 }
 
 
-void QLayoutPrivate::doResize(const QSize &r)
+void QLayoutPrivate::doResize(const QSize &r) // On QEventResize
 {
-    Q_Q(QLayout);
+    QLayout * const q = q_func();
     int mbh = menuBarHeightForWidth(menubar, r.width());
     QWidget *mw = q->parentWidget();
+	// oye 从parent widget出拿到实际的Rect用来重新规划新的layout
     QRect rect = mw->testAttribute(Qt::WA_LayoutOnEntireRect) ? mw->rect() : mw->contentsRect();
     const int mbTop = rect.top();
     rect.setTop(mbTop + mbh);
-    q->setGeometry(rect);
+
+	// 布局器的rect改变了,子类应该自动让布局器里面的所有元素,重新排列
+    q->setGeometry(rect);	// 纯虚函数,让子类来处理
+    // 真是的给顶部的menubar留了位置
 #if QT_CONFIG(menubar)
     if (menubar)
         menubar->setGeometry(rect.left(), mbTop, r.width(), mbh);
@@ -460,15 +408,10 @@ void QLayoutPrivate::doResize(const QSize &r)
 }
 
 
-/*!
-    \internal
-    Performs child widget layout when the parent widget is
-    resized.  Also handles removal of widgets. \a e is the
-    event
-*/
+// Like QObject::event();
 void QLayout::widgetEvent(QEvent *e)
 {
-    Q_D(QLayout);
+    QLayoutPrivate * const d = d_func();
     if (!d->enabled)
         return;
 
@@ -485,15 +428,14 @@ void QLayout::widgetEvent(QEvent *e)
         {
             QChildEvent *c = (QChildEvent *)e;
             if (c->child()->isWidgetType()) {
-#if QT_CONFIG(menubar)
                 if (c->child() == d->menubar)
                     d->menubar = 0;
-#endif
+				// 找到并删除
                 removeWidgetRecursively(this, c->child());
             }
         }
         break;
-    case QEvent::LayoutRequest:
+    case QEvent::LayoutRequest:  // deleteWidget(), update(), Widget::setvisible,updateGeometry
         if (static_cast<QWidget *>(parent())->isVisible())
             activate();
         break;
@@ -507,7 +449,7 @@ void QLayout::widgetEvent(QEvent *e)
 */
 void QLayout::childEvent(QChildEvent *e)
 {
-    Q_D(QLayout);
+    QLayoutPrivate * const d = d_func();
     if (!d->enabled)
         return;
 
@@ -625,7 +567,7 @@ QSize QLayout::totalMaximumSize() const
 */
 QLayout::~QLayout()
 {
-    Q_D(QLayout);
+    QLayoutPrivate * const d = d_func();
     if (d->topLevel && parent() && parent()->isWidgetType() && parentWidget()->layout() == this)
         parentWidget()->d_func()->layout = 0;
     else if (QLayout *parentLayout = qobject_cast<QLayout *>(parent()))
@@ -657,9 +599,7 @@ void QLayout::addChildLayout(QLayout *l)
 
 }
 
-/*!
-   \internal
- */
+
 bool QLayout::adoptLayout(QLayout *layout)
 {
     const bool ok = !layout->parent();
@@ -667,20 +607,11 @@ bool QLayout::adoptLayout(QLayout *layout)
     return ok;
 }
 
-#ifdef QT_DEBUG
-static bool layoutDebug()
-{
-    static int checked_env = -1;
-    if(checked_env == -1)
-        checked_env = !!qEnvironmentVariableIntValue("QT_LAYOUT_DEBUG");
 
-    return checked_env;
-}
-#endif
 
 void QLayoutPrivate::reparentChildWidgets(QWidget *mw)
 {
-    Q_Q(QLayout);
+    QLayout * const q = q_func();
     int n =  q->count();
 
 #if QT_CONFIG(menubar)
@@ -798,7 +729,7 @@ void QLayout::addChildWidget(QWidget *w)
 */
 void QLayout::setMenuBar(QWidget *widget)
 {
-    Q_D(QLayout);
+    QLayoutPrivate * const d = d_func();
         if (widget)
             addChildWidget(widget);
     d->menubar = widget;
@@ -816,16 +747,7 @@ QWidget *QLayout::menuBar() const
 }
 
 
-/*!
-    Returns the minimum size of this layout. This is the smallest
-    size that the layout can have while still respecting the
-    specifications.
 
-    The returned value doesn't include the space required by
-    QWidget::setContentsMargins() or menuBar().
-
-    The default implementation allows unlimited resizing.
-*/
 QSize QLayout::minimumSize() const
 {
     return QSize(0, 0);
@@ -837,65 +759,56 @@ QSize QLayout::maximumSize() const
     return QSize(QLAYOUTSIZE_MAX, QLAYOUTSIZE_MAX);
 }
 
-/*!
-    Returns whether this layout can make use of more space than
-    sizeHint(). A value of Qt::Vertical or Qt::Horizontal means that
-    it wants to grow in only one dimension, whereas Qt::Vertical |
-    Qt::Horizontal means that it wants to grow in both dimensions.
 
-    The default implementation returns Qt::Horizontal | Qt::Vertical.
-    Subclasses reimplement it to return a meaningful value based on
-    their child widgets's \l{QSizePolicy}{size policies}.
-
-    \sa sizeHint()
-*/
 Qt::Orientations QLayout::expandingDirections() const
 {
     return Qt::Horizontal | Qt::Vertical;
 }
 
+// in activate() will call it with activateRecursiveHelper(this)
+// 深度优先递归, 设置素有的layout为 activated = true
 void QLayout::activateRecursiveHelper(QLayoutItem *item)
 {
     item->invalidate();
-    QLayout *layout = item->layout();
+    QLayout *layout = item->layout();  // item 可否转型为layout, 典型composite模式
+	
     if (layout) {
+		// 如果是layout, 先激活其下所有子layout,
         QLayoutItem *child;
         int i=0;
         while ((child = layout->itemAt(i++)))
             activateRecursiveHelper(child);
+		// 最后激活自己
         layout->d_func()->activated = true;
     }
 }
 
 
-
+// oye  invalidate will call
 void QLayout::update()
 {
     QLayout *layout = this;
+	// 从this layout一路向上找,直到topLevel layout, 给topLevel layout的parent,必然是widget发送QEvent::LayoutRequest
     while (layout && layout->d_func()->activated) {
-        layout->d_func()->activated = false;
+        layout->d_func()->activated = false;		// 更新时先灭活?
+		
         if (layout->d_func()->topLevel) {
             Q_ASSERT(layout->parent()->isWidgetType());
             QWidget *mw = static_cast<QWidget*>(layout->parent());
+			// 找到layout的Widget,然后给此widget发送layout重绘消息
             QApplication::postEvent(mw, new QEvent(QEvent::LayoutRequest));
             break;
         }
+		// oye 根据树QLayoutItem的组织原理, 
+		//		非根节点如果是layout, parent一定也是layout
         layout = static_cast<QLayout*>(layout->parent());
     }
 }
 
-/*!
-    Redoes the layout for parentWidget() if necessary.
 
-    You should generally not need to call this because it is
-    automatically called at the most appropriate times. It returns
-    true if the layout was redone.
-
-    \sa update(), QWidget::updateGeometry()
-*/
 bool QLayout::activate()
 {
-    Q_D(QLayout);
+    QLayoutPrivate * const d = d_func();
     if (!d->enabled || !parent())
         return false;
     if (!d->topLevel)
@@ -908,8 +821,9 @@ bool QLayout::activate()
                  metaObject()->className(), qUtf16Printable(objectName()));
         return false;
     }
-    activateRecursiveHelper(this);
+    activateRecursiveHelper(this);  // 递归调用, 激活所有子layout
 
+	//
     QWidgetPrivate *md = mw->d_func();
     uint explMin = md->extra ? md->extra->explicitMinSize : 0;
     uint explMax = md->extra ? md->extra->explicitMaxSize : 0;
@@ -989,7 +903,7 @@ bool QLayout::activate()
 
 QLayoutItem *QLayout::replaceWidget(QWidget *from, QWidget *to, Qt::FindChildOptions options)
 {
-    Q_D(QLayout);
+    QLayoutPrivate * const d = d_func();
     if (!from || !to)
         return 0;
 
@@ -1071,7 +985,7 @@ int QLayout::indexOf(QWidget *widget) const
 */
 void QLayout::setSizeConstraint(SizeConstraint constraint)
 {
-    Q_D(QLayout);
+    QLayoutPrivate * const d = d_func();
     if (constraint == d->constraint)
         return;
 
@@ -1134,12 +1048,13 @@ QRect QLayout::alignmentRect(const QRect &r) const
 }
 
 /*!
-    Removes the widget \a widget from the layout. After this call, it
-    is the caller's responsibility to give the widget a reasonable
+    Removes the widget from the layout. 
+
+    After this call, it is the caller's responsibility to give the widget a reasonable
     geometry or to put the widget back into a layout or to explicitly
     hide it if necessary.
 
-    \b{Note:} The ownership of \a widget remains the same as
+    The ownership of  widget remains the same as
     when it was added.
 
     \sa removeItem(), QWidget::setGeometry(), addWidget()
@@ -1159,13 +1074,9 @@ void QLayout::removeWidget(QWidget *widget)
 }
 
 /*!
-    Removes the layout item \a item from the layout. It is the
-    caller's responsibility to delete the item.
-
-    Notice that \a item can be a layout (since QLayout inherits
-    QLayoutItem).
-
-    \sa removeWidget(), addItem()
+    Removes the layout item from the layout. 
+    
+    It is the caller's responsibility to delete the item.
 */
 void QLayout::removeItem(QLayoutItem *item)
 {
@@ -1182,26 +1093,19 @@ void QLayout::removeItem(QLayoutItem *item)
 }
 
 /*!
-    Enables this layout if \a enable is true, otherwise disables it.
+	oye
+    True adjusts dynamically to changes; 
 
-    An enabled layout adjusts dynamically to changes; a disabled
-    layout acts as if it did not exist.
-
-    By default all layouts are enabled.
-
-    \sa isEnabled()
+    False acts as if it did not exist
+    在widgetEvent()中如果!d->enabled, 则什么都不做
 */
 void QLayout::setEnabled(bool enable)
 {
-    Q_D(QLayout);
+    QLayoutPrivate * const d = d_func();
     d->enabled = enable;
 }
 
-/*!
-    Returns \c true if the layout is enabled; otherwise returns \c false.
 
-    \sa setEnabled()
-*/
 bool QLayout::isEnabled() const
 {
     Q_D(const QLayout);

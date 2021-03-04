@@ -113,7 +113,7 @@ public:
     static void setEffectEnabled(Qt::UIEffect, bool enable = true);
 
 
-    static int exec();
+    static int exec(){return QGuiApplication::exec();}
 	
 	// oye isWidget -> use it,  
 	//     isWindow -> use GUIAppication::notify,

@@ -1948,10 +1948,15 @@ void QWidget::setStyleSheet(const QString& styleSheet)
 
 #endif // QT_NO_STYLE_STYLESHEET
 
+/*
+	oye , PushButton 里面计算尺寸是碰到
+			style()->sizeFromContents(QStyle::CT_PushButton, &opt, QSize(w, h), this)
+			
+	(this)PushButton 拿到style, 如果自己定制了,就用定制的, 否则用App的
+*/
 QStyle *QWidget::style() const
 {
     QWidgetPrivate * const d = d_func();
-
     if (d->extra && d->extra->style)
         return d->extra->style;
     return QApplication::style();
@@ -9155,15 +9160,22 @@ bool QWidget::nativeEvent(const QByteArray &eventType, void *message, long *resu
     return false;
 }
 
-// oye, have a proper font and palette within the QStyle
-// oye: reimpl event(), hadnle QEvent::Polish
+/*
+    oye
+    
+    have a proper font and palette within the QStyle
+
+    ensure this widget and its children has been polished by QStyle
+
+*/
 void QWidget::ensurePolished() const
 {
     QWidgetPrivate * const d = d_func();
 
     const QMetaObject *m = metaObject();
     if (m == d->polished)
-        return;
+        return;  // prevent meaningless reentry
+	
     d->polished = m;
 
     QEvent e(QEvent::Polish);

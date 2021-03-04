@@ -557,7 +557,7 @@ void QCoreApplication::setQuitLockEnabled(bool enabled)
     quitLockRefEnabled = enabled;
 }
 
-
+// oye static
 bool QCoreApplication::notifyInternal2(QObject *receiver, QEvent *event)
 {
     bool selfRequired = QCoreApplicationPrivate::threadRequiresCoreApplication();
@@ -581,8 +581,9 @@ bool QCoreApplication::notifyInternal2(QObject *receiver, QEvent *event)
 	
     if (!selfRequired)
         return doNotify(receiver, event);
+	
 	//oye notify is virtual, so, maybe QApplication or QGUIApplication 
-    return self->notify(receiver, event);  
+    return self->notify(receiver, event);  // virtual
 }
 
 // virtual, is GUIAPP, see 
@@ -606,8 +607,6 @@ static bool doNotify(QObject *receiver, QEvent *event)
 
 bool QCoreApplicationPrivate::sendThroughApplicationEventFilters(QObject *receiver, QEvent *event)
 {
-    // We can't access the application event filters outside of the main thread (race conditions)
-    Q_ASSERT(receiver->d_func()->threadData->thread == mainThread());
 
     if (extraData) {
         // application event filters are only called for objects in the GUI thread

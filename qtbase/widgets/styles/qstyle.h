@@ -519,6 +519,11 @@ public:
         PM_CustomBase = 0xf0000000
     };
 
+	/*
+		oye , 计算一个特定单位的尺寸, 比如
+			pixelMetric(QStyle::PM_MenuButtonIndicator, &opt, this);
+				// (this)pushbutton里面 加上menu时, menu要给你一个指示符,计算其宽度
+	*/
     virtual int pixelMetric(PixelMetric metric, const QStyleOption *option = Q_NULLPTR,
                             const QWidget *widget = Q_NULLPTR) const = 0;
 

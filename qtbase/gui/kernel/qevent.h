@@ -65,7 +65,8 @@ class QGesture;
 #endif
 class QScreen;
 
-class Q_GUI_EXPORT QInputEvent : public QEvent
+//oye
+class  QInputEvent : public QEvent
 {
 public:
     explicit QInputEvent(Type type, Qt::KeyboardModifiers modifiers = Qt::NoModifier);

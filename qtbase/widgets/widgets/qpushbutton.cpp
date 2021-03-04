@@ -184,11 +184,12 @@ QSize QPushButton::sizeHint() const
         w += sz.width();
     if(!empty || !h)
         h = qMax(h, sz.height());
+	// oye update the style.rect, why? 
     opt.rect.setSize(QSize(w, h)); // PM_MenuButtonIndicator depends on the height
-#if QT_CONFIG(menu)
+
+	// calc menu indicator
     if (menu())
         w += style()->pixelMetric(QStyle::PM_MenuButtonIndicator, &opt, this);
-#endif
     d->sizeHint = (style()->sizeFromContents(QStyle::CT_PushButton, &opt, QSize(w, h), this).
                   expandedTo(QApplication::globalStrut()));
     return d->sizeHint;

@@ -14,6 +14,7 @@
 
 class  QLayout : public QObject, public QLayoutItem
 {
+	inline QLayoutPrivate* d_func() { return reinterpret_cast<QLayoutPrivate *>(qGetPtrHelper(d_ptr)); }
 
 public:
     enum SizeConstraint {
@@ -28,6 +29,8 @@ public:
     QLayout(QWidget *parent);
     QLayout();
     ~QLayout();
+
+    QLayout *layout() override {return this;} 
 
     int margin() const;
     int spacing() const;
@@ -65,7 +68,8 @@ public:
     Qt::Orientations expandingDirections() const ;
     QSize minimumSize() const ;
     QSize maximumSize() const ;
-    virtual void setGeometry(const QRect&) ;
+	// 
+    virtual void setGeometry(const QRect&) override ;
 	
     virtual void addItem(QLayoutItem *) = 0;
     virtual QLayoutItem *itemAt(int index) const = 0;
@@ -83,7 +87,7 @@ public:
     QSize totalMinimumSize() const;
     QSize totalMaximumSize() const;
     QSize totalSizeHint() const;
-    QLayout *layout() ;
+
 
     void setEnabled(bool);
     bool isEnabled() const;
@@ -92,6 +96,7 @@ public:
     static QSize closestAcceptableSize(const QWidget *w, const QSize &s);
 
 protected:
+	// oye event dispatcher时, 处理widget receiver中, 会call此函数
     void widgetEvent(QEvent *);
     void childEvent(QChildEvent *e) ;
     void addChildLayout(QLayout *l);
