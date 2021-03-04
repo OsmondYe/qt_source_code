@@ -13,9 +13,7 @@
 #include "qapplication.h"
 #include "qstyle.h"
 #include "qaction.h"
-#ifndef QT_NO_ACCESSIBILITY
-#include "qaccessible.h"
-#endif
+
 
 #include <algorithm>
 
@@ -472,13 +470,6 @@ void QAbstractButton::setChecked(bool checked)
     if (guard)
         d->emitToggled(checked);
 
-
-#ifndef QT_NO_ACCESSIBILITY
-    QAccessible::State s;
-    s.checked = true;
-    QAccessibleStateChangeEvent event(this, s);
-    QAccessible::updateAccessibility(&event);
-#endif
 }
 
 bool QAbstractButton::isChecked() const

@@ -91,6 +91,7 @@ public:
 	QHash<QWindow *, SynthesizedMouseData> synthesizedMousePoints;
 
 
+public:
     QGuiApplicationPrivate(int &argc, char **argv, int flags);
     ~QGuiApplicationPrivate();
 
@@ -108,11 +109,9 @@ public:
     bool shouldQuitInternal(const QWindowList &processedWindows);
     virtual bool tryCloseAllWindows();
 
-    static QPlatformIntegration *platformIntegration()
-    { return platform_integration; }
+    static QPlatformIntegration *platformIntegration() { return platform_integration; }
     
-    static QPlatformTheme *platformTheme()
-    { return platform_theme; }
+    static QPlatformTheme *platformTheme()   { return platform_theme; }
 
     static QAbstractEventDispatcher *qt_qpa_core_dispatcher()
     {
@@ -198,6 +197,7 @@ public:
 
     static void showModalWindow(QWindow *window);
     static void hideModalWindow(QWindow *window);
+	
     static void updateBlockedStatus(QWindow *window);
     virtual bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = 0) const;
     virtual bool popupActive() { return false; }

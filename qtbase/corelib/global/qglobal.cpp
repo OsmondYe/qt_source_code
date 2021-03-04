@@ -715,7 +715,39 @@ struct QInternal_CallBackTable {
     QVector<QList<qInternalCallback> > callbacks;
 };
 
-Q_GLOBAL_STATIC(QInternal_CallBackTable, global_callback_table)
+//Q_GLOBAL_STATIC(QInternal_CallBackTable, global_callback_table)
+// oye expand  Q_GLOBAL_STATIC for global_callback_table to study
+namespace { 
+	namespace Q_QGS_global_callback_table {									
+		typedef QInternal_CallBackTable Type;													
+		QBasicAtomicInt guard = Q_BASIC_ATOMIC_INITIALIZER(QtGlobalStatic::Uninitialized); 									
+		inline Type *innerFunction()                          
+    {                                                                   
+        static Type *d;                                                 
+        static QBasicMutex mutex;                                       
+        int x = guard.loadAcquire();                                    
+        if (Q_UNLIKELY(x >= QtGlobalStatic::Uninitialized)) {           
+            QMutexLocker locker(&mutex);                                
+            if (guard.load() == QtGlobalStatic::Uninitialized) {        
+                d = new Type ();                                      
+                static struct Cleanup {                                 
+                    ~Cleanup() {                                        
+                        delete d;                                       
+                        guard.store(QtGlobalStatic::Destroyed);         
+                    }                                                   
+                } cleanup;                                              
+                guard.storeRelease(QtGlobalStatic::Initialized);        
+            }                                                           
+        }                                                               
+        return d;                                                       
+    }
+	} 
+} 																	
+static QGlobalStatic<QInternal_CallBackTable,												
+					 Q_QGS_global_callback_table::innerFunction, 					
+					 Q_QGS_global_callback_table::guard> global_callback_table;
+
+
 
 bool QInternal::registerCallback(Callback cb, qInternalCallback callback)
 {
@@ -741,8 +773,7 @@ bool QInternal::unregisterCallback(Callback cb, qInternalCallback callback)
 
 bool QInternal::activateCallbacks(Callback cb, void **parameters)
 {
-    Q_ASSERT_X(cb >= 0, "QInternal::activateCallback()", "Callback id must be a valid id");
-
+    
     if (!global_callback_table.exists())
         return false;
 

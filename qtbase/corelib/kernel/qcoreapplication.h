@@ -77,7 +77,7 @@ public:
     static QAbstractEventDispatcher *eventDispatcher();
     static void setEventDispatcher(QAbstractEventDispatcher *eventDispatcher);
 
-    virtual bool notify(QObject *, QEvent *);
+    virtual bool notify(QObject *, QEvent *)override;
 	
 
     static bool startingUp();
@@ -132,7 +132,12 @@ protected:
     QCoreApplication(QCoreApplicationPrivate &p);   
 
 private:
-    static bool sendSpontaneousEvent(QObject *receiver, QEvent *event);
+
+	inline bool static sendSpontaneousEvent(QObject *receiver, QEvent *event)
+	{ 
+		if (event) event->spont = true; 
+		return notifyInternal2(receiver, event); 
+	}
     static bool notifyInternal2(QObject *receiver, QEvent *);
 
    // Q_DISABLE_COPY(QCoreApplication)
@@ -153,8 +158,7 @@ private:
 
 
 
-inline bool QCoreApplication::sendSpontaneousEvent(QObject *receiver, QEvent *event)
-{ if (event) event->spont = true; return notifyInternal2(receiver, event); }
+
 
 
 #define QT_DECLARE_DEPRECATED_TR_FUNCTIONS(context)

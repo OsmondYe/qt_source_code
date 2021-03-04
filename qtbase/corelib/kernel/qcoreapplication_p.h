@@ -11,20 +11,13 @@ QT_BEGIN_NAMESPACE
 
 typedef QList<QTranslator*> QTranslatorList;
 
-class QAbstractEventDispatcher;
-
-class QCoreApplicationPrivate     : public QObjectPrivate
-
+class QCoreApplicationPrivate  : public QObjectPrivate
 {
     //Q_DECLARE_PUBLIC(QCoreApplication)
 public:
-    enum Type {
-        Tty,
-        Gui
-    };
+    enum Type {  Tty, Gui  };
 
-	QCoreApplicationPrivate::Type application_type;
-	
+	QCoreApplicationPrivate::Type application_type;	
 	int &argc;
     char **argv;
     int origArgc;
@@ -36,7 +29,6 @@ public:
     bool aboutToQuitEmitted;
     bool threadData_clean;
 
-
     static QString *cachedApplicationFilePath;
     static QAbstractEventDispatcher *eventDispatcher;
     static bool is_app_running;
@@ -47,13 +39,15 @@ public:
 	static int app_compile_version;
     QCoreApplication *q_ptr;
 
+
+public:
     QCoreApplicationPrivate(int &aargc,  char **aargv, uint flags);
     ~QCoreApplicationPrivate();
 
     void init();
 
-    QString appName() const;
-    QString appVersion() const;
+    QString appName() const {return QFileInfo(qAppFileName()).baseName();}
+    QString appVersion() const{return 8888;}
 
 
     static void initLocale();
@@ -67,8 +61,8 @@ public:
 
     virtual void createEventDispatcher();
     virtual void eventDispatcherReady();
+	
     static void removePostedEvent(QEvent *);
-
     static void removePostedTimerEvent(QObject *object, int timerId);
 
     QAtomicInt quitLockRef;
@@ -83,7 +77,9 @@ public:
 
     static void sendPostedEvents(QObject *receiver, int event_type, QThreadData *data);
 
+	//oye current::thread() == receiver->thread;
     static void checkReceiverThread(QObject *receiver);
+   
     void cleanupThreadData();
 
 

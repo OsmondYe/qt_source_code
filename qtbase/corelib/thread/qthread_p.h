@@ -149,7 +149,7 @@ private:
 
 public:
     int loopLevel;
-    int scopeLevel;
+    int scopeLevel; // using by QScopedScopeLevelCounter
 
 	// MSG 3tuple[ eventLoops, postEvetnList, eventDispather ] 
     QStack<QEventLoop *> eventLoops;

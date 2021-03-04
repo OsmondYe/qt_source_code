@@ -1490,25 +1490,8 @@ void QApplication::aboutQt()
 #endif // QT_CONFIG(messagebox)
 }
 
-/*!
-    \since 4.1
-    \fn void QApplication::focusChanged(QWidget *old, QWidget *now)
 
-    This signal is emitted when the widget that has keyboard focus changed from
-    \a old to \a now, i.e., because the user pressed the tab-key, clicked into
-    a widget or changed the active window. Both \a old and \a now can be the
-    null-pointer.
-
-    The signal is emitted after both widget have been notified about the change
-    through QFocusEvent.
-
-    \sa QWidget::setFocus(), QWidget::clearFocus(), Qt::FocusReason
-*/
-
-/*!\reimp
-
-*/
-bool QApplication::event(QEvent *e)
+bool QApplication::event(QEvent *e) override
 {
     QApplicationPrivate * const d = d_func();
     if(e->type() == QEvent::Close) {
@@ -2502,9 +2485,8 @@ static inline void closeAllPopups()
         popup->close();
 }
 
-/*! \reimp
- */
-bool QApplication::notify(QObject *receiver, QEvent *e)
+// oye 800 line, SendEvent的核心处理逻辑在这里,
+bool QApplication::notify(QObject *receiver, QEvent *e) override
 {
     QApplicationPrivate * const d = d_func();
     // no events are delivered after ~QCoreApplication() has started
@@ -2515,66 +2497,61 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         qWarning("QApplication::notify: Unexpected null receiver");
         return true;
     }
-
-#ifndef QT_NO_DEBUG
+	// current::thread == receiver->thread;
     d->checkReceiverThread(receiver);
-#endif
 
     if (receiver->isWindowType())
         QGuiApplicationPrivate::sendQWindowEventToQPlatformWindow(static_cast<QWindow *>(receiver), e);
 
+	// 来自win32的消息
     if(e->spontaneous()) {
         // Capture the current mouse and keyboard states. Doing so here is
         // required in order to support Qt Test synthesized events. Real mouse
         // and keyboard state updates from the platform plugin are managed by
         // QGuiApplicationPrivate::process(Mouse|Wheel|Key|Touch|Tablet)Event();
         switch (e->type()) {
-        case QEvent::MouseButtonPress:
-            {
-                QMouseEvent *me = static_cast<QMouseEvent*>(e);
-                QApplicationPrivate::modifier_buttons = me->modifiers();
-                QApplicationPrivate::mouse_buttons |= me->button();
-                break;
-            }
-        case QEvent::MouseButtonDblClick:
-            {
-                QMouseEvent *me = static_cast<QMouseEvent*>(e);
-                QApplicationPrivate::modifier_buttons = me->modifiers();
-                QApplicationPrivate::mouse_buttons |= me->button();
-                break;
-            }
-        case QEvent::MouseButtonRelease:
-            {
-                QMouseEvent *me = static_cast<QMouseEvent*>(e);
-                QApplicationPrivate::modifier_buttons = me->modifiers();
-                QApplicationPrivate::mouse_buttons &= ~me->button();
-                break;
-            }
-        case QEvent::KeyPress:
-        case QEvent::KeyRelease:
-        case QEvent::MouseMove:
-#if QT_CONFIG(wheelevent)
-        case QEvent::Wheel:
-#endif
-        case QEvent::TouchBegin:
-        case QEvent::TouchUpdate:
-        case QEvent::TouchEnd:
-#if QT_CONFIG(tabletevent)
-        case QEvent::TabletMove:
-        case QEvent::TabletPress:
-        case QEvent::TabletRelease:
-#endif
-            {
-                QInputEvent *ie = static_cast<QInputEvent*>(e);
-                QApplicationPrivate::modifier_buttons = ie->modifiers();
-                break;
-            }
-        default:
-            break;
+	        case QEvent::MouseButtonPress:
+	            {
+	                QMouseEvent *me = static_cast<QMouseEvent*>(e);
+	                QApplicationPrivate::modifier_buttons = me->modifiers();
+	                QApplicationPrivate::mouse_buttons |= me->button();
+	                break;
+	            }
+	        case QEvent::MouseButtonDblClick:
+	            {
+	                QMouseEvent *me = static_cast<QMouseEvent*>(e);
+	                QApplicationPrivate::modifier_buttons = me->modifiers();
+	                QApplicationPrivate::mouse_buttons |= me->button();
+	                break;
+	            }
+	        case QEvent::MouseButtonRelease:
+	            {
+	                QMouseEvent *me = static_cast<QMouseEvent*>(e);
+	                QApplicationPrivate::modifier_buttons = me->modifiers();
+	                QApplicationPrivate::mouse_buttons &= ~me->button();
+	                break;
+	            }
+	        case QEvent::KeyPress:
+	        case QEvent::KeyRelease:
+	        case QEvent::MouseMove:
+	        case QEvent::Wheel:
+	        case QEvent::TouchBegin:
+	        case QEvent::TouchUpdate:
+	        case QEvent::TouchEnd:
+	        case QEvent::TabletMove:
+	        case QEvent::TabletPress:
+	        case QEvent::TabletRelease:
+	            {
+	                QInputEvent *ie = static_cast<QInputEvent*>(e);
+	                QApplicationPrivate::modifier_buttons = ie->modifiers();
+	                break;
+	            }
+	        default:
+	            break;
         }
     }
 
-#ifndef QT_NO_GESTURES
+
     // walk through parents and check for gestures
     if (d->gestureManager) {
         switch (e->type()) {
@@ -2614,7 +2591,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             break;
         }
     }
-#endif // QT_NO_GESTURES
 
     switch (e->type()) {
     case QEvent::ApplicationDeactivate:

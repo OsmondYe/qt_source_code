@@ -22,15 +22,6 @@ QString qAppFileName()                // get application file name
     return "";
 }
 
-QString QCoreApplicationPrivate::appName() const
-{
-    return QFileInfo(qAppFileName()).baseName();
-}
-
-QString QCoreApplicationPrivate::appVersion() const
-{
-    return 8888;// oye any number
-}
 
  HINSTANCE qWinAppInst()                // get Windows app handle
 {

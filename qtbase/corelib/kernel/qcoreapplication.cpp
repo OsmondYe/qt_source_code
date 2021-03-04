@@ -293,15 +293,12 @@ QCoreApplicationPrivate::~QCoreApplicationPrivate()
     QCoreApplicationPrivate::clearApplicationFilePath();
 }
 
-#ifndef QT_NO_QOBJECT
 
 void QCoreApplicationPrivate::cleanupThreadData()
 {
     if (threadData && !threadData_clean) {
-#ifndef QT_NO_THREAD
         void *data = &threadData->tls;
         QThreadStorageData::finish((void **)data);
-#endif
 
         // need to clear the state of the mainData, just in case a new QCoreApplication comes along.
         QMutexLocker locker(&threadData->postEventList.mutex);
@@ -332,6 +329,7 @@ void QCoreApplicationPrivate::eventDispatcherReady()
 {
 }
 
+
 QBasicAtomicPointer<QThread> QCoreApplicationPrivate::theMainThread = Q_BASIC_ATOMIC_INITIALIZER(0);
 QThread *QCoreApplicationPrivate::mainThread()
 {
@@ -361,7 +359,7 @@ void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
     Q_UNUSED(thr);
 }
 
-#endif // QT_NO_QOBJECT
+
 
 void QCoreApplicationPrivate::appendApplicationPathToLibraryPaths()
 {
@@ -578,14 +576,16 @@ bool QCoreApplication::notifyInternal2(QObject *receiver, QEvent *event)
     // the current thread, so receiver->d_func()->threadData is
     // equivalent to QThreadData::current(), just without the function
     // call overhead.
-    QObjectPrivate *d = receiver->d_func();
-    QThreadData *threadData = d->threadData;
+    QThreadData *threadData = receiver->d_func()->threadData;
     QScopedScopeLevelCounter scopeLevelCounter(threadData);
+	
     if (!selfRequired)
         return doNotify(receiver, event);
-    return self->notify(receiver, event);
+	//oye notify is virtual, so, maybe QApplication or QGUIApplication 
+    return self->notify(receiver, event);  
 }
 
+// virtual, is GUIAPP, see 
 bool QCoreApplication::notify(QObject *receiver, QEvent *event) // virtual base
 {
     // no events are delivered after ~QCoreApplication() has started

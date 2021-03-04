@@ -153,28 +153,32 @@ QSize QPushButton::sizeHint() const
     d->lastAutoDefault = autoDefault();
     ensurePolished();
 
+	// oye size: Icon + Text + Menu
+
     int w = 0, h = 0;
 
     QStyleOptionButton opt;
     initStyleOption(&opt);
 
     // calculate contents size...
-#if !defined(QT_NO_ICON) && QT_CONFIG(dialogbuttonbox)
     bool showButtonBoxIcons = qobject_cast<QDialogButtonBox*>(parentWidget())
                           && style()->styleHint(QStyle::SH_DialogButtonBox_ButtonsHaveIcons);
 
+	// consider size of icon						  
     if (!icon().isNull() || showButtonBoxIcons) {
         int ih = opt.iconSize.height();
         int iw = opt.iconSize.width() + 4;
         w += iw;
         h = qMax(h, ih);
     }
-#endif
+
+	// 
     QString s(text());
     bool empty = s.isEmpty();
     if (empty)
         s = QStringLiteral("XXXX");
     QFontMetrics fm = fontMetrics();
+	// calc the size of s
     QSize sz = fm.size(Qt::TextShowMnemonic, s);
     if(!empty || !w)
         w += sz.width();
@@ -419,27 +423,21 @@ bool QPushButton::isFlat() const
     return d->flat;
 }
 
-/*! \reimp */
 bool QPushButton::event(QEvent *e)
 {
     QPushButtonPrivate * const d = d_func();
     if (e->type() == QEvent::ParentChange) {
-#if QT_CONFIG(dialog)
         if (QDialog *dialog = d->dialogParent()) {
             if (d->defaultButton)
                 dialog->d_func()->setMainDefault(this);
         }
-#endif
-    } else if (e->type() == QEvent::StyleChange
-#ifdef Q_OS_MAC
-               || e->type() == QEvent::MacSizeChange
-#endif
-               ) {
+    } else if (e->type() == QEvent::StyleChange) {
         d->resetLayoutItemMargins();
         updateGeometry();
     } else if (e->type() == QEvent::PolishRequest) {
         updateGeometry();
     }
+	
     return QAbstractButton::event(e);
 }
 

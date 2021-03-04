@@ -1182,10 +1182,10 @@ int QGuiApplication::exec()
     return QCoreApplication::exec();
 }
 
-
-bool QGuiApplication::notify(QObject *object, QEvent *event)
+// override, GUI only care about the window notify
+bool QGuiApplication::notify(QObject *object, QEvent *event)override
 {
-    if (object->isWindowType())
+    if (object->isWindowType())		
         QGuiApplicationPrivate::sendQWindowEventToQPlatformWindow(static_cast<QWindow *>(object), event);
     return QCoreApplication::notify(object, event);
 }
@@ -1205,6 +1205,7 @@ bool QGuiApplication::compressEvent(QEvent *event, QObject *receiver, QPostEvent
     return QCoreApplication::compressEvent(event, receiver, postedEvents);
 }
 
+// oye UI层面 SendEvent 职责被转发到这里
 void QGuiApplicationPrivate::sendQWindowEventToQPlatformWindow(QWindow *window, QEvent *event)
 {
     if (!window)

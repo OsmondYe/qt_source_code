@@ -52,9 +52,6 @@ protected:
     void focusOutEvent(QFocusEvent *) Q_DECL_OVERRIDE;
     void initStyleOption(QStyleOptionButton *option) const;
     QPushButton(QPushButtonPrivate &dd, QWidget* parent = Q_NULLPTR);
-
-public:
-
 private:
     //Q_DISABLE_COPY(QPushButton)
     //Q_DECLARE_PRIVATE(QPushButton)

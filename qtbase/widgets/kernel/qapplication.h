@@ -27,6 +27,7 @@ class QApplicationPrivate;
 
 #define qApp (static_cast<QApplication *>(QCoreApplication::instance()))
 
+// oye:  比 QGuiApp 更进一步
 class  QApplication : public QGuiApplication
 {
     Q_OBJECT
@@ -113,7 +114,11 @@ public:
 
 
     static int exec();
-    bool notify(QObject *, QEvent *) Q_DECL_OVERRIDE;
+	
+	// oye isWidget -> use it,  
+	//     isWindow -> use GUIAppication::notify,
+	//     others   -> use QCoreAppication::notify
+    bool notify(QObject *, QEvent *) override;
 
 #ifdef QT_KEYPAD_NAVIGATION
     static Q_DECL_DEPRECATED void setKeypadNavigationEnabled(bool);
@@ -136,7 +141,7 @@ public Q_SLOTS:
     static void aboutQt();
 
 protected:
-    bool event(QEvent *) Q_DECL_OVERRIDE;
+    bool event(QEvent *) override;
     bool compressEvent(QEvent *, QObject *receiver, QPostEventList *) override;
 
 private:

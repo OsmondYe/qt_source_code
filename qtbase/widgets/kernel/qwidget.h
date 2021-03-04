@@ -144,7 +144,8 @@ public:
 
     const QFont &font() const;
     void setFont(const QFont &);
-    QFontMetrics fontMetrics() const;
+	// oye, PushButton use it to caculate the size of text
+    QFontMetrics fontMetrics() const{ return QFontMetrics(data->fnt); }
     QFontInfo fontInfo() const;
 
     QCursor cursor() const;
@@ -579,9 +580,6 @@ inline void QWidget::setBaseSize(const QSize &s)
 
 inline const QFont &QWidget::font() const
 { return data->fnt; }
-
-inline QFontMetrics QWidget::fontMetrics() const
-{ return QFontMetrics(data->fnt); }
 
 inline QFontInfo QWidget::fontInfo() const
 { return QFontInfo(data->fnt); }
