@@ -1,42 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtCore module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #ifndef QVARLENGTHARRAY_H
 #define QVARLENGTHARRAY_H
 
@@ -63,6 +24,16 @@ class QPodList;
 template<class T, int Prealloc>
 class QVarLengthArray
 {
+	int a;		// capacity
+	int s;		// size
+	T *ptr; 	// data
+	union {
+		char array[Prealloc * sizeof(T)];
+		qint64 q_for_alignment_1;
+		double q_for_alignment_2;
+	};
+
+
 public:
     inline explicit QVarLengthArray(int size = 0);
 
@@ -71,15 +42,6 @@ public:
     {
         append(other.constData(), other.size());
     }
-
-#ifdef Q_COMPILER_INITIALIZER_LISTS
-    QVarLengthArray(std::initializer_list<T> args)
-        : a(Prealloc), s(0), ptr(reinterpret_cast<T *>(array))
-    {
-        if (args.size())
-            append(args.begin(), int(args.size()));
-    }
-#endif
 
     inline ~QVarLengthArray() {
         if (QTypeInfo<T>::isComplex) {
@@ -98,16 +60,6 @@ public:
         }
         return *this;
     }
-
-#ifdef Q_COMPILER_INITIALIZER_LISTS
-    QVarLengthArray<T, Prealloc> &operator=(std::initializer_list<T> list)
-    {
-        resize(list.size());
-        std::copy(list.begin(), list.end(),
-                  QT_MAKE_CHECKED_ARRAY_ITERATOR(this->begin(), this->size()));
-        return *this;
-    }
-#endif
 
     inline void removeLast() {
         Q_ASSERT(s > 0);
@@ -239,14 +191,7 @@ private:
     friend class QPodList<T, Prealloc>;
     void realloc(int size, int alloc);
 
-    int a;      // capacity
-    int s;      // size
-    T *ptr;     // data
-    union {
-        char array[Prealloc * sizeof(T)];
-        qint64 q_for_alignment_1;
-        double q_for_alignment_2;
-    };
+
 
     bool isValidIterator(const const_iterator &i) const
     {

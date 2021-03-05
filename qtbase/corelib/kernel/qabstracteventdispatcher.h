@@ -15,7 +15,7 @@ class QWinEventNotifier;
 //oye for windows, using QEventDispatcherWin32 
 class QAbstractEventDispatcher : public QObject
 {
-    Q_OBJECT
+    //Q_OBJECT
     //Q_DECLARE_PRIVATE(QAbstractEventDispatcher)
 public:
     struct TimerInfo    {

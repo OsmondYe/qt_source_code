@@ -266,11 +266,7 @@ static inline const char *objectClassName(const QMetaObject *m)
     return rawStringData(m, priv(m->d.data)->className);
 }
 
-/*!
-    Returns the class name.
 
-    \sa superClass()
-*/
 const char *QMetaObject::className() const
 {
     return objectClassName(this);
@@ -541,10 +537,13 @@ static bool methodMatch(const QMetaObject *m, int handle,
 }
 
 /**
-* \internal
-* helper function for indexOf{Method,Slot,Signal}, returns the relative index of the method within
-* the baseObject
-* \a MethodType might be MethodSignal or MethodSlot, or 0 to match everything.
+	OYE 
+	returns the relative index of the method within
+	
+	MethodType:  MethodSignal  |  MethodSlot
+
+	Meta里面 通过 slots,signals之类的 预处理,已经提前把很多信息存进去啦
+
 */
 template<int MethodType>
 static inline int indexOfMethodRelative(const QMetaObject **baseObject,
@@ -614,7 +613,6 @@ int QMetaObject::indexOfMethod(const char *method) const
 static void argumentTypesFromString(const char *str, const char *end,
                                     QArgumentTypeArray &types)
 {
-    Q_ASSERT(str <= end);
     while (str != end) {
         if (!types.isEmpty())
             ++str; // Skip comma
@@ -631,18 +629,19 @@ static void argumentTypesFromString(const char *str, const char *end,
     }
 }
 
-// Given a method \a signature (e.g. "foo(int,double)"), this function
-// populates the argument \a types array and returns the method name.
+// Given a method signature (e.g. "foo(int,double)"), this function
+// populates the argument  types array and returns the method name.
 QByteArray QMetaObjectPrivate::decodeMethodSignature(
         const char *signature, QArgumentTypeArray &types)
 {
-    Q_ASSERT(signature != 0);
     const char *lparens = strchr(signature, '(');
     if (!lparens)
         return QByteArray();
+	
     const char *rparens = strrchr(lparens + 1, ')');
     if (!rparens || *(rparens+1))
         return QByteArray();
+	
     int nameLength = lparens - signature;
     argumentTypesFromString(lparens + 1, rparens, types);
     return QByteArray::fromRawData(signature, nameLength);
@@ -672,12 +671,7 @@ int QMetaObject::indexOfSignal(const char *signal) const
     return i;
 }
 
-/*!
-    \internal
-    Same as QMetaObject::indexOfSignal, but the result is the local offset to the base object.
 
-    \a baseObject will be adjusted to the enclosing QMetaObject, or 0 if the signal is not found
-*/
 int QMetaObjectPrivate::indexOfSignalRelative(const QMetaObject **baseObject,
                                               const QByteArray &name, int argc,
                                               const QArgumentType *types)

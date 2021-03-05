@@ -34,11 +34,8 @@ QEventLoop::~QEventLoop()
 
 
 bool QEventLoop::processEvents(ProcessEventsFlags flags)
-{
-    QEventLoopPrivate * const d = d_func();
-    if (!d->threadData->eventDispatcher.load())
-        return false;
-    return d->threadData->eventDispatcher.load()->processEvents(flags);
+{    
+	return QEventDispatcherWin32::processEvents(flags); // oye modified
 }
 
 int QEventLoop::exec(ProcessEventsFlags flags)

@@ -60,6 +60,8 @@ class  QObjectPrivate : public QObjectData
     inline QObject* q_func() { return static_cast<Class *>(q_ptr); }
 public:
     ExtraData *extraData;    // extra data set by the user
+
+	// oye 每个这样的Object对象都关联了threadData, 相同线程的值必然相同
     QThreadData *threadData; // id of the thread that owns the object
 
     QObjectConnectionListVector *connectionLists;

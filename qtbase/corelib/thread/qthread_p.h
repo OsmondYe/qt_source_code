@@ -153,7 +153,7 @@ public:
 
 	// MSG 3tuple[ eventLoops, postEvetnList, eventDispather ] 
     QStack<QEventLoop *> eventLoops;
-    QPostEventList postEventList;
+    QPostEventList postEventList;		// OYE 当QT要PostEvent时,存于此地[QPostEvent(receiver, event, priority)]
 	// created by QThreadPrivate::createEventDispatcher()
     QAtomicPointer<QAbstractEventDispatcher> eventDispatcher;    //using QEventDispatcherWin32 
 
@@ -162,7 +162,7 @@ public:
     QAtomicPointer<void> threadId;   							// GetCurrentThreadId
     QVector<void *> tls;
 	
-    FlaggedDebugSignatures flaggedSignatures;
+    FlaggedDebugSignatures flaggedSignatures;   // debugged verison
 
     bool quitNow;
     bool canWait;

@@ -1,53 +1,8 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtCore module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #ifndef Q_QDOC
 
 #ifndef QOBJECTDEFS_H
 #error Do not include qobjectdefs_impl.h directly
 #include <QtCore/qnamespace.h>
-#endif
-
-#if 0
-#pragma qt_sync_skip_header_check
-#pragma qt_sync_stop_processing
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -157,6 +112,13 @@ namespace QtPrivate {
     };
 #endif
 
+	/*
+		Oye
+		一个结构体我需要的参数是 
+			ReturnType (ClassType::*)(Args ...)   ->   类的成员函数的指针
+			Returntype (*)(Args ...)			  ->   普通成员函数指针
+			
+	*/
     template<class Obj, typename Ret, typename... Args> struct FunctionPointer<Ret (Obj::*) (Args...)>
     {
         typedef Obj Object;
@@ -169,19 +131,7 @@ namespace QtPrivate {
             FunctorCall<typename Indexes<ArgumentCount>::Value, SignalArgs, R, Function>::call(f, o, arg);
         }
     };
-    template<class Obj, typename Ret, typename... Args> struct FunctionPointer<Ret (Obj::*) (Args...) const>
-    {
-        typedef Obj Object;
-        typedef List<Args...>  Arguments;
-        typedef Ret ReturnType;
-        typedef Ret (Obj::*Function) (Args...) const;
-        enum {ArgumentCount = sizeof...(Args), IsPointerToMemberFunction = true};
-        template <typename SignalArgs, typename R>
-        static void call(Function f, Obj *o, void **arg) {
-            FunctorCall<typename Indexes<ArgumentCount>::Value, SignalArgs, R, Function>::call(f, o, arg);
-        }
-    };
-
+   
     template<typename Ret, typename... Args> struct FunctionPointer<Ret (*) (Args...)>
     {
         typedef List<Args...> Arguments;
@@ -194,44 +144,6 @@ namespace QtPrivate {
         }
     };
 
-#if defined(__cpp_noexcept_function_type) && __cpp_noexcept_function_type >= 201510
-    template<class Obj, typename Ret, typename... Args> struct FunctionPointer<Ret (Obj::*) (Args...) noexcept>
-    {
-        typedef Obj Object;
-        typedef List<Args...>  Arguments;
-        typedef Ret ReturnType;
-        typedef Ret (Obj::*Function) (Args...) noexcept;
-        enum {ArgumentCount = sizeof...(Args), IsPointerToMemberFunction = true};
-        template <typename SignalArgs, typename R>
-        static void call(Function f, Obj *o, void **arg) {
-            FunctorCall<typename Indexes<ArgumentCount>::Value, SignalArgs, R, Function>::call(f, o, arg);
-        }
-    };
-    template<class Obj, typename Ret, typename... Args> struct FunctionPointer<Ret (Obj::*) (Args...) const noexcept>
-    {
-        typedef Obj Object;
-        typedef List<Args...>  Arguments;
-        typedef Ret ReturnType;
-        typedef Ret (Obj::*Function) (Args...) const noexcept;
-        enum {ArgumentCount = sizeof...(Args), IsPointerToMemberFunction = true};
-        template <typename SignalArgs, typename R>
-        static void call(Function f, Obj *o, void **arg) {
-            FunctorCall<typename Indexes<ArgumentCount>::Value, SignalArgs, R, Function>::call(f, o, arg);
-        }
-    };
-
-    template<typename Ret, typename... Args> struct FunctionPointer<Ret (*) (Args...) noexcept>
-    {
-        typedef List<Args...> Arguments;
-        typedef Ret ReturnType;
-        typedef Ret (*Function) (Args...) noexcept;
-        enum {ArgumentCount = sizeof...(Args), IsPointerToMemberFunction = false};
-        template <typename SignalArgs, typename R>
-        static void call(Function f, void *, void **arg) {
-            FunctorCall<typename Indexes<ArgumentCount>::Value, SignalArgs, R, Function>::call(f, arg);
-        }
-    };
-#endif
 
     template<typename Function, int N> struct Functor
     {

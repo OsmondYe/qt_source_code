@@ -693,7 +693,14 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int m
     }
 }
 
-// oye:: QEventLoop eventLoop and its exec();
+// oye:: 
+/*
+	oye 
+	QEventLoop eventLoop and its exec();
+
+	the identical exec() for qApp,qguiApp,qCoreApp, 
+	
+*/
 int QCoreApplication::exec()  // static
 {
 	// oye, checkInstance will make sure the singleton must be instanciated
@@ -713,8 +720,9 @@ int QCoreApplication::exec()  // static
         qWarning("QCoreApplication::exec: The event loop is already running");
         return -1;
     }
-
+	//
 	// algo begins
+	//
     threadData->quitNow = false;
     QEventLoop eventLoop;
     self->d_func()->in_exec = true;
@@ -813,6 +821,10 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
         data->postEventList.mutex.lock();
     }
 
+	//
+	//  algo begin
+	//
+
     QMutexUnlocker locker(&data->postEventList.mutex);
 
     // if this is one of the compressible events, do compression
@@ -855,9 +867,10 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
     data->canWait = false;
     locker.unlock();
 
-    QAbstractEventDispatcher* dispatcher = data->eventDispatcher.loadAcquire();
-    if (dispatcher)
-        dispatcher->wakeUp();
+	// oye 老朋友, PostMessage(d->internalHwnd, WM_QT_SENDPOSTEDEVENTS, 0, 0);
+	// win32的eventDispatcher中
+    data->eventDispatcher.loadAcquire()->wakeUp();
+
 }
 
 
@@ -915,10 +928,24 @@ void QCoreApplication::sendPostedEvents(QObject *receiver, int event_type)
     QCoreApplicationPrivate::sendPostedEvents(receiver, event_type, data);
 }
 
-// static
+/*
+	oye
+	static
+	Qt框架 postEvent时, dispatcher->wakeup()->win32::PosetMessage(WM_QTSENDPOSTMESAGE).
+	
+	win32Dispatcher中有一个inernal_msg_wnd,  其对WM_QTSENDPOSTMESAGE的处理就是call 本函数
+	相当于绕了一圈又回来啦
+	
+	QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
+	拿到PostEventList 一次处理全部的
+	 在 List<QPostEvent>里的每一个item中 抽取 r:receiver, e: evnet
+	 喂给:
+		QCoreApplication::sendEvent(r, e);
+*/
 void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type,
                                                QThreadData *data)
 {
+	// oye from Win32Dispatcher:  sendPostedEvents(0, 0, d->threadData);
 	// oye sanith check
     if (receiver && receiver->d_func()->threadData != data) {
         qWarning("QCoreApplication::sendPostedEvents: Cannot send "
@@ -983,6 +1010,9 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
     };
     CleanUp cleanup(receiver, event_type, data);
 
+	//
+	//  alog begins
+	//
     while (i < data->postEventList.size()) {
         // avoid live-lock
         if (i >= data->postEventList.insertionOffset)
@@ -1055,6 +1085,7 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
         QScopedPointer<QEvent> event_deleter(e); // will delete the event (with the mutex unlocked)
 
         // after all that work, it's time to deliver the event.
+        // 饶了一大圈,PostEvent最终还是依赖SendEvent来处理
         QCoreApplication::sendEvent(r, e);
 
         // careful when adding anything below this point - the

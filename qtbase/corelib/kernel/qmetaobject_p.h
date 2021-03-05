@@ -1,56 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtCore module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #ifndef QMETAOBJECT_P_H
 #define QMETAOBJECT_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of moc.  This header file may change from version to version without notice,
-// or even be removed.
-//
-// We mean it.
-//
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qobjectdefs.h>
@@ -60,6 +9,10 @@
 #include <QtCore/qvarlengtharray.h>
 
 QT_BEGIN_NAMESPACE
+
+
+void osmond_no_meaning();
+
 
 enum PropertyFlags  {
     Invalid = 0x00000000,
@@ -123,18 +76,17 @@ extern int qMetaTypeTypeInternal(const char *);
 
 class QArgumentType
 {
+private:
+    int _type;
+    QByteArray _name;	
+
 public:
-    QArgumentType(int type)
-        : _type(type)
-    {}
+    QArgumentType(int type)    : _type(type) {}
     QArgumentType(const QByteArray &name)
         : _type(qMetaTypeTypeInternal(name.constData())), _name(name)
     {}
-    QArgumentType()
-        : _type(0)
-    {}
-    int type() const
-    { return _type; }
+    QArgumentType()      : _type(0)   {}
+    int type() const  { return _type; }
     QByteArray name() const
     {
         if (_type && _name.isEmpty())
@@ -155,12 +107,8 @@ public:
         else
             return name() != other.name();
     }
-
-private:
-    int _type;
-    QByteArray _name;
 };
-Q_DECLARE_TYPEINFO(QArgumentType, Q_MOVABLE_TYPE);
+//Q_DECLARE_TYPEINFO(QArgumentType, Q_MOVABLE_TYPE);
 
 typedef QVarLengthArray<QArgumentType, 10> QArgumentTypeArray;
 
@@ -255,13 +203,6 @@ static inline bool is_space(char s)
 }
 #endif
 
-/*
-    This function is shared with moc.cpp. The implementation lives in qmetaobject_moc_p.h, which
-    should be included where needed. The declaration here is not used to avoid warnings from
-    the compiler about unused functions.
-
-static QByteArray normalizeTypeInternal(const char *t, const char *e, bool fixScope = false, bool adjustConst = true);
-*/
 
 QT_END_NAMESPACE
 

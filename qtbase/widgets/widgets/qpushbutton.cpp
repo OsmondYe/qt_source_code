@@ -150,6 +150,7 @@ QSize QPushButton::sizeHint() const
     QPushButtonPrivate * const d = d_func();
     if (d->sizeHint.isValid() && d->lastAutoDefault == autoDefault())
         return d->sizeHint;
+	
     d->lastAutoDefault = autoDefault();
     ensurePolished();
 
@@ -190,8 +191,9 @@ QSize QPushButton::sizeHint() const
 	// calc menu indicator
     if (menu())
         w += style()->pixelMetric(QStyle::PM_MenuButtonIndicator, &opt, this);
-    d->sizeHint = (style()->sizeFromContents(QStyle::CT_PushButton, &opt, QSize(w, h), this).
-                  expandedTo(QApplication::globalStrut()));
+	
+    d->sizeHint = 
+    (style()->sizeFromContents(QStyle::CT_PushButton, &opt, QSize(w, h), this).expandedTo(QApplication::globalStrut()));
     return d->sizeHint;
 }
 
@@ -273,19 +275,6 @@ void QPushButton::focusOutEvent(QFocusEvent *e)
 }
 
 #if QT_CONFIG(menu)
-/*!
-    Associates the popup menu \a menu with this push button. This
-    turns the button into a menu button, which in some styles will
-    produce a small triangle to the right of the button's text.
-
-    Ownership of the menu is \e not transferred to the push button.
-
-    \image fusion-pushbutton-menu.png Screenshot of a Fusion style push button with popup menu.
-    A push button with popup menus shown in the \l{Qt Widget Gallery}
-    {Fusion widget style}.
-
-    \sa menu()
-*/
 void QPushButton::setMenu(QMenu* menu)
 {
     QPushButtonPrivate * const d = d_func();
@@ -307,23 +296,13 @@ void QPushButton::setMenu(QMenu* menu)
     updateGeometry();
 }
 
-/*!
-    Returns the button's associated popup menu or 0 if no popup menu
-    has been set.
-
-    \sa setMenu()
-*/
 QMenu* QPushButton::menu() const
 {
     QPushButtonPrivate * const d = d_func();
     return d->menu;
 }
 
-/*!
-    Shows (pops up) the associated popup menu. If there is no such
-    menu, this function does nothing. This function does not return
-    until the popup menu has been closed by the user.
-*/
+
 void QPushButton::showMenu()
 {
     QPushButtonPrivate * const d = d_func();

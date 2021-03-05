@@ -1973,73 +1973,10 @@ void QObject::deleteLater()
     QCoreApplication::postEvent(this, new QDeferredDeleteEvent());
 }
 
-/*!
-    \fn QString QObject::tr(const char *sourceText, const char *disambiguation, int n)
-    \reentrant
-
-    Returns a translated version of \a sourceText, optionally based on a
-    \a disambiguation string and value of \a n for strings containing plurals;
-    otherwise returns QString::fromUtf8(\a sourceText) if no appropriate
-    translated string is available.
-
-    Example:
-    \snippet ../widgets/mainwindows/sdi/mainwindow.cpp implicit tr context
-    \dots
-
-    If the same \a sourceText is used in different roles within the
-    same context, an additional identifying string may be passed in
-    \a disambiguation (0 by default). In Qt 4.4 and earlier, this was
-    the preferred way to pass comments to translators.
-
-    Example:
-
-    \snippet code/src_corelib_kernel_qobject.cpp 17
-    \dots
-
-    See \l{Writing Source Code for Translation} for a detailed description of
-    Qt's translation mechanisms in general, and the
-    \l{Writing Source Code for Translation#Disambiguation}{Disambiguation}
-    section for information on disambiguation.
-
-    \warning This method is reentrant only if all translators are
-    installed \e before calling this method. Installing or removing
-    translators while performing translations is not supported. Doing
-    so will probably result in crashes or other undesirable behavior.
-
-    \sa QCoreApplication::translate(), {Internationalization with Qt}
-*/
-
-/*!
-    \fn QString QObject::trUtf8(const char *sourceText, const char *disambiguation, int n)
-    \reentrant
-    \obsolete
-
-    Returns a translated version of \a sourceText, or
-    QString::fromUtf8(\a sourceText) if there is no appropriate
-    version. It is otherwise identical to tr(\a sourceText, \a
-    disambiguation, \a n).
-
-    \warning This method is reentrant only if all translators are
-    installed \e before calling this method. Installing or removing
-    translators while performing translations is not supported. Doing
-    so will probably result in crashes or other undesirable behavior.
-
-    \warning For portability reasons, we recommend that you use
-    escape sequences for specifying non-ASCII characters in string
-    literals to trUtf8(). For example:
-
-    \snippet code/src_corelib_kernel_qobject.cpp 20
-
-    \sa tr(), QCoreApplication::translate(), {Internationalization with Qt}
-*/
-
-
-
 
 /*****************************************************************************
   Signals and slots
  *****************************************************************************/
-
 
 const char *qFlagLocation(const char *method)
 {
@@ -2065,7 +2002,8 @@ static const char * extract_location(const char *member)
     }
     return 0;
 }
-
+// oye signal 需要时经过 SIGNAL(pressed()) 宏处理过的 "1pressed()";
+//  check_signal_macro(sender, signal, "connect", "bind")
 static bool check_signal_macro(const QObject *sender, const char *signal,
                                 const char *func, const char *op)
 {
@@ -2391,98 +2329,25 @@ static inline void check_and_warn_compat(const QMetaObject *sender, const QMetaM
 }
 #endif
 
-/*!
-    \threadsafe
 
-    Creates a connection of the given \a type from the \a signal in
-    the \a sender object to the \a method in the \a receiver object.
-    Returns a handle to the connection that can be used to disconnect
-    it later.
-
-    You must use the \c SIGNAL() and \c SLOT() macros when specifying
-    the \a signal and the \a method, for example:
-
-    \snippet code/src_corelib_kernel_qobject.cpp 22
-
-    This example ensures that the label always displays the current
-    scroll bar value. Note that the signal and slots parameters must not
-    contain any variable names, only the type. E.g. the following would
-    not work and return false:
-
-    \snippet code/src_corelib_kernel_qobject.cpp 23
-
-    A signal can also be connected to another signal:
-
-    \snippet code/src_corelib_kernel_qobject.cpp 24
-
-    In this example, the \c MyWidget constructor relays a signal from
-    a private member variable, and makes it available under a name
-    that relates to \c MyWidget.
-
-    A signal can be connected to many slots and signals. Many signals
-    can be connected to one slot.
-
-    If a signal is connected to several slots, the slots are activated
-    in the same order in which the connections were made, when the
-    signal is emitted.
-
-    The function returns a QMetaObject::Connection that represents
-    a handle to a connection if it successfully
-    connects the signal to the slot. The connection handle will be invalid
-    if it cannot create the connection, for example, if QObject is unable
-    to verify the existence of either \a signal or \a method, or if their
-    signatures aren't compatible.
-    You can check if the handle is valid by casting it to a bool.
-
-    By default, a signal is emitted for every connection you make;
-    two signals are emitted for duplicate connections. You can break
-    all of these connections with a single disconnect() call.
-    If you pass the Qt::UniqueConnection \a type, the connection will only
-    be made if it is not a duplicate. If there is already a duplicate
-    (exact same signal to the exact same slot on the same objects),
-    the connection will fail and connect will return an invalid QMetaObject::Connection.
-
-    \note Qt::UniqueConnections do not work for lambdas, non-member functions
-    and functors; they only apply to connecting to member functions.
-
-    The optional \a type parameter describes the type of connection
-    to establish. In particular, it determines whether a particular
-    signal is delivered to a slot immediately or queued for delivery
-    at a later time. If the signal is queued, the parameters must be
-    of types that are known to Qt's meta-object system, because Qt
-    needs to copy the arguments to store them in an event behind the
-    scenes. If you try to use a queued connection and get the error
-    message
-
-    \snippet code/src_corelib_kernel_qobject.cpp 25
-
-    call qRegisterMetaType() to register the data type before you
-    establish the connection.
-
-    \sa disconnect(), sender(), qRegisterMetaType(), Q_DECLARE_METATYPE(),
-    {Differences between String-Based and Functor-Based Connections}
-*/
 QMetaObject::Connection QObject::connect(const QObject *sender, const char *signal,
                                      const QObject *receiver, const char *method,
                                      Qt::ConnectionType type)
 {
-    if (sender == 0 || receiver == 0 || signal == 0 || method == 0) {
-        qWarning("QObject::connect: Cannot connect %s::%s to %s::%s",
-                 sender ? sender->metaObject()->className() : "(null)",
-                 (signal && *signal) ? signal+1 : "(null)",
-                 receiver ? receiver->metaObject()->className() : "(null)",
-                 (method && *method) ? method+1 : "(null)");
-        return QMetaObject::Connection(0);
-    }
     QByteArray tmp_signal_name;
 
+	// oye 确保 signal 真的是经过SIGNAL宏处理过的
     if (!check_signal_macro(sender, signal, "connect", "bind"))
         return QMetaObject::Connection(0);
+	
     const QMetaObject *smeta = sender->metaObject();
     const char *signal_arg = signal;
+	
     ++signal; //skip code
+    
     QArgumentTypeArray signalTypes;
-    Q_ASSERT(QMetaObjectPrivate::get(smeta)->revision >= 7);
+
+	
     QByteArray signalName = QMetaObjectPrivate::decodeMethodSignature(signal, signalTypes);
     int signal_index = QMetaObjectPrivate::indexOfSignalRelative(
             &smeta, signalName, signalTypes.size(), signalTypes.constData());

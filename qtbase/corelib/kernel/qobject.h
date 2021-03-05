@@ -57,7 +57,10 @@ public:
     uint isWindow : 1; //for QWindow
     uint deleteLaterCalled : 1;
     uint unused : 24;
-    int postedEvents;                     // oye  how many Events has been posted
+	
+	//	++ in QCoreApplication::postEvent
+	//  -- in QCoreApplicationPrivate::sendPostedEvents
+    int postedEvents;                     	// oye  how many Events has been posted
     QDynamicMetaObjectData *metaObject;
     QMetaObject *dynamicMetaObject() const;
 };
@@ -192,20 +195,26 @@ public:
     void installEventFilter(QObject *filterObj);
     void removeEventFilter(QObject *obj);
 
-    static QMetaObject::Connection connect(const QObject *sender, const char *signal,
-                        const QObject *receiver, const char *member, Qt::ConnectionType = Qt::AutoConnection);
+    static QMetaObject::Connection connect(
+						const QObject *sender,   const char *signal,
+                        const QObject *receiver, const char *member, 
+                        Qt::ConnectionType = Qt::AutoConnection);
 
-    static QMetaObject::Connection connect(const QObject *sender, const QMetaMethod &signal,
+    static QMetaObject::Connection connect(
+						const QObject *sender, const QMetaMethod &signal,
                         const QObject *receiver, const QMetaMethod &method,
                         Qt::ConnectionType type = Qt::AutoConnection);
 
-    inline QMetaObject::Connection connect(const QObject *sender, const char *signal,
-                        const char *member, Qt::ConnectionType type = Qt::AutoConnection) const;
+    inline QMetaObject::Connection connect(
+						const QObject *sender, const char *signal,
+                        const char *member, 
+                        Qt::ConnectionType type = Qt::AutoConnection) const;
+
 
     //Connect a signal to a pointer to qobject member function
     template <typename Func1, typename Func2>
     static inline QMetaObject::Connection connect(
-    		const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal,
+    		const typename QtPrivate::FunctionPointer<Func1>::Object *sender, 	Func1 signal,
             const typename QtPrivate::FunctionPointer<Func2>::Object *receiver, Func2 slot,
             Qt::ConnectionType type = Qt::AutoConnection)
     {

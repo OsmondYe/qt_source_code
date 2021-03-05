@@ -1,43 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtCore module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #ifndef QBYTEARRAY_H
 #define QBYTEARRAY_H
 
@@ -52,61 +12,8 @@
 #include <string>
 #include <iterator>
 
-#ifdef truncate
-#error qbytearray.h must be included before any header file that defines truncate
-#endif
-
-#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
-Q_FORWARD_DECLARE_CF_TYPE(CFData);
-Q_FORWARD_DECLARE_OBJC_CLASS(NSData);
-#endif
 
 QT_BEGIN_NAMESPACE
-
-
-/*****************************************************************************
-  Safe and portable C string functions; extensions to standard string.h
- *****************************************************************************/
-
-Q_CORE_EXPORT char *qstrdup(const char *);
-
-inline uint qstrlen(const char *str)
-{ return str ? uint(strlen(str)) : 0; }
-
-inline uint qstrnlen(const char *str, uint maxlen)
-{
-    uint length = 0;
-    if (str) {
-        while (length < maxlen && *str++)
-            length++;
-    }
-    return length;
-}
-
-Q_CORE_EXPORT char *qstrcpy(char *dst, const char *src);
-Q_CORE_EXPORT char *qstrncpy(char *dst, const char *src, uint len);
-
-Q_CORE_EXPORT int qstrcmp(const char *str1, const char *str2);
-Q_CORE_EXPORT int qstrcmp(const QByteArray &str1, const QByteArray &str2);
-Q_CORE_EXPORT int qstrcmp(const QByteArray &str1, const char *str2);
-static inline int qstrcmp(const char *str1, const QByteArray &str2)
-{ return -qstrcmp(str2, str1); }
-
-inline int qstrncmp(const char *str1, const char *str2, uint len)
-{
-    return (str1 && str2) ? strncmp(str1, str2, len)
-        : (str1 ? 1 : (str2 ? -1 : 0));
-}
-Q_CORE_EXPORT int qstricmp(const char *, const char *);
-Q_CORE_EXPORT int qstrnicmp(const char *, const char *, uint len);
-
-// implemented in qvsnprintf.cpp
-Q_CORE_EXPORT int qvsnprintf(char *str, size_t n, const char *fmt, va_list ap);
-Q_CORE_EXPORT int qsnprintf(char *str, size_t n, const char *fmt, ...);
-
-// qChecksum: Internet checksum
-Q_CORE_EXPORT quint16 qChecksum(const char *s, uint len);                            // ### Qt 6: Remove
-Q_CORE_EXPORT quint16 qChecksum(const char *s, uint len, Qt::ChecksumType standard); // ### Qt 6: Use Qt::ChecksumType standard = Qt::ChecksumIso3309
 
 class QByteRef;
 class QString;
@@ -152,10 +59,14 @@ struct QByteArrayDataPtr
     }()) \
     /**/
 
-class Q_CORE_EXPORT QByteArray
+class  QByteArray
 {
 private:
     typedef QTypedArrayData<char> Data;
+public: 
+	Data *d;
+	typedef Data * DataPtr;
+	inline DataPtr &data_ptr() { return d; }
 
 public:
     enum Base64Option {
@@ -176,11 +87,6 @@ public:
 
     QByteArray &operator=(const QByteArray &) Q_DECL_NOTHROW;
     QByteArray &operator=(const char *str);
-#ifdef Q_COMPILER_RVALUE_REFS
-    inline QByteArray(QByteArray && other) Q_DECL_NOTHROW : d(other.d) { other.d = Data::sharedNull(); }
-    inline QByteArray &operator=(QByteArray &&other) Q_DECL_NOTHROW
-    { qSwap(d, other.d); return *this; }
-#endif
 
     inline void swap(QByteArray &other) Q_DECL_NOTHROW
     { qSwap(d, other.d); }
@@ -434,7 +340,7 @@ public:
 
 private:
     operator QNoImplicitBoolCast() const;
-    Data *d;
+
     void reallocData(uint alloc, Data::AllocationOptions options);
     void expand(int i);
     QByteArray nulTerminated() const;
@@ -450,13 +356,11 @@ private:
 
     friend class QByteRef;
     friend class QString;
-    friend Q_CORE_EXPORT QByteArray qUncompress(const uchar *data, int nbytes);
-public:
-    typedef Data * DataPtr;
-    inline DataPtr &data_ptr() { return d; }
+    friend  QByteArray qUncompress(const uchar *data, int nbytes);
+
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QByteArray::Base64Options)
+//Q_DECLARE_OPERATORS_FOR_FLAGS(QByteArray::Base64Options)
 
 inline QByteArray::QByteArray() Q_DECL_NOTHROW : d(Data::sharedNull()) { }
 inline QByteArray::~QByteArray() { if (!d->ref.deref()) Data::deallocate(d); }

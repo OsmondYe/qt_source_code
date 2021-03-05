@@ -19,9 +19,11 @@ protected:
     ushort t;
 
 private:
-    ushort posted : 1; 
+	// oye true after  call data->postEventList.addEvent()
+	//     false in  QCoreApplicationPrivate::sendPostedEvents 
+    ushort posted : 1; 		
     ushort spont : 1;  		//oye spontaneous, true -> Event from win32_msg_queue || false -> Customized Defined Event
-    ushort m_accept : 1;	// oye whether user want this event
+    ushort m_accept : 1;	// oye whether user want this event, receiver不要的,会propagate给其parent
     ushort reserved : 13;
 	
 

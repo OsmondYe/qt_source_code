@@ -21,103 +21,100 @@ typedef QArrayData QByteArrayData;
 
 // The following macros are our "extensions" to C++
 // They are used, strictly speaking, only by the moc.
-#ifndef QT_NO_META_MACROS
-# if defined(QT_NO_KEYWORDS)
-#  define QT_NO_EMIT
-# else
-#   ifndef QT_NO_SIGNALS_SLOTS_KEYWORDS
-#     define slots Q_SLOTS
-#     define signals Q_SIGNALS
-#   endif
-# endif
-# define Q_SLOTS QT_ANNOTATE_ACCESS_SPECIFIER(qt_slot)
-# define Q_SIGNALS public QT_ANNOTATE_ACCESS_SPECIFIER(qt_signal)
-# define Q_PRIVATE_SLOT(d, signature) QT_ANNOTATE_CLASS2(qt_private_slot, d, signature)
-# define Q_EMIT
-#ifndef QT_NO_EMIT
-# define emit
-#endif
-#ifndef Q_CLASSINFO
-# define Q_CLASSINFO(name, value)
-#endif
-#define Q_PLUGIN_METADATA(x) QT_ANNOTATE_CLASS(qt_plugin_metadata, x)
-#define Q_INTERFACES(x) QT_ANNOTATE_CLASS(qt_interfaces, x)
-#ifdef Q_COMPILER_VARIADIC_MACROS
-# define Q_PROPERTY(...) QT_ANNOTATE_CLASS(qt_property, __VA_ARGS__)
-#else
-# define Q_PROPERTY(text) QT_ANNOTATE_CLASS(qt_property, text)
-#endif
+// oye: MOC回来scan一遍源代码,在里面找这些他认为的关键字,然后去做额外的处理
+
+// 比下面2位仁兄更简洁的定义方法
+#define slots Q_SLOTS
+#define signals Q_SIGNALS
+
+#define Q_SLOTS 						QT_ANNOTATE_ACCESS_SPECIFIER(qt_slot)
+#define Q_SIGNALS 						public QT_ANNOTATE_ACCESS_SPECIFIER(qt_signal)
+
+// Widget的源码里面很常见
+#define Q_PRIVATE_SLOT(d, signature) 	QT_ANNOTATE_CLASS2(qt_private_slot, d, signature)
+
+
+#define Q_EMIT
+#define emit   // oye 发送信号专用
+
+
+
+#define Q_CLASSINFO(name, value)
+
+#define Q_PLUGIN_METADATA(x) 	QT_ANNOTATE_CLASS(qt_plugin_metadata, x)
+#define Q_INTERFACES(x) 		QT_ANNOTATE_CLASS(qt_interfaces, x)
+
+// Widget里面的属性定义
+#define Q_PROPERTY(...) QT_ANNOTATE_CLASS(qt_property, __VA_ARGS__)
+#define Q_PROPERTY(text) QT_ANNOTATE_CLASS(qt_property, text)
 #define Q_PRIVATE_PROPERTY(d, text) QT_ANNOTATE_CLASS2(qt_private_property, d, text)
-#ifndef Q_REVISION
-# define Q_REVISION(v)
-#endif
+
+#define Q_REVISION(v)
+
 #define Q_OVERRIDE(text) QT_ANNOTATE_CLASS(qt_override, text)
 #define QDOC_PROPERTY(text) QT_ANNOTATE_CLASS(qt_qdoc_property, text)
 #define Q_ENUMS(x) QT_ANNOTATE_CLASS(qt_enums, x)
 #define Q_FLAGS(x) QT_ANNOTATE_CLASS(qt_enums, x)
+
+// oye class Qt 里面的 enum 和falg的定义
 #define Q_ENUM_IMPL(ENUM) \
     friend Q_DECL_CONSTEXPR const QMetaObject *qt_getEnumMetaObject(ENUM) Q_DECL_NOEXCEPT { return &staticMetaObject; } \
     friend Q_DECL_CONSTEXPR const char *qt_getEnumName(ENUM) Q_DECL_NOEXCEPT { return #ENUM; }
+	
 #define Q_ENUM(x) Q_ENUMS(x) Q_ENUM_IMPL(x)
 #define Q_FLAG(x) Q_FLAGS(x) Q_ENUM_IMPL(x)
+
 #define Q_ENUM_NS_IMPL(ENUM) \
     inline Q_DECL_CONSTEXPR const QMetaObject *qt_getEnumMetaObject(ENUM) Q_DECL_NOEXCEPT { return &staticMetaObject; } \
     inline Q_DECL_CONSTEXPR const char *qt_getEnumName(ENUM) Q_DECL_NOEXCEPT { return #ENUM; }
+	
 #define Q_ENUM_NS(x) Q_ENUMS(x) Q_ENUM_NS_IMPL(x)
 #define Q_FLAG_NS(x) Q_FLAGS(x) Q_ENUM_NS_IMPL(x)
-#define Q_SCRIPTABLE QT_ANNOTATE_FUNCTION(qt_scriptable)
-#define Q_INVOKABLE  QT_ANNOTATE_FUNCTION(qt_invokable)
-#define Q_SIGNAL QT_ANNOTATE_FUNCTION(qt_signal)
-#define Q_SLOT QT_ANNOTATE_FUNCTION(qt_slot)
-#endif // QT_NO_META_MACROS
 
-#ifndef QT_NO_TRANSLATION
+// oye 目前还没有碰到
+#define Q_SCRIPTABLE 	QT_ANNOTATE_FUNCTION(qt_scriptable)
+#define Q_INVOKABLE  	QT_ANNOTATE_FUNCTION(qt_invokable)
+#define Q_SIGNAL 		QT_ANNOTATE_FUNCTION(qt_signal)
+#define Q_SLOT 			QT_ANNOTATE_FUNCTION(qt_slot)
+
+
 // full set of tr functions
-#  define QT_TR_FUNCTIONS \
+#define QT_TR_FUNCTIONS \
     static inline QString tr(const char *s, const char *c = Q_NULLPTR, int n = -1) \
         { return staticMetaObject.tr(s, c, n); } \
-    QT_DEPRECATED static inline QString trUtf8(const char *s, const char *c = Q_NULLPTR, int n = -1) \
+    static inline QString trUtf8(const char *s, const char *c = Q_NULLPTR, int n = -1) \
         { return staticMetaObject.tr(s, c, n); }
-#else
-// inherit the ones from QObject
-# define QT_TR_FUNCTIONS
-#endif
 
-/* qmake ignore Q_OBJECT */
+
+// oye 修改了一些不重要的额外修饰符
 #define Q_OBJECT \
 public: \
-    QT_WARNING_PUSH \
-    Q_OBJECT_NO_OVERRIDE_WARNING \
     static const QMetaObject staticMetaObject; \
     virtual const QMetaObject *metaObject() const; \
     virtual void *qt_metacast(const char *); \
     virtual int qt_metacall(QMetaObject::Call, int, void **); \
     QT_TR_FUNCTIONS \
 private: \
-    Q_OBJECT_NO_ATTRIBUTES_WARNING \
     Q_DECL_HIDDEN_STATIC_METACALL static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **); \
-    QT_WARNING_POP \
     struct QPrivateSignal {}; \
     QT_ANNOTATE_CLASS(qt_qobject, "")
 
-/* qmake ignore Q_OBJECT */
+
 #define Q_OBJECT_FAKE Q_OBJECT QT_ANNOTATE_CLASS(qt_fake, "")
 
-/* qmake ignore Q_GADGET */
+
 #define Q_GADGET \
 public: \
     static const QMetaObject staticMetaObject; \
     void qt_check_for_QGADGET_macro(); \
     typedef void QtGadgetHelper; \
 private: \
-    QT_WARNING_PUSH \
-    Q_OBJECT_NO_ATTRIBUTES_WARNING \
     Q_DECL_HIDDEN_STATIC_METACALL static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **); \
-    QT_WARNING_POP \
     QT_ANNOTATE_CLASS(qt_qgadget, "") \
     /*end*/
 
-/* qmake ignore Q_NAMESPACE */
+
+// OYE 目前还没有碰到
 #define Q_NAMESPACE \
     extern const QMetaObject staticMetaObject; \
     QT_ANNOTATE_CLASS(qt_qnamespace, "") \
@@ -127,27 +124,25 @@ private: \
 
 const char *qFlagLocation(const char *method);
 
-#ifndef QT_NO_META_MACROS
-#ifndef QT_NO_DEBUG
-# define QLOCATION "\0" __FILE__ ":" QT_STRINGIFY(__LINE__)
-# ifndef QT_NO_KEYWORDS
-#  define METHOD(a)   qFlagLocation("0"#a QLOCATION)
-# endif
-# define SLOT(a)     qFlagLocation("1"#a QLOCATION)
-# define SIGNAL(a)   qFlagLocation("2"#a QLOCATION)
-#else
-# ifndef QT_NO_KEYWORDS
-#  define METHOD(a)   "0"#a
-# endif
-# define SLOT(a)     "1"#a
-# define SIGNAL(a)   "2"#a
-#endif
+
+// QT_STRINGIFY : Line是数字,变为字符串 #define QT_STRINGIFY2(x) #x
+#define QLOCATION "\0" __FILE__ ":" QT_STRINGIFY(__LINE__)
+
+//
+// oye 在connect的建立联系中,用到
+//
+#define METHOD(a)   qFlagLocation("0"#a QLOCATION)
+#define SLOT(a)     qFlagLocation("1"#a QLOCATION)
+#define SIGNAL(a)   qFlagLocation("2"#a QLOCATION)
+
 
 #define QMETHOD_CODE  0                        // member type codes
 #define QSLOT_CODE    1
 #define QSIGNAL_CODE  2
-#endif // QT_NO_META_MACROS
 
+
+
+// oye 我猜想,定义数据是,一定用此宏来做,方笔
 #define Q_ARG(type, data) QArgument<type >(#type, data)
 #define Q_RETURN_ARG(type, data) QReturnArgument<type >(#type, data)
 
@@ -160,24 +155,38 @@ class QMetaClassInfo;
 
 class  QGenericArgument
 {
+private:
+    const void *_data;  //什么数据类型都可以?
+    const char *_name;
+
 public:
     inline QGenericArgument(const char *aName = Q_NULLPTR, const void *aData = Q_NULLPTR)
         : _data(aData), _name(aName) {}
     inline void *data() const { return const_cast<void *>(_data); }
     inline const char *name() const { return _name; }
 
-private:
-    const void *_data;
-    const char *_name;
+
 };
 
+// 只有不同类名的意义,用来区分的不同type [入参 | 返回值 ]
 class QGenericReturnArgument: public QGenericArgument
 {
 public:
     inline QGenericReturnArgument(const char *aName = Q_NULLPTR, void *aData = Q_NULLPTR)
-        : QGenericArgument(aName, aData)
+        : QGenericArgument(aName, aData)    {}
+};
+
+template <typename T>
+class QReturnArgument: public QGenericReturnArgument
+{
+public:
+    inline QReturnArgument(const char *aName, T &aData)
+        : QGenericReturnArgument(aName, static_cast<void *>(&aData))
         {}
 };
+		
+
+
 
 template <class T>
 class QArgument: public QGenericArgument
@@ -197,18 +206,24 @@ public:
 };
 
 
-template <typename T>
-class QReturnArgument: public QGenericReturnArgument
-{
-public:
-    inline QReturnArgument(const char *aName, T &aData)
-        : QGenericReturnArgument(aName, static_cast<void *>(&aData))
-        {}
-};
+
 
 struct QMetaObject
 {
-	// oyue define a class ??? but no any details
+// data first
+    struct { // private data
+    const QMetaObject *superdata;
+    const QByteArrayData *stringdata;
+    const uint *data;
+    typedef void (*StaticMetacallFunction)(QObject *, QMetaObject::Call, int, void **);
+    StaticMetacallFunction static_metacall;
+	
+    const QMetaObject * const *relatedMetaObjects;
+    void *extradata; //reserved for future use
+    } d;
+
+// others 
+
     class Connection;
     const char *className() const;
     const QMetaObject *superClass() const;
@@ -362,15 +377,7 @@ struct QMetaObject
     int static_metacall(Call, int, void **) const;
     static int metacall(QObject *, Call, int, void **);
 
-    struct { // private data
-        const QMetaObject *superdata;
-        const QByteArrayData *stringdata;
-        const uint *data;
-        typedef void (*StaticMetacallFunction)(QObject *, QMetaObject::Call, int, void **);
-        StaticMetacallFunction static_metacall;
-        const QMetaObject * const *relatedMetaObjects;
-        void *extradata; //reserved for future use
-    } d;
+
 };
 
 class  QMetaObject::Connection {

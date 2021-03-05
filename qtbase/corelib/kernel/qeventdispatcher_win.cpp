@@ -169,6 +169,9 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
 		
         if (localSerialNumber != d->lastSerialNumber) {
             d->lastSerialNumber = localSerialNumber;
+			//
+			//  oye, WM_QT_SENDPOSTEDEVENTS, qt在上层的PostEvent饶了一大圈,最终在这里又callback回去啦
+			//
             q->sendPostedEvents();  //QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
         }
         return 0;
@@ -768,6 +771,8 @@ int QEventDispatcherWin32::remainingTime(int timerId)
     return -1;
 }
 
+// oye qt的线程tls中 的 PostEventList 每当有数据进来时,就是调用一下wakeup
+// 驱win32 msg_queue 来做强制同步
 void QEventDispatcherWin32::wakeUp()
 {
     QEventDispatcherWin32Private * const d = d_func();

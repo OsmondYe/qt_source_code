@@ -1,42 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWidgets module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #ifndef QDYNAMICMAINWINDOW_H
 #define QDYNAMICMAINWINDOW_H
 
@@ -46,7 +7,6 @@
 #include <QtWidgets/qtabwidget.h>
 #endif
 
-QT_REQUIRE_CONFIG(mainwindow);
 
 QT_BEGIN_NAMESPACE
 
@@ -57,26 +17,18 @@ class QStatusBar;
 class QToolBar;
 class QMenu;
 
-class Q_WIDGETS_EXPORT QMainWindow : public QWidget
+class  QMainWindow : public QWidget
 {
-    Q_OBJECT
+    //Q_OBJECT
 
     Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize)
     Q_PROPERTY(Qt::ToolButtonStyle toolButtonStyle READ toolButtonStyle WRITE setToolButtonStyle)
-#if QT_CONFIG(dockwidget)
     Q_PROPERTY(bool animated READ isAnimated WRITE setAnimated)
-#if QT_CONFIG(tabbar)
     Q_PROPERTY(bool documentMode READ documentMode WRITE setDocumentMode)
-#endif // QT_CONFIG(tabbar)
-#if QT_CONFIG(tabwidget)
     Q_PROPERTY(QTabWidget::TabShape tabShape READ tabShape WRITE setTabShape)
-#endif // QT_CONFIG(tabwidget)
     Q_PROPERTY(bool dockNestingEnabled READ isDockNestingEnabled WRITE setDockNestingEnabled)
-#endif // QT_CONFIG(dockwidget)
     Q_PROPERTY(DockOptions dockOptions READ dockOptions WRITE setDockOptions)
-#ifndef QT_NO_TOOLBAR
-    Q_PROPERTY(bool unifiedTitleAndToolBarOnMac READ unifiedTitleAndToolBarOnMac WRITE setUnifiedTitleAndToolBarOnMac)
-#endif
+	Q_PROPERTY(bool unifiedTitleAndToolBarOnMac READ unifiedTitleAndToolBarOnMac WRITE setUnifiedTitleAndToolBarOnMac)
 
 public:
     enum DockOption {
@@ -87,9 +39,17 @@ public:
         VerticalTabs = 0x10,      // implies AllowTabbedDocks
         GroupedDragging = 0x20    // implies AllowTabbedDocks
     };
-    Q_ENUM(DockOption)
-    Q_DECLARE_FLAGS(DockOptions, DockOption)
-    Q_FLAG(DockOptions)
+	enum DockOptions {
+        AnimatedDocks = 0x01,
+        AllowNestedDocks = 0x02,
+        AllowTabbedDocks = 0x04,
+        ForceTabbedDocks = 0x08,  // implies AllowTabbedDocks, !AllowNestedDocks
+        VerticalTabs = 0x10,      // implies AllowTabbedDocks
+        GroupedDragging = 0x20    // implies AllowTabbedDocks
+    };
+    //Q_ENUM(DockOption)
+    //Q_DECLARE_FLAGS(DockOptions, DockOption)
+    //Q_FLAG(DockOptions)
 
     explicit QMainWindow(QWidget *parent = Q_NULLPTR, Qt::WindowFlags flags = Qt::WindowFlags());
     ~QMainWindow();
@@ -202,14 +162,12 @@ Q_SIGNALS:
 #endif
 
 protected:
-#ifndef QT_NO_CONTEXTMENU
     void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
-#endif
-    bool event(QEvent *event) Q_DECL_OVERRIDE;
+bool event(QEvent *event) Q_DECL_OVERRIDE;
 
 private:
-    Q_DECLARE_PRIVATE(QMainWindow)
-    Q_DISABLE_COPY(QMainWindow)
+    //Q_DECLARE_PRIVATE(QMainWindow)
+    //Q_DISABLE_COPY(QMainWindow)
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QMainWindow::DockOptions)

@@ -38,7 +38,7 @@ public:
 	}
     ~QEventDispatcherWin32(){}
 	
-    bool processEvents(QEventLoop::ProcessEventsFlags flags);
+    bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
     bool hasPendingEvents();
     void interrupt();
 	

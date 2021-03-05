@@ -1,42 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtCore module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #ifndef QARRAYDATA_H
 #define QARRAYDATA_H
 
@@ -45,7 +6,9 @@
 
 QT_BEGIN_NAMESPACE
 
-struct Q_CORE_EXPORT QArrayData
+void osmond_no_meaning();
+
+struct  QArrayData
 {
     QtPrivate::RefCount ref;
     int size;
@@ -86,8 +49,19 @@ struct Q_CORE_EXPORT QArrayData
 
         Default = 0
     };
+	enum AllocationOptions {
+			CapacityReserved	= 0x1,
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
+			Unsharable			= 0x2,
+#endif
+			RawData 			= 0x4,
+			Grow				= 0x8,
+	
+			Default = 0
+	};
 
-    Q_DECLARE_FLAGS(AllocationOptions, AllocationOption)
+
+    //Q_DECLARE_FLAGS(AllocationOptions, AllocationOption)
 
     size_t detachCapacity(size_t newSize) const
     {
@@ -112,9 +86,9 @@ struct Q_CORE_EXPORT QArrayData
         return result;
     }
 
-    Q_REQUIRED_RESULT static QArrayData *allocate(size_t objectSize, size_t alignment,
+     static QArrayData *allocate(size_t objectSize, size_t alignment,
             size_t capacity, AllocationOptions options = Default) Q_DECL_NOTHROW;
-    Q_REQUIRED_RESULT static QArrayData *reallocateUnaligned(QArrayData *data, size_t objectSize,
+     static QArrayData *reallocateUnaligned(QArrayData *data, size_t objectSize,
             size_t newCapacity, AllocationOptions newOptions = Default) Q_DECL_NOTHROW;
     static void deallocate(QArrayData *data, size_t objectSize,
             size_t alignment) Q_DECL_NOTHROW;
@@ -123,7 +97,7 @@ struct Q_CORE_EXPORT QArrayData
     static QArrayData *sharedNull() Q_DECL_NOTHROW { return const_cast<QArrayData*>(shared_null); }
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QArrayData::AllocationOptions)
+//Q_DECLARE_OPERATORS_FOR_FLAGS(QArrayData::AllocationOptions)
 
 template <class T>
 struct QTypedArrayData
@@ -215,7 +189,7 @@ struct QTypedArrayData
 
     class AlignmentDummy { QArrayData header; T data; };
 
-    Q_REQUIRED_RESULT static QTypedArrayData *allocate(size_t capacity,
+    static QTypedArrayData *allocate(size_t capacity,
             AllocationOptions options = Default)
     {
         Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
@@ -264,13 +238,11 @@ struct QTypedArrayData
         return allocate(/* capacity */ 0);
     }
 
-#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
     static QTypedArrayData *unsharableEmpty()
     {
         Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
         return allocate(/* capacity */ 0, Unsharable);
     }
-#endif
 };
 
 template <class T, size_t N>

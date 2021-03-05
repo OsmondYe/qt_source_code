@@ -289,6 +289,7 @@ public:
     };
 
 
+
     enum WindowState {
         WindowNoState    = 0x00000000,
         WindowMinimized  = 0x00000001,
@@ -1228,7 +1229,14 @@ public:
         BottomEdge = 0x00008
     };
 
-    Q_DECLARE_FLAGS(Edges, Edge)
+	enum Edges {
+        TopEdge = 0x00001,
+        LeftEdge = 0x00002,
+        RightEdge = 0x00004,
+        BottomEdge = 0x00008
+    };
+
+    //Q_DECLARE_FLAGS(Edges, Edge)
 
     enum ConnectionType {
         AutoConnection,
@@ -1401,7 +1409,7 @@ public:
         FindDirectChildrenOnly = 0x0,
         FindChildrenRecursively = 0x1
     };
-    Q_DECLARE_FLAGS(FindChildOptions, FindChildOption)
+    //Q_DECLARE_FLAGS(FindChildOptions, FindChildOption)
 
     enum DropAction {
         CopyAction = 0x1,
@@ -1465,7 +1473,7 @@ public:
         ItemNeverHasChildren = 128,
         ItemIsUserTristate = 256
     };
-    Q_DECLARE_FLAGS(ItemFlags, ItemFlag)
+    //Q_DECLARE_FLAGS(ItemFlags, ItemFlag)
 
     enum MatchFlag {
         MatchExactly = 0,
@@ -1479,12 +1487,10 @@ public:
         MatchWrap = 32,
         MatchRecursive = 64
     };
-    Q_DECLARE_FLAGS(MatchFlags, MatchFlag)
+    //Q_DECLARE_FLAGS(MatchFlags, MatchFlag)
 
     typedef void * HANDLE;
-#if QT_DEPRECATED_SINCE(5, 0)
-    typedef WindowFlags WFlags;
-#endif
+
 
     enum WindowModality {
         NonModal,

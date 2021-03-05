@@ -61,7 +61,7 @@ public:
     static void processEvents(QEventLoop::ProcessEventsFlags flags, int maxtime);
     static void exit(int retcode=0);
 
-	// oye:  old friend
+	
 	// oye, send Qt defined event
     static bool sendEvent(QObject *receiver, QEvent *event){  
 		if (event) 

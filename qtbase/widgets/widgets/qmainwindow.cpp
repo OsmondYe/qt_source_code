@@ -1,42 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWidgets module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 //#define QT_EXPERIMENTAL_CLIENT_DECORATIONS
 
 #include "qmainwindow.h"
@@ -63,59 +24,34 @@
 #include <private/qwidget_p.h>
 #include "qtoolbar_p.h"
 #include "qwidgetanimator_p.h"
-#ifdef Q_OS_OSX
-#include <qpa/qplatformnativeinterface.h>
-#endif
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-#include <private/qt_mac_p.h>
-#include <private/qt_cocoa_helpers_mac_p.h>
-QT_BEGIN_NAMESPACE
-extern OSWindowRef qt_mac_window_for(const QWidget *); // qwidget_mac.cpp
-QT_END_NAMESPACE
-#endif
 
 QT_BEGIN_NAMESPACE
+
+class QMainWindowLayout;
 
 class QMainWindowPrivate : public QWidgetPrivate
 {
-    Q_DECLARE_PUBLIC(QMainWindow)
+    //Q_DECLARE_PUBLIC(QMainWindow)
 public:
-    inline QMainWindowPrivate()
+    QMainWindowPrivate()
         : layout(0), explicitIconSize(false), toolButtonStyle(Qt::ToolButtonIconOnly)
-#ifdef Q_OS_OSX
-            , useUnifiedToolBar(false)
-#endif
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-            , useHIToolBar(false)
-            , activateUnifiedToolbarAfterFullScreen(false)
-#endif
-#if QT_CONFIG(dockwidget) && !defined(QT_NO_CURSOR)
-            , hasOldCursor(false) , cursorAdjusted(false)
-#endif
+		, hasOldCursor(false) , cursorAdjusted(false)
     { }
     QMainWindowLayout *layout;
     QSize iconSize;
     bool explicitIconSize;
     Qt::ToolButtonStyle toolButtonStyle;
-#ifdef Q_OS_OSX
-    bool useUnifiedToolBar;
-#endif
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    bool useHIToolBar;
-    bool activateUnifiedToolbarAfterFullScreen;
-#endif
+
     void init();
     QList<int> hoverSeparator;
     QPoint hoverPos;
 
-#if QT_CONFIG(dockwidget) && !defined(QT_NO_CURSOR)
     QCursor separatorCursor(const QList<int> &path) const;
     void adjustCursor(const QPoint &pos);
     QCursor oldCursor;
     QCursor adjustedCursor;
     uint hasOldCursor : 1;
     uint cursorAdjusted : 1;
-#endif
 
     static inline QMainWindowLayout *mainWindowLayout(const QMainWindow *mainWindow)
     {
@@ -128,8 +64,7 @@ QMainWindowLayout *qt_mainwindow_layout(const QMainWindow *mainWindow)
     return QMainWindowPrivate::mainWindowLayout(mainWindow);
 }
 
-#ifdef QT_EXPERIMENTAL_CLIENT_DECORATIONS
-Q_WIDGETS_EXPORT void qt_setMainWindowTitleWidget(QMainWindow *mainWindow, Qt::DockWidgetArea area, QWidget *widget)
+ void qt_setMainWindowTitleWidget(QMainWindow *mainWindow, Qt::DockWidgetArea area, QWidget *widget)
 {
     QGridLayout *topLayout = qobject_cast<QGridLayout *>(mainWindow->layout());
     Q_ASSERT(topLayout);
@@ -382,25 +317,8 @@ void QMainWindowPrivate::init()
     \sa setToolButtonStyle()
 */
 
-#if QT_CONFIG(dockwidget)
-/*!
-    \fn void QMainWindow::tabifiedDockWidgetActivated(QDockWidget *dockWidget)
 
-    This signal is emitted when the tabified dock widget is activated by
-    selecting the tab. The activated dock widget is passed in \a dockWidget.
 
-    \since 5.8
-    \sa tabifyDockWidget(), tabifiedDockWidgets()
-*/
-#endif
-
-/*!
-    Constructs a QMainWindow with the given \a parent and the specified
-    widget \a flags.
-
-    QMainWindow sets the Qt::Window flag itself, and will hence
-    always be created as a top-level widget.
- */
 QMainWindow::QMainWindow(QWidget *parent, Qt::WindowFlags flags)
     : QWidget(*(new QMainWindowPrivate()), parent, flags | Qt::Window)
 {
