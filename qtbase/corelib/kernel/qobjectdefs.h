@@ -185,9 +185,6 @@ public:
         {}
 };
 		
-
-
-
 template <class T>
 class QArgument: public QGenericArgument
 {
@@ -206,33 +203,63 @@ public:
 };
 
 
+typedef void (*StaticMetacallFunction)(QObject *, QMetaObject::Call, int, void **);	
 
 
 struct QMetaObject
 {
-// data first
+	public:
+
     struct { // private data
-    const QMetaObject *superdata;
-    const QByteArrayData *stringdata;
-    const uint *data;
-    typedef void (*StaticMetacallFunction)(QObject *, QMetaObject::Call, int, void **);
-    StaticMetacallFunction static_metacall;
+    const QMetaObject *superdata;		//oye 以组合的形式,持有父类的data,便于向上查找
+    const QByteArrayData *stringdata;	//oye 其要表征的类名    QPushButton, QMainWindow之类
+    const uint *data;  					//oye 魔法数据,但可以转为 QMetaObjectPrivate*   通过内部函数 priv(const uint* data)
+    // 这个函数用来实现调用具体的receiver
+    StaticMetacallFunction static_metacall;	
 	
-    const QMetaObject * const *relatedMetaObjects;
+    const QMetaObject * const *relatedMetaObjects;	
     void *extradata; //reserved for future use
     } d;
 
-// others 
+
+public:
 
     class Connection;
-    const char *className() const;
-    const QMetaObject *superClass() const;
+    const char *className() const;	
+	inline const QMetaObject *superClass() const{ return d.superdata; }
 
-    bool inherits(const QMetaObject *metaObject) const ;
-    QObject *cast(QObject *obj) const;
-    const QObject *cast(const QObject *obj) const;
+    bool inherits(const QMetaObject *metaObject) const ;  // 向上不断判断 super == metaObject
+    
+    QObject *cast(QObject *obj) const{
+		return const_cast<QObject*>(cast(const_cast<const QObject*>(obj)));
+    }
+    const QObject *cast(const QObject *obj) const{
+		return (obj && obj->metaObject()->inherits(this)) ? obj : nullptr;
+    }
 
-    QString tr(const char *s, const char *c, int n = -1) const;
+    QString tr(const char *s, const char *c, int n = -1) const{
+    	return QCoreApplication::translate(objectClassName(this), s, c, n);
+    }
+
+    enum Call {
+        InvokeMetaMethod,
+        ReadProperty,
+        WriteProperty,
+        ResetProperty,
+        QueryPropertyDesignable,
+        QueryPropertyScriptable,
+        QueryPropertyStored,
+        QueryPropertyEditable,
+        QueryPropertyUser,
+        CreateInstance,
+        IndexOfMethod,
+        RegisterPropertyMetaType,
+        RegisterMethodArgumentMetaType
+    };
+
+    int static_metacall(Call, int, void **) const;
+    static int metacall(QObject *, Call, int, void **);
+	
 
     int methodOffset() const;
     int enumeratorOffset() const;
@@ -279,6 +306,9 @@ struct QMetaObject
     static void connectSlotsByName(QObject *o);
 
     // internal index-based signal activation
+    // emit signal时的实际操作
+	// oye emit的实现原理, 比如还是激活this里面的ObjectPrivate里面的ConnectionList
+	// 从中找到指定的,然后寻找receiver的staticMetaCall 进行调用
     static void activate(QObject *sender, int signal_index, void **argv);
     static void activate(QObject *sender, const QMetaObject *, int local_signal_index, void **argv);
     static void activate(QObject *sender, int signal_offset, int local_signal_index, void **argv);
@@ -358,54 +388,43 @@ struct QMetaObject
                          QGenericArgument val8 = QGenericArgument(),
                          QGenericArgument val9 = QGenericArgument()) const;
 
-    enum Call {
-        InvokeMetaMethod,
-        ReadProperty,
-        WriteProperty,
-        ResetProperty,
-        QueryPropertyDesignable,
-        QueryPropertyScriptable,
-        QueryPropertyStored,
-        QueryPropertyEditable,
-        QueryPropertyUser,
-        CreateInstance,
-        IndexOfMethod,
-        RegisterPropertyMetaType,
-        RegisterMethodArgumentMetaType
-    };
 
-    int static_metacall(Call, int, void **) const;
-    static int metacall(QObject *, Call, int, void **);
 
 
 };
 
+/*
+	Represents a handle to a signal-slot connection.
+
+	It can be used to disconnect that connection, 
+
+	or check if	the connection was successful
+
+    ###	QObjectPrivate::Connection*  
+
+*/
 class  QMetaObject::Connection {
     void *d_ptr; //QObjectPrivate::Connection*
     explicit Connection(void *data) : d_ptr(data) {  }
     friend class QObject;
     friend class QObjectPrivate;
     friend struct QMetaObject;
-    bool isConnected_helper() const;
+	
+	/*! \internal Returns true if the object is still connected */
+    bool isConnected_helper() const{		return static_cast<QObjectPrivate::Connection *>(d_ptr)->receiver;    }
 public:
-    ~Connection();
-    Connection();
-    Connection(const Connection &other);
-    Connection &operator=(const Connection &other);
-#ifdef Q_QDOC
-    operator bool() const;
-#else
+	Connection(): d_ptr(0) {};
+	
+    ~Connection(){
+    	if (d_ptr)  	static_cast<QObjectPrivate::Connection *>(d_ptr)->deref();
+	}
+
     typedef void *Connection::*RestrictedBool;
     operator RestrictedBool() const { return d_ptr && isConnected_helper() ? &Connection::d_ptr : Q_NULLPTR; }
-#endif
-
-    inline Connection(Connection &&o) : d_ptr(o.d_ptr) { o.d_ptr = Q_NULLPTR; }
-    inline Connection &operator=(Connection &&other)    { qSwap(d_ptr, other.d_ptr); return *this; }
 	
 };
 
-inline const QMetaObject *QMetaObject::superClass() const
-{ return d.superdata; }
+
 
 namespace QtPrivate {
     /* Trait that tells is a the Object has a Q_OBJECT macro */

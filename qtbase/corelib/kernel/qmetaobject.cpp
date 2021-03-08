@@ -22,97 +22,13 @@
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \class QMetaObject
-    \inmodule QtCore
-
-    \brief The QMetaObject class contains meta-information about Qt
-    objects.
-
-    \ingroup objectmodel
-
-    The Qt \l{Meta-Object System} in Qt is responsible for the
-    signals and slots inter-object communication mechanism, runtime
-    type information, and the Qt property system. A single
-    QMetaObject instance is created for each QObject subclass that is
-    used in an application, and this instance stores all the
-    meta-information for the QObject subclass. This object is
-    available as QObject::metaObject().
-
-    This class is not normally required for application programming,
-    but it is useful if you write meta-applications, such as scripting
-    engines or GUI builders.
-
-    The functions you are most likely to find useful are these:
-    \list
-    \li className() returns the name of a class.
-    \li superClass() returns the superclass's meta-object.
-    \li method() and methodCount() provide information
-       about a class's meta-methods (signals, slots and other
-       \l{Q_INVOKABLE}{invokable} member functions).
-    \li enumerator() and enumeratorCount() and provide information about
-       a class's enumerators.
-    \li propertyCount() and property() provide information about a
-       class's properties.
-    \li constructor() and constructorCount() provide information
-       about a class's meta-constructors.
-    \endlist
-
-    The index functions indexOfConstructor(), indexOfMethod(),
-    indexOfEnumerator(), and indexOfProperty() map names of constructors,
-    member functions, enumerators, or properties to indexes in the
-    meta-object. For example, Qt uses indexOfMethod() internally when you
-    connect a signal to a slot.
-
-    Classes can also have a list of \e{name}--\e{value} pairs of
-    additional class information, stored in QMetaClassInfo objects.
-    The number of pairs is returned by classInfoCount(), single pairs
-    are returned by classInfo(), and you can search for pairs with
-    indexOfClassInfo().
-
-    \sa QMetaClassInfo, QMetaEnum, QMetaMethod, QMetaProperty, QMetaType,
-        {Meta-Object System}
-*/
-
-/*!
-    \enum QMetaObject::Call
-
-    \internal
-
-    \value InvokeSlot
-    \value EmitSignal
-    \value ReadProperty
-    \value WriteProperty
-    \value ResetProperty
-    \value QueryPropertyDesignable
-    \value QueryPropertyScriptable
-    \value QueryPropertyStored
-    \value QueryPropertyEditable
-    \value QueryPropertyUser
-    \value CreateInstance
-*/
-
-/*!
-    \enum QMetaMethod::Access
-
-    This enum describes the access level of a method, following the conventions used in C++.
-
-    \value Private
-    \value Protected
-    \value Public
-*/
-
+// oye  converter, 外部类持有的神秘数据向QMetaObjectPrivate的转换
 static inline const QMetaObjectPrivate *priv(const uint* data)
 { return reinterpret_cast<const QMetaObjectPrivate*>(data); }
 
 static inline const QByteArray stringData(const QMetaObject *mo, int index)
 {
-    Q_ASSERT(priv(mo->d.data)->revision >= 7);
     const QByteArrayDataPtr data = { const_cast<QByteArrayData*>(&mo->d.stringdata[index]) };
-    Q_ASSERT(data.ptr->ref.isStatic());
-    Q_ASSERT(data.ptr->alloc == 0);
-    Q_ASSERT(data.ptr->capacityReserved == 0);
-    Q_ASSERT(data.ptr->size >= 0);
     return data;
 }
 
@@ -272,24 +188,8 @@ const char *QMetaObject::className() const
     return objectClassName(this);
 }
 
-/*!
-    \fn QMetaObject *QMetaObject::superClass() const
 
-    Returns the meta-object of the superclass, or 0 if there is no
-    such object.
-
-    \sa className()
-*/
-
-/*!
-    Returns \c true if the class described by this QMetaObject inherits
-    the type described by \a metaObject; otherwise returns false.
-
-    A type is considered to inherit itself.
-
-    \since 5.7
-*/
-bool QMetaObject::inherits(const QMetaObject *metaObject) const Q_DECL_NOEXCEPT
+bool QMetaObject::inherits(const QMetaObject *metaObject) const 
 {
     const QMetaObject *m = this;
     do {
@@ -299,38 +199,6 @@ bool QMetaObject::inherits(const QMetaObject *metaObject) const Q_DECL_NOEXCEPT
     return false;
 }
 
-/*!
-    \internal
-
-    Returns \a obj if object \a obj inherits from this
-    meta-object; otherwise returns 0.
-*/
-QObject *QMetaObject::cast(QObject *obj) const
-{
-    // ### Qt 6: inline
-    return const_cast<QObject*>(cast(const_cast<const QObject*>(obj)));
-}
-
-/*!
-    \internal
-
-    Returns \a obj if object \a obj inherits from this
-    meta-object; otherwise returns 0.
-*/
-const QObject *QMetaObject::cast(const QObject *obj) const
-{
-    return (obj && obj->metaObject()->inherits(this)) ? obj : nullptr;
-}
-
-#ifndef QT_NO_TRANSLATION
-/*!
-    \internal
-*/
-QString QMetaObject::tr(const char *s, const char *c, int n) const
-{
-    return QCoreApplication::translate(objectClassName(this), s, c, n);
-}
-#endif // QT_NO_TRANSLATION
 
 /*!
     Returns the method offset for this class; i.e. the index position
@@ -550,10 +418,11 @@ static inline int indexOfMethodRelative(const QMetaObject **baseObject,
                                         const QByteArray &name, int argc,
                                         const QArgumentType *types)
 {
+	// oye 从本类开始,父类,父父类,QObject, 一直向上查找
     for (const QMetaObject *m = *baseObject; m; m = m->d.superdata) {
-        Q_ASSERT(priv(m->d.data)->revision >= 7);
         int i = (MethodType == MethodSignal)
                  ? (priv(m->d.data)->signalCount - 1) : (priv(m->d.data)->methodCount - 1);
+		
         const int end = (MethodType == MethodSlot)
                         ? (priv(m->d.data)->signalCount) : 0;
 
@@ -672,23 +541,12 @@ int QMetaObject::indexOfSignal(const char *signal) const
 }
 
 
-int QMetaObjectPrivate::indexOfSignalRelative(const QMetaObject **baseObject,
-                                              const QByteArray &name, int argc,
-                                              const QArgumentType *types)
+int QMetaObjectPrivate::indexOfSignalRelative(
+							const QMetaObject **baseObject,
+                            const QByteArray &name, 
+                            int argc, const QArgumentType *types)
 {
     int i = indexOfMethodRelative<MethodSignal>(baseObject, name, argc, types);
-#ifndef QT_NO_DEBUG
-    const QMetaObject *m = *baseObject;
-    if (i >= 0 && m && m->d.superdata) {
-        int conflict = indexOfMethod(m->d.superdata, name, argc, types);
-        if (conflict >= 0) {
-            QMetaMethod conflictMethod = m->d.superdata->method(conflict);
-            qWarning("QMetaObject::indexOfSignal: signal %s from %s redefined in %s",
-                     conflictMethod.methodSignature().constData(),
-                     objectClassName(m->d.superdata), objectClassName(m));
-        }
-     }
- #endif
      return i;
 }
 

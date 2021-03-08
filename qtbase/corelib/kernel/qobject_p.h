@@ -34,7 +34,7 @@ extern QSignalSpyCallbackSet  qt_signal_spy_callback_set;
 
 enum { QObjectPrivateVersion = QT_VERSION };
 
-class Q_CORE_EXPORT QAbstractDeclarativeData
+class QAbstractDeclarativeData
 {
 public:
     static void (*destroyed)(QAbstractDeclarativeData *, QObject *);
@@ -54,6 +54,13 @@ struct QAbstractDeclarativeDataImpl : public QAbstractDeclarativeData
     quint32 unused: 31;
 };
 
+/*
+	oye
+	-1 sig-slot connection
+	-2 属性,用户数据
+	-3 事件过滤器
+	-4 
+*/
 class  QObjectPrivate : public QObjectData
 {
     //Q_DECLARE_PUBLIC(QObject)
@@ -64,6 +71,7 @@ public:
 	// oye 每个这样的Object对象都关联了threadData, 相同线程的值必然相同
     QThreadData *threadData; // id of the thread that owns the object
 
+	// oye sender 存放sig-slot connection的地方
     QObjectConnectionListVector *connectionLists;
 
     Connection *senders;     // linked list of connections connected to this object
@@ -102,9 +110,12 @@ public:
         };
         // The next pointer for the singly-linked ConnectionList
         Connection *nextConnectionList;
+
+		// oye 居然看到了驱动的玩法
         //senders linked list
-        Connection *next;
-        Connection **prev;
+        Connection *     next;
+        Connection **    prev;
+		
         QAtomicPointer<const int> argumentTypes;
         QAtomicInt ref_;
         ushort method_offset;
@@ -114,14 +125,14 @@ public:
         ushort isSlotObject : 1;
         ushort ownArgumentTypes : 1;
         Connection() : nextConnectionList(0), ref_(2), ownArgumentTypes(true) {
-            //ref_ is 2 for the use in the internal lists, and for the use in QMetaObject::Connection
+            //ref_ is 2 for the use in the internal lists, 
+            // and for the use in QMetaObject::Connection
         }
         ~Connection();
-        int method() const { Q_ASSERT(!isSlotObject); return method_offset + method_relative; }
+        int method() const {  return method_offset + method_relative; }
         void ref() { ref_.ref(); }
         void deref() {
             if (!ref_.deref()) {
-                Q_ASSERT(!receiver);
                 delete this;
             }
         }
@@ -163,10 +174,10 @@ public:
                                    Sender *currentSender,
                                    Sender *previousSender);
 
-    static QObjectPrivate *get(QObject *o) {
-        return o->d_func();
-    }
+	// QObjectPrivate 本身是内部使用的, 这里提供了一个快速转换的方法 Object -> ObjectPrivate
+    static QObjectPrivate *get(QObject *o) {       return o->d_func();   }
     static const QObjectPrivate *get(const QObject *o) { return o->d_func(); }
+	
 
     int signalIndex(const char *signalName, const QMetaObject **meta = 0) const;
     inline bool isSignalConnected(uint signalIdx, bool checkDeclarative = true) const;
@@ -196,13 +207,12 @@ public:
 };
 
 
-/*! \internal
-
-  Returns \c true if the signal with index \a signal_index from object \a sender is connected.
+/*
+  Returns true if the signal with index signal_index from object sender is connected.
+  
   Signals with indices above a certain range are always considered connected (see connectedSignals
   in QObjectPrivate).
 
-  \a signal_index must be the index returned by QObjectPrivate::signalIndex;
 */
 inline bool QObjectPrivate::isSignalConnected(uint signal_index, bool checkDeclarative) const
 {
@@ -322,11 +332,27 @@ Q_DECLARE_TYPEINFO(QObjectPrivate::Connection, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(QObjectPrivate::Sender, Q_MOVABLE_TYPE);
 
 class QSemaphore;
-class Q_CORE_EXPORT QMetaCallEvent : public QEvent
+class QMetaCallEvent : public QEvent
 {
+private:
+    QtPrivate::QSlotObjectBase *slotObj_;
+    const QObject *sender_;
+    int signalId_;
+    int nargs_;
+    int *types_;
+    void **args_;
+    QSemaphore *semaphore_;
+    QObjectPrivate::StaticMetaCallFunction callFunction_;
+    ushort method_offset_;
+    ushort method_relative_;
+
 public:
-    QMetaCallEvent(ushort method_offset, ushort method_relative, QObjectPrivate::StaticMetaCallFunction callFunction , const QObject *sender, int signalId,
-                   int nargs = 0, int *types = 0, void **args = 0, QSemaphore *semaphore = 0);
+    QMetaCallEvent(
+			ushort method_offset, 
+			ushort method_relative, 
+			QObjectPrivate::StaticMetaCallFunction callFunction , 
+			const QObject *sender, int signalId,
+           int nargs = 0, int *types = 0, void **args = 0, QSemaphore *semaphore = 0);
     /*! \internal
         \a signalId is in the signal index range (see QObjectPrivate::signalIndex()).
     */
@@ -340,19 +366,10 @@ public:
     inline int signalId() const { return signalId_; }
     inline void **args() const { return args_; }
 
+	// oye 是不是要通过他来实现隐藏QMetaCallEvent类本身的信息???
     virtual void placeMetaCall(QObject *object);
 
-private:
-    QtPrivate::QSlotObjectBase *slotObj_;
-    const QObject *sender_;
-    int signalId_;
-    int nargs_;
-    int *types_;
-    void **args_;
-    QSemaphore *semaphore_;
-    QObjectPrivate::StaticMetaCallFunction callFunction_;
-    ushort method_offset_;
-    ushort method_relative_;
+
 };
 
 class QBoolBlocker
@@ -366,10 +383,10 @@ private:
     bool reset;
 };
 
-void Q_CORE_EXPORT qDeleteInEventHandler(QObject *o);
+void  qDeleteInEventHandler(QObject *o);
 
 struct QAbstractDynamicMetaObject;
-struct Q_CORE_EXPORT QDynamicMetaObjectData
+struct  QDynamicMetaObjectData
 {
     virtual ~QDynamicMetaObjectData();
     virtual void objectDestroyed(QObject *) { delete this; }
@@ -378,7 +395,7 @@ struct Q_CORE_EXPORT QDynamicMetaObjectData
     virtual int metaCall(QObject *, QMetaObject::Call, int _id, void **) = 0;
 };
 
-struct Q_CORE_EXPORT QAbstractDynamicMetaObject : public QDynamicMetaObjectData, public QMetaObject
+struct  QAbstractDynamicMetaObject : public QDynamicMetaObjectData, public QMetaObject
 {
     ~QAbstractDynamicMetaObject();
 

@@ -32,6 +32,9 @@ class QWidgetPrivate;
 
 class  QWidget : public QObject, public QPaintDevice
 {
+private:	
+    QWidgetData *data;
+	
 	inline QWidgetPrivate* d_func() { return reinterpret_cast<QWidgetPrivate *>(qGetPtrHelper(d_ptr)); }
 public:
     enum RenderFlag {
@@ -511,7 +514,6 @@ private:
 private:
     Q_PRIVATE_SLOT(d_func(), void _q_showIfNotHidden())
 
-    QWidgetData *data;
 };
 
 

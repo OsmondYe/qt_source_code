@@ -119,7 +119,7 @@ struct QMetaObjectPrivate
 {
     // revision 7 is Qt 5.0 everything lower is not supported
     enum { OutputRevision = 7 }; // Used by moc, qmetaobjectbuilder and qdbus
-
+	// 按照一个固定的魔法数组来排列的, 顺序不能被打乱
     int revision;
     int className;
     int classInfoCount, classInfoData;
@@ -151,10 +151,12 @@ struct QMetaObjectPrivate
                              int argc, const QArgumentType *types);
     static int indexOfConstructor(const QMetaObject *m, const QByteArray &name,
                                   int argc, const QArgumentType *types);
-    Q_CORE_EXPORT static QMetaMethod signal(const QMetaObject *m, int signal_index);
-    Q_CORE_EXPORT static int signalOffset(const QMetaObject *m);
-    Q_CORE_EXPORT static int absoluteSignalCount(const QMetaObject *m);
-    Q_CORE_EXPORT static int signalIndex(const QMetaMethod &m);
+    static QMetaMethod signal(const QMetaObject *m, int signal_index);
+    static int signalOffset(const QMetaObject *m);
+	
+    static int absoluteSignalCount(const QMetaObject *m);
+    static int signalIndex(const QMetaMethod &m);
+	
     static bool checkConnectArgs(int signalArgc, const QArgumentType *signalTypes,
                                  int methodArgc, const QArgumentType *methodTypes);
     static bool checkConnectArgs(const QMetaMethodPrivate *signal,
@@ -162,7 +164,6 @@ struct QMetaObjectPrivate
 
     static QList<QByteArray> parameterTypeNamesFromSignature(const char *signature);
 
-#ifndef QT_NO_QOBJECT
     //defined in qobject.cpp
     enum DisconnectType { DisconnectAll, DisconnectOne };
     static void memberIndexes(const QObject *obj, const QMetaMethod &member,
@@ -179,7 +180,6 @@ struct QMetaObjectPrivate
     static inline bool disconnectHelper(QObjectPrivate::Connection *c,
                                         const QObject *receiver, int method_index, void **slot,
                                         QMutex *senderMutex, DisconnectType = DisconnectAll);
-#endif
 };
 
 // For meta-object generators

@@ -75,6 +75,7 @@ public:
     static QThread *mainThread();
     static bool threadRequiresCoreApplication();
 
+	// post event时 最终处理消息的地方
     static void sendPostedEvents(QObject *receiver, int event_type, QThreadData *data);
 
 	//oye current::thread() == receiver->thread;

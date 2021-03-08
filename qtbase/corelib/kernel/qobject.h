@@ -72,14 +72,22 @@ public:
 */
 class  QObject
 {
-//----------------------------------------------------------
+// Q_OBJECT
+// OYE moc 将会处理Q_OBJECT 宏,生成 相对应的moc_QObject.cpp代码
+
 // Q_OBJECT will be expanded as 
+//----------------------------------------------------------
 public:     
-     
+	//0ye : 经过moc后,这些信息会在另一个 moc_XXX.cpp文件中被写入
     static const QMetaObject staticMetaObject; 
-    virtual const QMetaObject *metaObject() const; 
+
+    virtual const QMetaObject *metaObject() const; 	
+	// 参考实现  return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+	   
     virtual void *qt_metacast(const char *); 
+	
     virtual int qt_metacall(QMetaObject::Call, int, void **); 
+	
     static inline QString tr(const char *s, const char *c = Q_NULLPTR, int n = -1) 
         { return staticMetaObject.tr(s, c, n); } 
     static inline QString trUtf8(const char *s, const char *c = Q_NULLPTR, int n = -1) 
@@ -88,18 +96,16 @@ private:
     static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **);      
     struct QPrivateSignal {}; 
     //QT_ANNOTATE_CLASS(qt_qobject, "")
-
-// end enpandsion of the macro O_OBJECT
 //----------------------------------------------------------
+// end enpandsion of the macro O_OBJECT
 
 	
     //Q_PROPERTY(QString objectName READ objectName WRITE setObjectName NOTIFY objectNameChanged)
 
 
 protected:
-    QScopedPointer<QObjectData> d_ptr;
+    QScopedPointer<QObjectData> d_ptr;   // 唯一的数据成员
 
-    static const QMetaObject staticQtMetaObject;
     friend inline const QMetaObject *qt_getQtMetaObject() { return &QObject::staticQtMetaObject; }
 
     friend struct QMetaObject;
@@ -123,13 +129,6 @@ public:
 	// oye, widget overrides it to expand ui event
     virtual bool event(QEvent *event);
     virtual bool eventFilter(QObject *watched, QEvent *event);
-
-    static QString tr(const char *sourceText, const char *comment = Q_NULLPTR, int n = -1);
-    static QString trUtf8(const char *sourceText, const char *comment = Q_NULLPTR, int n = -1);
-    static QString tr(const char *sourceText, const char * = Q_NULLPTR, int = -1)       { return QString::fromUtf8(sourceText); }
-	
-    virtual const QMetaObject *metaObject() const;
-    static const QMetaObject staticMetaObject;
 
 
     QString objectName() const;
@@ -195,20 +194,6 @@ public:
     void installEventFilter(QObject *filterObj);
     void removeEventFilter(QObject *obj);
 
-    static QMetaObject::Connection connect(
-						const QObject *sender,   const char *signal,
-                        const QObject *receiver, const char *member, 
-                        Qt::ConnectionType = Qt::AutoConnection);
-
-    static QMetaObject::Connection connect(
-						const QObject *sender, const QMetaMethod &signal,
-                        const QObject *receiver, const QMetaMethod &method,
-                        Qt::ConnectionType type = Qt::AutoConnection);
-
-    inline QMetaObject::Connection connect(
-						const QObject *sender, const char *signal,
-                        const char *member, 
-                        Qt::ConnectionType type = Qt::AutoConnection) const;
 
 
     //Connect a signal to a pointer to qobject member function
@@ -365,10 +350,6 @@ public:
     }
 
 
-
-    void dumpObjectTree() const;
-    void dumpObjectInfo() const;
-
     bool setProperty(const char *name, const QVariant &value);
     QVariant property(const char *name) const;
     QList<QByteArray> dynamicPropertyNames() const;
@@ -400,17 +381,14 @@ protected:
     virtual void childEvent(QChildEvent *event);
     virtual void customEvent(QEvent *event);
 
-    virtual void connectNotify(const QMetaMethod &signal);
-    virtual void disconnectNotify(const QMetaMethod &signal);
+    virtual void connectNotify(const QMetaMethod &signal){   Q_UNUSED(signal);}
+    virtual void disconnectNotify(const QMetaMethod &signal){   Q_UNUSED(signal);}
 
 protected:
     QObject(QObjectPrivate &dd, QObject *parent = Q_NULLPTR);
-
-
-
 private:
-    //Q_DISABLE_COPY(QObject)
-    Q_PRIVATE_SLOT(d_func(), void _q_reregisterTimers(void *))
+    // Q_DISABLE_COPY(QObject)
+    // Q_PRIVATE_SLOT(d_func(), void _q_reregisterTimers(void *))
 
 private:
     static QMetaObject::Connection connectImpl(const QObject *sender, void **signal,

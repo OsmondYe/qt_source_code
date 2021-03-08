@@ -1083,7 +1083,6 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
         MutexUnlocker unlocker(locker);
 
         QScopedPointer<QEvent> event_deleter(e); // will delete the event (with the mutex unlocked)
-
         // after all that work, it's time to deliver the event.
         // 饶了一大圈,PostEvent最终还是依赖SendEvent来处理
         QCoreApplication::sendEvent(r, e);

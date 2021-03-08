@@ -108,6 +108,7 @@ public:
 #endif
 };
 
+
 class QAtomicInt : public QAtomicInteger<int>
 {
 public:

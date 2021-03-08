@@ -47,14 +47,16 @@
 QT_BEGIN_NAMESPACE
 
 
-#ifndef QT_NO_THREAD
-
 class QWaitConditionPrivate;
 class QMutex;
 class QReadWriteLock;
 
-class Q_CORE_EXPORT QWaitCondition
+class QWaitCondition
 {
+private:
+    //Q_DISABLE_COPY(QWaitCondition)
+    QWaitConditionPrivate * d;
+
 public:
     QWaitCondition();
     ~QWaitCondition();
@@ -68,33 +70,9 @@ public:
     void notify_one() { wakeOne(); }
     void notify_all() { wakeAll(); }
 
-private:
-    Q_DISABLE_COPY(QWaitCondition)
 
-    QWaitConditionPrivate * d;
 };
 
-#else
-
-class QMutex;
-class Q_CORE_EXPORT QWaitCondition
-{
-public:
-    QWaitCondition() {}
-    ~QWaitCondition() {}
-
-    bool wait(QMutex *mutex, unsigned long time = ULONG_MAX)
-    {
-        Q_UNUSED(mutex);
-        Q_UNUSED(time);
-        return true;
-    }
-
-    void wakeOne() {}
-    void wakeAll() {}
-};
-
-#endif // QT_NO_THREAD
 
 QT_END_NAMESPACE
 
