@@ -127,14 +127,15 @@ class QRawFont;
 
 class QPainterPrivate
 {
+//Q_DECLARE_PUBLIC(QPainter)
 public:
-    QPainter *q_ptr;
-    QPainterPrivate **d_ptrs;
+    QPainter 					*q_ptr;
+    QPainterPrivate 			**d_ptrs;
 
-    QPainterState *state;
-    QVector<QPainterState*> states;
+    QPainterState 				*state;
+    QVector<QPainterState*> 	states;
 
-    mutable QPainterDummyState *dummyState;
+    mutable QPainterDummyState  *dummyState;
 
     QTransform invMatrix;
     uint txinv:1;
@@ -142,7 +143,14 @@ public:
     uint d_ptrs_size;
     uint refcount;
 
-    //Q_DECLARE_PUBLIC(QPainter)
+	QPaintDevice 				*device;
+    QPaintDevice 				*original_device;
+    QPaintDevice 				*helper_device;
+    QPaintEngine 				*engine;
+    QEmulationPaintEngine 		*emulationEngine;
+    QPaintEngineEx 				*extended;
+    QBrush 						colorBrush;          // for fill with solid color
+
 public:
     QPainterPrivate(QPainter *painter)
     : q_ptr(painter), d_ptrs(0), state(0), dummyState(0), txinv(0), inDestructor(false), d_ptrs_size(0),
@@ -153,11 +161,10 @@ public:
 
     ~QPainterPrivate();
 
-
-
-    enum DrawOperation { StrokeDraw        = 0x1,
-                         FillDraw          = 0x2,
-                         StrokeAndFillDraw = 0x3
+    enum DrawOperation { 
+		StrokeDraw        = 0x1,
+        FillDraw          = 0x2,
+        StrokeAndFillDraw = 0x3
     };
 
     QPainterDummyState *fakeState() const {
@@ -197,16 +204,10 @@ public:
     static bool attachPainterPrivate(QPainter *q, QPaintDevice *pdev);
     void detachPainterPrivate(QPainter *q);
 
-    QPaintDevice *device;
-    QPaintDevice *original_device;
-    QPaintDevice *helper_device;
-    QPaintEngine *engine;
-    QEmulationPaintEngine *emulationEngine;
-    QPaintEngineEx *extended;
-    QBrush colorBrush;          // for fill with solid color
+
 };
 
-Q_GUI_EXPORT void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivate::DrawOperation operation);
+void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivate::DrawOperation operation);
 
 QString qt_generate_brush_key(const QBrush &brush);
 
