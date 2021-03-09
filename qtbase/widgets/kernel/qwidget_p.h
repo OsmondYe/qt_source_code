@@ -99,6 +99,7 @@ struct QTLWExtra {
 
 };
 
+// Qt Widget Extra
 struct QWExtra {
     // *************************** Cross-platform variables *****************************
 
@@ -109,12 +110,13 @@ struct QWExtra {
 
     QCursor *curs;
 
-    QPointer<QStyle> style;
-    QPointer<QWidget> focus_proxy;
+    QPointer<QStyle> 		style;				// oye style
+    QPointer<QWidget> 		focus_proxy;
 
     // Implicit pointers (shared_empty/shared_null).
-    QRegion mask; // widget mask
-    QString styleSheet;
+    QRegion 				mask; // widget mask
+    
+    QString 				styleSheet;			// CSS 
 
     // Other variables.
     qint32 minw;
@@ -150,6 +152,93 @@ static inline bool bypassGraphicsProxyWidget(const QWidget *p)
 class  QWidgetPrivate : public QObjectPrivate
 {
     //Q_DECLARE_PUBLIC(QWidget);
+public:	// Variables.
+	QWExtra *extra;
+	QWidget *focus_next;
+	QWidget *focus_prev;
+	QWidget *focus_child;
+	QLayout *layout;      						//oye widget会绑定一个默认的layout, 每次消息泵过来,会给layout一个机会
+	QRegion *needsFlush;
+	QPaintDevice *redirectDev;
+	QWidgetItemV2 *widgetItem;
+	QPaintEngine *extraPaintEngine;
+	mutable const QMetaObject *polished;  		// ensurePolished里面看到
+	QGraphicsEffect *graphicsEffect;
+	// All widgets are added into the allWidgets set. Once
+	// they receive a window id they are also added to the mapper.
+	// This should just ensure that all widgets are deleted by QApplication
+	static QWidgetMapper *mapper;
+	static QWidgetSet *allWidgets;
+	Qt::InputMethodHints imHints;
+	static QPointer<QWidget> editingWidget;
+
+	// Implicit pointers (shared_null/shared_empty).
+	QRegion opaqueChildren;
+	QRegion dirty;
+#ifndef QT_NO_TOOLTIP
+	QString toolTip;
+	int toolTipDuration;
+#endif
+#if QT_CONFIG(statustip)
+	QString statusTip;
+#endif
+#if QT_CONFIG(whatsthis)
+	QString whatsThis;
+#endif
+#ifndef QT_NO_ACCESSIBILITY
+	QString accessibleName;
+	QString accessibleDescription;
+#endif
+
+	// Other variables.
+	uint inheritedFontResolveMask;
+	uint inheritedPaletteResolveMask;
+	short leftmargin;
+	short topmargin;
+	short rightmargin;
+	short bottommargin;
+	signed char leftLayoutItemMargin;
+	signed char topLayoutItemMargin;
+	signed char rightLayoutItemMargin;
+	signed char bottomLayoutItemMargin;
+	
+	static int instanceCounter; // Current number of widget instances
+	static int maxInstances; // Maximum number of widget instances
+	
+	Qt::HANDLE hd;
+	QWidgetData data;
+	QSizePolicy size_policy;
+	QLocale locale;
+	QPoint redirectOffset;
+	QList<QAction*> actions;
+	QMap<Qt::GestureType, Qt::GestureFlags> gestureContext;
+
+	// Bit fields.
+	uint high_attributes[4]; // the low ones are in QWidget::widget_attributes
+	QPalette::ColorRole fg_role : 8;
+	QPalette::ColorRole bg_role : 8;
+	uint dirtyOpaqueChildren : 1;
+	uint isOpaque : 1;
+	uint retainSizeWhenHiddenChanged : 1;
+	uint inDirtyList : 1;
+	uint isScrolled : 1;
+	uint isMoved : 1;
+	uint usesDoubleBufferedGLContext : 1;
+	uint mustHaveWindowHandle : 1;
+	uint renderToTexture : 1;
+	uint textureChildSeen : 1;
+#ifndef QT_NO_IM
+	uint inheritsInputMethodHints : 1;
+#endif
+#ifndef QT_NO_OPENGL
+	uint renderToTextureReallyDirty : 1;
+	uint renderToTextureComposeActive : 1;
+#endif
+	uint childrenHiddenByWState : 1;
+	uint childrenShownByExpose : 1;
+
+	// *************************** Platform specific ************************************
+	uint noPaintOnScreen : 1; // 0 by default  see qwidget.cpp ::paintEngine()
 
 public:
     // *************************** Cross-platform ***************************************
@@ -177,96 +266,7 @@ public:
         DirectionSouth = 0x02,
         DirectionWest = 0x20
     };	
-		// Variables.
-		// Regular pointers (keep them together to avoid gaps on 64 bit architectures).
-		QWExtra *extra;
-		QWidget *focus_next;
-		QWidget *focus_prev;
-		QWidget *focus_child;
-		QLayout *layout;      					//oye widget会绑定一个默认的layout, 每次消息泵过来,会给layout一个机会
-		QRegion *needsFlush;
-		QPaintDevice *redirectDev;
-		QWidgetItemV2 *widgetItem;
-		QPaintEngine *extraPaintEngine;
-		mutable const QMetaObject *polished;  // ensurePolished里面看到
-		QGraphicsEffect *graphicsEffect;
-		// All widgets are added into the allWidgets set. Once
-		// they receive a window id they are also added to the mapper.
-		// This should just ensure that all widgets are deleted by QApplication
-		static QWidgetMapper *mapper;
-		static QWidgetSet *allWidgets;
-		Qt::InputMethodHints imHints;
-		static QPointer<QWidget> editingWidget;
-	
-		// Implicit pointers (shared_null/shared_empty).
-		QRegion opaqueChildren;
-		QRegion dirty;
-#ifndef QT_NO_TOOLTIP
-		QString toolTip;
-		int toolTipDuration;
-#endif
-#if QT_CONFIG(statustip)
-		QString statusTip;
-#endif
-#if QT_CONFIG(whatsthis)
-		QString whatsThis;
-#endif
-#ifndef QT_NO_ACCESSIBILITY
-		QString accessibleName;
-		QString accessibleDescription;
-#endif
-	
-		// Other variables.
-		uint inheritedFontResolveMask;
-		uint inheritedPaletteResolveMask;
-		short leftmargin;
-		short topmargin;
-		short rightmargin;
-		short bottommargin;
-		signed char leftLayoutItemMargin;
-		signed char topLayoutItemMargin;
-		signed char rightLayoutItemMargin;
-		signed char bottomLayoutItemMargin;
-		static int instanceCounter; // Current number of widget instances
-		static int maxInstances; // Maximum number of widget instances
-		Qt::HANDLE hd;
-		QWidgetData data;
-		QSizePolicy size_policy;
-		QLocale locale;
-		QPoint redirectOffset;
-#ifndef QT_NO_ACTION
-		QList<QAction*> actions;
-#endif
-#ifndef QT_NO_GESTURES
-		QMap<Qt::GestureType, Qt::GestureFlags> gestureContext;
-#endif
-	
-		// Bit fields.
-		uint high_attributes[4]; // the low ones are in QWidget::widget_attributes
-		QPalette::ColorRole fg_role : 8;
-		QPalette::ColorRole bg_role : 8;
-		uint dirtyOpaqueChildren : 1;
-		uint isOpaque : 1;
-		uint retainSizeWhenHiddenChanged : 1;
-		uint inDirtyList : 1;
-		uint isScrolled : 1;
-		uint isMoved : 1;
-		uint usesDoubleBufferedGLContext : 1;
-		uint mustHaveWindowHandle : 1;
-		uint renderToTexture : 1;
-		uint textureChildSeen : 1;
-#ifndef QT_NO_IM
-		uint inheritsInputMethodHints : 1;
-#endif
-#ifndef QT_NO_OPENGL
-		uint renderToTextureReallyDirty : 1;
-		uint renderToTextureComposeActive : 1;
-#endif
-		uint childrenHiddenByWState : 1;
-		uint childrenShownByExpose : 1;
-	
-		// *************************** Platform specific ************************************
-		uint noPaintOnScreen : 1; // see qwidget.cpp ::paintEngine()
+
     // Functions.
     explicit QWidgetPrivate(int version = QObjectPrivateVersion);
     ~QWidgetPrivate();

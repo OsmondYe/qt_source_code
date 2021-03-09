@@ -32,41 +32,100 @@ class QWidgetPrivate;
 
 class  QWidget : public QObject, public QPaintDevice
 {
-private:	
-    QWidgetData *data;
-	
+	// QWidgetPrivate
 	inline QWidgetPrivate* d_func() { return reinterpret_cast<QWidgetPrivate *>(qGetPtrHelper(d_ptr)); }
-
+private:	
+    QWidgetData *data;	
 public:
     QLayout *layout() const;
     void setLayout(QLayout *);
 	
-
-
-
     explicit QWidget(QWidget* parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
     ~QWidget();
 
+public: // override QPaintDevice	
     int devType() const override {return QInternal::Widget;}
+	int metric(PaintDeviceMetric) const override;
+    void initPainter(QPainter *painter) const override;
+    QPaintDevice *redirected(QPoint *offset) const override;
+    QPainter *sharedPainter() const override;
 
-    WId winId() const;
-    void createWinId(); // internal, going away
-    
-    inline WId internalWinId() const { return data->winid; }
-	
-    WId effectiveWinId() const;
-
-    // GUI style setting
+public:  // GUI style setting    
     QStyle *style() const;
     void setStyle(QStyle *);
-    // Widget types and states
+	
+    const QPalette &palette() const;
+    void setPalette(const QPalette &);
 
-    bool isTopLevel() const;
-    bool isWindow() const;
+    void setBackgroundRole(QPalette::ColorRole);
+    QPalette::ColorRole backgroundRole() const;
 
-    bool isModal() const;
-    Qt::WindowModality windowModality() const;
+    void setForegroundRole(QPalette::ColorRole);
+    QPalette::ColorRole foregroundRole() const;
+
+    const QFont &font() const;
+    void setFont(const QFont &);
+	// oye, PushButton use it to caculate the size of text
+    QFontMetrics fontMetrics() const{ return QFontMetrics(data->fnt); }
+    QFontInfo fontInfo() const;
+
+    QString styleSheet() const;
+public Q_SLOTS:
+    void setStyleSheet(const QString& styleSheet);
+
+public:  // Qt window
+    WId winId() const;
+    WId effectiveWinId() const;
+    void createWinId(); // internal, going away
+    inline WId internalWinId() const { return data->winid; }
+
+	bool isWindow() const;
+	Qt::WindowModality windowModality() const;
     void setWindowModality(Qt::WindowModality windowModality);
+    QWidget *window() const;
+    inline QWidget *topLevelWidget() const { return window(); }
+	QString windowTitle() const;
+	void setWindowIcon(const QIcon &icon);
+	QIcon windowIcon() const;
+	void setWindowIconText(const QString &);
+	QString windowIconText() const;
+	void setWindowRole(const QString &);
+	QString windowRole() const;
+	void setWindowFilePath(const QString &filePath);
+	QString windowFilePath() const;
+
+	void setWindowOpacity(qreal level);
+	qreal windowOpacity() const;
+
+	bool isWindowModified() const;
+
+    bool isActiveWindow() const;
+    void activateWindow();
+    Qt::WindowStates windowState() const;
+    void setWindowState(Qt::WindowStates state);
+    void overrideWindowState(Qt::WindowStates state);
+
+    inline Qt::WindowType windowType() const;
+	void setWindowFlags(Qt::WindowFlags type);
+	
+    inline Qt::WindowFlags windowFlags() const;
+    void setWindowFlag(Qt::WindowType, bool on = true);
+    void overrideWindowFlags(Qt::WindowFlags type);
+	
+	QWindow *windowHandle() const;
+ 	static QWidget *createWindowContainer(
+				QWindow *window, 
+				QWidget *parent=Q_NULLPTR, 
+				Qt::WindowFlags flags=Qt::WindowFlags());
+
+public: // designed for UIC		
+    void setupUi(QWidget *widget);
+	
+
+    // Widget types and states
+public:  // Position
+    bool isTopLevel() const;   
+    bool isModal() const;
 
     bool isEnabled() const;
     bool isEnabledTo(const QWidget *) const;
@@ -77,9 +136,7 @@ public Q_SLOTS:
     void setDisabled(bool);
     void setWindowModified(bool);
 
-    // Widget coordinates
-
-public:
+public: // Widget coordinates
     QRect frameGeometry() const;
     const QRect &geometry() const;
     QRect normalGeometry() const;
@@ -110,8 +167,6 @@ public:
     void setMaximumWidth(int maxw);
     void setMaximumHeight(int maxh);
 
-    void setupUi(QWidget *widget);
-
     QSize sizeIncrement() const;
     void setSizeIncrement(const QSize &);
     void setSizeIncrement(int w, int h);
@@ -132,26 +187,9 @@ public:
     QPoint mapFromParent(const QPoint &) const;
     QPoint mapTo(const QWidget *, const QPoint &) const;
     QPoint mapFrom(const QWidget *, const QPoint &) const;
-
-    QWidget *window() const;
+	
+public:
     QWidget *nativeParentWidget() const;
-    inline QWidget *topLevelWidget() const { return window(); }
-
-    // Widget appearance functions
-    const QPalette &palette() const;
-    void setPalette(const QPalette &);
-
-    void setBackgroundRole(QPalette::ColorRole);
-    QPalette::ColorRole backgroundRole() const;
-
-    void setForegroundRole(QPalette::ColorRole);
-    QPalette::ColorRole foregroundRole() const;
-
-    const QFont &font() const;
-    void setFont(const QFont &);
-	// oye, PushButton use it to caculate the size of text
-    QFontMetrics fontMetrics() const{ return QFontMetrics(data->fnt); }
-    QFontInfo fontInfo() const;
 
     QCursor cursor() const;
     void setCursor(const QCursor &);
@@ -182,28 +220,10 @@ public:
     QGraphicsEffect *graphicsEffect() const;
     void setGraphicsEffect(QGraphicsEffect *effect);
 
-    void grabGesture(Qt::GestureType type, Qt::GestureFlags flags = Qt::GestureFlags());
-    void ungrabGesture(Qt::GestureType type);
 
 public Q_SLOTS:
     void setWindowTitle(const QString &);
-    void setStyleSheet(const QString& styleSheet);
 public:
-    QString styleSheet() const;
-    QString windowTitle() const;
-    void setWindowIcon(const QIcon &icon);
-    QIcon windowIcon() const;
-    void setWindowIconText(const QString &);
-    QString windowIconText() const;
-    void setWindowRole(const QString &);
-    QString windowRole() const;
-    void setWindowFilePath(const QString &filePath);
-    QString windowFilePath() const;
-
-    void setWindowOpacity(qreal level);
-    qreal windowOpacity() const;
-
-    bool isWindowModified() const;
     void setToolTip(const QString &);
     QString toolTip() const;
     void setToolTipDuration(int msec);
@@ -228,11 +248,10 @@ public Q_SLOTS:
     inline void setFocus() { setFocus(Qt::OtherFocusReason); }
 
 public:
-    bool isActiveWindow() const;
-    void activateWindow();
-    void clearFocus();
 
+    void clearFocus();
     void setFocus(Qt::FocusReason reason);
+	
     Qt::FocusPolicy focusPolicy() const;
     void setFocusPolicy(Qt::FocusPolicy policy);
     bool hasFocus() const;
@@ -277,7 +296,6 @@ public:
 
 public Q_SLOTS:
     // Widget management functions
-
     virtual void setVisible(bool visible);
     void setHidden(bool hidden);
     void show();
@@ -310,10 +328,6 @@ public:
     bool isMinimized() const;
     bool isMaximized() const;
     bool isFullScreen() const;
-
-    Qt::WindowStates windowState() const;
-    void setWindowState(Qt::WindowStates state);
-    void overrideWindowState(Qt::WindowStates state);
 
     virtual QSize sizeHint() const;
     virtual QSize minimumSizeHint() const;
@@ -364,13 +378,6 @@ public:
 
     QWidget *parentWidget() const;
 
-    void setWindowFlags(Qt::WindowFlags type);
-    inline Qt::WindowFlags windowFlags() const;
-    void setWindowFlag(Qt::WindowType, bool on = true);
-    void overrideWindowFlags(Qt::WindowFlags type);
-
-    inline Qt::WindowType windowType() const;
-
     static QWidget *find(WId);
     inline QWidget *childAt(int x, int y) const;
     QWidget *childAt(const QPoint &p) const;
@@ -391,11 +398,7 @@ public:
     void setAutoFillBackground(bool enabled);
 
     QBackingStore *backingStore() const;
-
-    QWindow *windowHandle() const;
-
-    static QWidget *createWindowContainer(QWindow *window, QWidget *parent=Q_NULLPTR, Qt::WindowFlags flags=Qt::WindowFlags());
-
+   
 Q_SIGNALS:
     void windowTitleChanged(const QString &title);
     void windowIconChanged(const QIcon &icon);
@@ -436,17 +439,10 @@ protected:
     // Misc. protected functions
     virtual void changeEvent(QEvent *);
 
-
-    int metric(PaintDeviceMetric) const Q_DECL_OVERRIDE;
-    void initPainter(QPainter *painter) const Q_DECL_OVERRIDE;
-    QPaintDevice *redirected(QPoint *offset) const Q_DECL_OVERRIDE;
-    QPainter *sharedPainter() const Q_DECL_OVERRIDE;
-
     virtual void inputMethodEvent(QInputMethodEvent *);
 public:
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery) const;
-
-    Qt::InputMethodHints inputMethodHints() const;
+    Qt::InputMethodHints inputMethodHints() const;	
     void setInputMethodHints(Qt::InputMethodHints hints);
 
 protected Q_SLOTS:
@@ -522,7 +518,6 @@ public:
 
 
 };
-
 
 
 template <> inline QWidget *qobject_cast<QWidget*>(QObject *o)

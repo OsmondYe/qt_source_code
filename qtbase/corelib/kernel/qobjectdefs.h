@@ -228,14 +228,18 @@ public:
     const char *className() const;	
 	inline const QMetaObject *superClass() const{ return d.superdata; }
 
+	// metaObject是否和this的Type是同一个继承体系的
     bool inherits(const QMetaObject *metaObject) const ;  // 向上不断判断 super == metaObject
-    
+
+	// 是否可以把Obj 转换成 this的类型
+	const QObject *cast(const QObject *obj) const{
+		return (obj && obj->metaObject()->inherits(this)) ? obj : nullptr;
+    }
+	
     QObject *cast(QObject *obj) const{
 		return const_cast<QObject*>(cast(const_cast<const QObject*>(obj)));
     }
-    const QObject *cast(const QObject *obj) const{
-		return (obj && obj->metaObject()->inherits(this)) ? obj : nullptr;
-    }
+    
 
     QString tr(const char *s, const char *c, int n = -1) const{
     	return QCoreApplication::translate(objectClassName(this), s, c, n);

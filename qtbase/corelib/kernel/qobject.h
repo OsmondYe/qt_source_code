@@ -48,7 +48,7 @@ public:
     QObject *parent;				// oye widget之类的树形布局中
     QObjectList children;  			// oye 用在widget上绝了, 控件内涵子控件
 
-    uint isWidget : 1;
+    uint isWidget : 1;				// Widget's PrivateClass will set it to 1
     uint blockSig : 1;
     uint wasDeleted : 1;
     uint isDeletingChildren : 1;
@@ -458,12 +458,19 @@ QList<T> qFindChildren(const QObject *oobj, const QString &name = QString());
 QList<T> qFindChildren(const QObject *o, const QRegExp &re);
 #endif
 
+
+// oye QObject 继承体系下的 down-cast 这么做?
+// QT定了qobject_cast转型, 其实就是通过MetaObject来做判断
+// 比如有了 QStyle* obj, 现在判断是否是 QCascadeSheetStyle
 template <class T>
 inline T qobject_cast(QObject *object)
 {
+	// ObjType 其实就是T类型, 去掉 const * &之类的东西
     typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type ObjType;
     Q_STATIC_ASSERT_X(QtPrivate::HasQ_OBJECT_Macro<ObjType>::Value,
                     "qobject_cast requires the type to have a Q_OBJECT macro");
+
+	// 尝试拿到T class的静态MetaObject,来判断当前给的object,是否和T是同一个继承体系的
     return static_cast<T>(ObjType::staticMetaObject.cast(object));
 }
 

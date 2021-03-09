@@ -189,6 +189,8 @@ const char *QMetaObject::className() const
 }
 
 
+// oye 每一个主要的qt类,都给弄了类的静态MetaObject对象,
+// 只要判断地址是否相等,就可以确定, 任意2个metaObject是否是一回事
 bool QMetaObject::inherits(const QMetaObject *metaObject) const 
 {
     const QMetaObject *m = this;

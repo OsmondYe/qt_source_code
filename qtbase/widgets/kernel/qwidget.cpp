@@ -77,12 +77,8 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , extraPaintEngine(0)
       , polished(0)
       , graphicsEffect(0)
-#if !defined(QT_NO_IM)
       , imHints(Qt::ImhNone)
-#endif
-#ifndef QT_NO_TOOLTIP
       , toolTipDuration(-1)
-#endif
       , inheritedFontResolveMask(0)
       , inheritedPaletteResolveMask(0)
       , leftmargin(0)
@@ -107,61 +103,23 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , mustHaveWindowHandle(0)
       , renderToTexture(0)
       , textureChildSeen(0)
-#ifndef QT_NO_IM
       , inheritsInputMethodHints(0)
-#endif
-#ifndef QT_NO_OPENGL
       , renderToTextureReallyDirty(1)
       , renderToTextureComposeActive(0)
-#endif
       , childrenHiddenByWState(0)
       , childrenShownByExpose(0)
-#if defined(Q_OS_WIN)
       , noPaintOnScreen(0)
-#endif
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-      , picture(0)
-#elif 0 // Used to be included in Qt4 for Q_WS_WIN
-  #ifndef QT_NO_GESTURES
-      , nativeGesturePanEnabled(0)
-  #endif
-#elif 0 // Used to be included in Qt4 for Q_WS_MAC
-      , needWindowChange(0)
-      , window_event(0)
-      , qd_hd(0)
-#endif
 {
-    if (Q_UNLIKELY(!qApp)) {
+    if (!qApp) {
         qFatal("QWidget: Must construct a QApplication before a QWidget");
         return;
     }
 
-#ifdef QT_BUILD_INTERNAL
-    // Don't check the version parameter in internal builds.
-    // This allows incompatible versions to be loaded, possibly for testing.
-    Q_UNUSED(version);
-#else
-    if (Q_UNLIKELY(version != QObjectPrivateVersion))
-        qFatal("Cannot mix incompatible Qt library (version 0x%x) with this library (version 0x%x)",
-                version, QObjectPrivateVersion);
-#endif
-
     isWidget = true;
     memset(high_attributes, 0, sizeof(high_attributes));
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    drawRectOriginalAdded = false;
-    originalDrawMethod = true;
-    changeMethods = false;
-    isInUnifiedToolbar = false;
-    unifiedSurface = 0;
-    toolbar_ancestor = 0;
-    flushRequested = false;
-    touchEventsEnabled = false;
-#endif
-#ifdef QWIDGET_EXTRA_DEBUG
+
     static int count = 0;
     qDebug() << "widgets" << ++count;
-#endif
 }
 
 
@@ -421,7 +379,6 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     if (Q_UNLIKELY(!qobject_cast<QApplication *>(QCoreApplication::instance())))
         qFatal("QWidget: Cannot create a QWidget without QApplication");
 
-    Q_ASSERT(allWidgets);
     if (allWidgets)
         allWidgets->insert(q);
 
@@ -434,13 +391,10 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
 
     q->data = &data;
 
-#ifndef QT_NO_THREAD
     if (!parent) {
-        Q_ASSERT_X(q->thread() == qApp->thread(), "QWidget",
-                   "Widgets must be created in the GUI thread.");
+        Q_ASSERT_X(q->thread() == qApp->thread(), 
+			"QWidget", "Widgets must be created in the GUI thread.");
     }
-#endif
-
 
     if (targetScreen >= 0) {
         topData()->initialScreenIndex = targetScreen;
@@ -513,18 +467,7 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     QApplication::postEvent(q, new QEvent(QEvent::PolishRequest));
 
     extraPaintEngine = 0;
-
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    // If we add a child to the unified toolbar, we have to redirect the painting.
-    if (parentWidget && parentWidget->d_func() && parentWidget->d_func()->isInUnifiedToolbar) {
-        if (parentWidget->d_func()->unifiedSurface) {
-            QWidget *toolbar = parentWidget->d_func()->toolbar_ancestor;
-            parentWidget->d_func()->unifiedSurface->recursiveRedirect(toolbar, toolbar, toolbar->d_func()->toolbar_offset);
-        }
-    }
-#endif
 }
-
 
 
 void QWidgetPrivate::createRecursively()
@@ -1078,16 +1021,12 @@ void QWidgetPrivate::createSysExtra()
 
 void QWidgetPrivate::deleteExtra()
 {
-    if (extra) {                                // if exists
-#ifndef QT_NO_CURSOR
+    if (extra) {                       
         delete extra->curs;
-#endif
         deleteSysExtra();
-#ifndef QT_NO_STYLE_STYLESHEET
         // dereference the stylesheet style
         if (QStyleSheetStyle *proxy = qobject_cast<QStyleSheetStyle *>(extra->style))
             proxy->deref();
-#endif
         if (extra->topextra) {
             deleteTLSysExtra();
             // extra->topextra->backingStore destroyed in QWidgetPrivate::deleteTLSysExtra()
@@ -1900,21 +1839,7 @@ QWindow *QWidget::windowHandle() const
 
 #ifndef QT_NO_STYLE_STYLESHEET
 
-/*!
-    \property QWidget::styleSheet
-    \brief the widget's style sheet
-    \since 4.2
 
-    The style sheet contains a textual description of customizations to the
-    widget's style, as described in the \l{Qt Style Sheets} document.
-
-    Since Qt 4.5, Qt style sheets fully supports \macos.
-
-    \warning Qt style sheets are currently not supported for custom QStyle
-    subclasses. We plan to address this in some future release.
-
-    \sa setStyle(), QApplication::styleSheet, {Qt Style Sheets}
-*/
 QString QWidget::styleSheet() const
 {
     QWidgetPrivate * const d = d_func();
@@ -1925,18 +1850,19 @@ QString QWidget::styleSheet() const
 
 void QWidget::setStyleSheet(const QString& styleSheet)
 {
-//    QWidgetPrivate * const d = d_func();
 	QWidgetPrivate * const d = d_func();
+
     if (data->in_destructor)
         return;
     d->createExtra();
 
+	// 目前保存的style,是否可以转型为QStyleSheetStyle
     QStyleSheetStyle *proxy = qobject_cast<QStyleSheetStyle *>(d->extra->style);
     d->extra->styleSheet = styleSheet;
     if (styleSheet.isEmpty()) { // stylesheet removed
         if (!proxy)
             return;
-
+		// 取消已经设置的style,回复默认
         d->inheritStyle();
         return;
     }
@@ -1946,7 +1872,7 @@ void QWidget::setStyleSheet(const QString& styleSheet)
             proxy->repolish(this);
         return;
     }
-
+	// oye stylesheetStyle的构造,是否需要含有原始style的一些特征
     if (testAttribute(Qt::WA_SetStyle)) {
         d->setStyle_helper(new QStyleSheetStyle(d->extra->style), true);
     } else {
@@ -1996,7 +1922,8 @@ void QWidget::setStyle(QStyle *style)
     QWidgetPrivate * const d = d_func();
     setAttribute(Qt::WA_SetStyle, style != 0);
     d->createExtra();
-#ifndef QT_NO_STYLE_STYLESHEET
+
+	
     if (QStyleSheetStyle *proxy = qobject_cast<QStyleSheetStyle *>(style)) {
         //if for some reason someone try to set a QStyleSheetStyle, ref it
         //(this may happen for exemple in QButtonDialogBox which propagates its style)
@@ -2006,13 +1933,11 @@ void QWidget::setStyle(QStyle *style)
         // if we have an application stylesheet or have a proxy already, propagate
         d->setStyle_helper(new QStyleSheetStyle(style), true);
     } else
-#endif
         d->setStyle_helper(style, false);
 }
 
 void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate, bool)
 {
-	//QWidget* const q = q_func();
 	QWidget * const q = q_func();
     QStyle *oldStyle  = q->style();
     QPointer<QStyle> origStyle;
@@ -11341,36 +11266,6 @@ QGraphicsProxyWidget *QWidget::graphicsProxyWidget() const
 }
 #endif
 
-#ifndef QT_NO_GESTURES
-/*!
-    Subscribes the widget to a given \a gesture with specific \a flags.
-
-    \sa ungrabGesture(), QGestureEvent
-    \since 4.6
-*/
-void QWidget::grabGesture(Qt::GestureType gesture, Qt::GestureFlags flags)
-{
-    QWidgetPrivate * const d = d_func();
-    d->gestureContext.insert(gesture, flags);
-    (void)QGestureManager::instance(); // create a gesture manager
-}
-
-/*!
-    Unsubscribes the widget from a given \a gesture type
-
-    \sa grabGesture(), QGestureEvent
-    \since 4.6
-*/
-void QWidget::ungrabGesture(Qt::GestureType gesture)
-{
-    // if you modify this function, check the inlined version in ~QWidget, too
-    QWidgetPrivate * const d = d_func();
-    if (d->gestureContext.remove(gesture)) {
-        if (QGestureManager *manager = QGestureManager::instance())
-            manager->cleanupCachedGestures(this, gesture);
-    }
-}
-#endif // QT_NO_GESTURES
 
 /*!
     \fn void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
