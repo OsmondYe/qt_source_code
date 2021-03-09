@@ -41,6 +41,39 @@ public:
 
     ~QCoreApplication();
 
+public:  // oye 比较重要的
+
+	// oye, send Qt defined event
+	static bool sendEvent(QObject *receiver, QEvent *event){  
+		if (event) 
+			event->spont = false; 
+		return notifyInternal2(receiver, event); 
+	}
+	
+	static void postEvent(QObject *receiver, QEvent *event, int priority = Qt::NormalEventPriority);
+	static int exec();
+
+	// GUI的App类会重写此函数
+	virtual bool notify(QObject *, QEvent *)override;
+
+private:
+
+	//
+	//	oye, 我看到 Pushbutton的paintEvent会来自这里, 
+	//		谁call的他? 
+	//
+	inline bool static sendSpontaneousEvent(QObject *receiver, QEvent *event)
+	{ 
+		if (event) event->spont = true; 
+		return notifyInternal2(receiver, event); 
+	}
+
+	// oye 这里面会形成一个dispatch call -> notify()
+	// 因为notify是一个虚函数, 所以在GUI情况下,有QApplication来承载
+	static bool notifyInternal2(QObject *receiver, QEvent *);
+
+public:
+	
     static QStringList arguments();
 
     static void setAttribute(Qt::ApplicationAttribute attribute, bool on = true);
@@ -56,20 +89,14 @@ public:
     static QString applicationVersion();
 
 
-    static int exec();
+    
     static void processEvents(QEventLoop::ProcessEventsFlags flags = QEventLoop::AllEvents);
     static void processEvents(QEventLoop::ProcessEventsFlags flags, int maxtime);
     static void exit(int retcode=0);
 
 	
-	// oye, send Qt defined event
-    static bool sendEvent(QObject *receiver, QEvent *event){  
-		if (event) 
-			event->spont = false; 
-		return notifyInternal2(receiver, event); 
-	}
-	//
-    static void postEvent(QObject *receiver, QEvent *event, int priority = Qt::NormalEventPriority);
+	
+	
 	
     static void sendPostedEvents(QObject *receiver = Q_NULLPTR, int event_type = 0);
     static void removePostedEvents(QObject *receiver, int eventType = 0);
@@ -77,7 +104,7 @@ public:
     static QAbstractEventDispatcher *eventDispatcher();
     static void setEventDispatcher(QAbstractEventDispatcher *eventDispatcher);
 
-    virtual bool notify(QObject *, QEvent *)override;
+    
 	
 
     static bool startingUp();
@@ -131,14 +158,7 @@ protected:
 protected:
     QCoreApplication(QCoreApplicationPrivate &p);   
 
-private:
 
-	inline bool static sendSpontaneousEvent(QObject *receiver, QEvent *event)
-	{ 
-		if (event) event->spont = true; 
-		return notifyInternal2(receiver, event); 
-	}
-    static bool notifyInternal2(QObject *receiver, QEvent *);
 
    // Q_DISABLE_COPY(QCoreApplication)
 

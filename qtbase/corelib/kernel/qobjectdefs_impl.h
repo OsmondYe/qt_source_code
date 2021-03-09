@@ -117,6 +117,8 @@ namespace QtPrivate {
 		一个结构体我需要的参数是 
 			ReturnType (ClassType::*)(Args ...)   ->   类的成员函数的指针
 			Returntype (*)(Args ...)			  ->   普通成员函数指针
+
+		并且其实一个指向 类成员 函数的指针
 			
 	*/
     template<class Obj, typename Ret, typename... Args> struct FunctionPointer<Ret (Obj::*) (Args...)>
@@ -131,7 +133,9 @@ namespace QtPrivate {
             FunctorCall<typename Indexes<ArgumentCount>::Value, SignalArgs, R, Function>::call(f, o, arg);
         }
     };
-   
+		
+   	// oye
+   	// 这个接受的pointer 是一般函数的指针
     template<typename Ret, typename... Args> struct FunctionPointer<Ret (*) (Args...)>
     {
         typedef List<Args...> Arguments;

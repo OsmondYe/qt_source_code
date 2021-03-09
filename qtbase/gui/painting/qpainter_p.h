@@ -1,55 +1,6 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtGui module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #ifndef QPAINTER_P_H
 #define QPAINTER_P_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
 
 #include <QtGui/private/qtguiglobal_p.h>
 #include "QtGui/qbrush.h"
@@ -121,31 +72,13 @@ public:
     QRect rect;
     QRectF rectf;
 
-    // ###
-//     union {
-//         QRegionData *d;
-//         QPainterPathPrivate *pathData;
-
-//         struct {
-//             int x, y, w, h;
-//         } rectData;
-//         struct {
-//             qreal x, y, w, h;
-//         } rectFData;
-//     };
-
 };
 
-Q_DECLARE_TYPEINFO(QPainterClipInfo, Q_MOVABLE_TYPE);
+//Q_DECLARE_TYPEINFO(QPainterClipInfo, Q_MOVABLE_TYPE);
 
-class Q_GUI_EXPORT QPainterState : public QPaintEngineState
+class  QPainterState : public QPaintEngineState
 {
 public:
-    QPainterState();
-    QPainterState(const QPainterState *s);
-    virtual ~QPainterState();
-    void init(QPainter *p);
-
     QPointF brushOrigin;
     QFont font;
     QFont deviceFont;
@@ -174,6 +107,12 @@ public:
     QPainter::CompositionMode composition_mode;
     uint emulationSpecifier;
     uint changeFlags;
+public:
+	QPainterState();
+	QPainterState(const QPainterState *s);
+	virtual ~QPainterState();
+	void init(QPainter *p);
+
 };
 
 struct QPainterDummyState
@@ -185,19 +124,10 @@ struct QPainterDummyState
 };
 
 class QRawFont;
+
 class QPainterPrivate
 {
-    Q_DECLARE_PUBLIC(QPainter)
 public:
-    QPainterPrivate(QPainter *painter)
-    : q_ptr(painter), d_ptrs(0), state(0), dummyState(0), txinv(0), inDestructor(false), d_ptrs_size(0),
-        refcount(1), device(0), original_device(0), helper_device(0), engine(0), emulationEngine(0),
-        extended(0)
-    {
-    }
-
-    ~QPainterPrivate();
-
     QPainter *q_ptr;
     QPainterPrivate **d_ptrs;
 
@@ -211,6 +141,19 @@ public:
     uint inDestructor : 1;
     uint d_ptrs_size;
     uint refcount;
+
+    //Q_DECLARE_PUBLIC(QPainter)
+public:
+    QPainterPrivate(QPainter *painter)
+    : q_ptr(painter), d_ptrs(0), state(0), dummyState(0), txinv(0), inDestructor(false), d_ptrs_size(0),
+        refcount(1), device(0), original_device(0), helper_device(0), engine(0), emulationEngine(0),
+        extended(0)
+    {
+    }
+
+    ~QPainterPrivate();
+
+
 
     enum DrawOperation { StrokeDraw        = 0x1,
                          FillDraw          = 0x2,

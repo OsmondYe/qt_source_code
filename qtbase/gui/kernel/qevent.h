@@ -422,7 +422,8 @@ protected:
     friend class QApplication;
 };
 
-class Q_GUI_EXPORT QExposeEvent : public QEvent
+// oye window内有区域(绘制的图像)无效,或者window的visibility属性被改变
+class QExposeEvent : public QEvent
 {
 public:
     explicit QExposeEvent(const QRegion &rgn);

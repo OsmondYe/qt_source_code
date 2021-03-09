@@ -95,7 +95,10 @@ public:
         QList<QByteArray> propertyNames;
         QVector<QVariant> propertyValues;
         QVector<int> runningTimers;
-        QList<QPointer<QObject> > eventFilters;
+
+		// QObject做基类的event_filter
+		// QCoreApplicationPrivate::sendThroughApplicationEventFilters
+        QList<QPointer<QObject> > eventFilters;  
         QString objectName;
     };
 

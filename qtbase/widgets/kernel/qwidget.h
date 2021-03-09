@@ -36,17 +36,18 @@ private:
     QWidgetData *data;
 	
 	inline QWidgetPrivate* d_func() { return reinterpret_cast<QWidgetPrivate *>(qGetPtrHelper(d_ptr)); }
+
 public:
-    enum RenderFlag {
-        DrawWindowBackground = 0x1,
-        DrawChildren = 0x2,
-        IgnoreMask = 0x4
-    };
+    QLayout *layout() const;
+    void setLayout(QLayout *);
+	
+
+
 
     explicit QWidget(QWidget* parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
     ~QWidget();
 
-    int devType() const Q_DECL_OVERRIDE;
+    int devType() const override {return QInternal::Widget;}
 
     WId winId() const;
     void createWinId(); // internal, going away
@@ -332,9 +333,7 @@ public:
 
     QRect contentsRect() const; // oye  rect() - contentsMargins();
 
-public:
-    QLayout *layout() const;
-    void setLayout(QLayout *);
+
     void updateGeometry();
 
     void setParent(QWidget *parent);
@@ -397,8 +396,6 @@ public:
 
     static QWidget *createWindowContainer(QWindow *window, QWidget *parent=Q_NULLPTR, Qt::WindowFlags flags=Qt::WindowFlags());
 
-    friend class QDesktopScreenWidget;
-
 Q_SIGNALS:
     void windowTitleChanged(const QString &title);
     void windowIconChanged(const QIcon &icon);
@@ -439,6 +436,7 @@ protected:
     // Misc. protected functions
     virtual void changeEvent(QEvent *);
 
+
     int metric(PaintDeviceMetric) const Q_DECL_OVERRIDE;
     void initPainter(QPainter *painter) const Q_DECL_OVERRIDE;
     QPaintDevice *redirected(QPoint *offset) const Q_DECL_OVERRIDE;
@@ -455,18 +453,16 @@ protected Q_SLOTS:
     void updateMicroFocus();
 protected:
 
-    void create(WId = 0, bool initializeWindow = true,
-                         bool destroyOldWindow = true);
-    void destroy(bool destroyWindow = true,
-                 bool destroySubWindows = true);
+    void create(WId = 0, bool initializeWindow = true,   bool destroyOldWindow = true);
+    void destroy(bool destroyWindow = true,    bool destroySubWindows = true);
 
     friend class QDataWidgetMapperPrivate; // for access to focusNextPrevChild
+    
     virtual bool focusNextPrevChild(bool next);
     inline bool focusNextChild() { return focusNextPrevChild(true); }
     inline bool focusPreviousChild() { return focusNextPrevChild(false); }
 
-protected:
-    QWidget(QWidgetPrivate &d, QWidget* parent, Qt::WindowFlags f);
+
 private:
     void setBackingStore(QBackingStore *store);
 
@@ -507,17 +503,28 @@ private:
     friend class QWinNativePanGestureRecognizer;
     friend class QWidgetEffectSourcePrivate;
 
+    friend class QDesktopScreenWidget;
+
 
     friend  QWidgetData *qt_qwidget_data(QWidget *widget);
     friend  QWidgetPrivate *qt_widget_private(QWidget *widget);
 
 private:
-    Q_PRIVATE_SLOT(d_func(), void _q_showIfNotHidden())
+    //Q_PRIVATE_SLOT(d_func(), void _q_showIfNotHidden())
+protected:
+    QWidget(QWidgetPrivate &d, QWidget* parent, Qt::WindowFlags f);
+public:
+	enum RenderFlag {
+		DrawWindowBackground = 0x1,
+		DrawChildren = 0x2,
+		IgnoreMask = 0x4
+	};
+
 
 };
 
 
-#ifndef Q_QDOC
+
 template <> inline QWidget *qobject_cast<QWidget*>(QObject *o)
 {
     if (!o || !o->isWidgetType()) return Q_NULLPTR;
@@ -528,7 +535,7 @@ template <> inline const QWidget *qobject_cast<const QWidget*>(const QObject *o)
     if (!o || !o->isWidgetType()) return Q_NULLPTR;
     return static_cast<const QWidget*>(o);
 }
-#endif // !Q_QDOC
+
 
 inline QWidget *QWidget::childAt(int ax, int ay) const
 { return childAt(QPoint(ax, ay)); }

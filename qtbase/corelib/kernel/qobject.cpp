@@ -3060,13 +3060,12 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
     }
 
 
-    void *empty_argv[] = { 0 };
     if (qt_signal_spy_callback_set.signal_begin_callback != 0) {
         qt_signal_spy_callback_set.signal_begin_callback(sender, signal_index,
                                                          argv ? argv : empty_argv);
     }
 
-
+	void *empty_argv[] = { 0 };
 	//
 	//   algo begins
 	// 
@@ -3120,11 +3119,10 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
             const bool receiverInSameThread = currentThreadId == receiver->d_func()->threadData->threadId.load();
 
 			// oye connection建立时的传入的type 只有在信号要emit时才有意义来看看,要怎么处理
-            // determine if this connection should be sent immediately or
-            // put into the event queue
             if ((c->connectionType == Qt::AutoConnection && !receiverInSameThread)
                 || (c->connectionType == Qt::QueuedConnection)) {
-                //oye 不是同一个线程 或者指定了QueuedConnection
+                //oye 自动连接,但send receiver不是同一线程, 就用消息队列
+                //    或者指定了QueuedConnection
                 queued_activate(sender, signal_index, c, argv ? argv : empty_argv, locker);
                 continue;
             } 

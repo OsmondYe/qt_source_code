@@ -614,20 +614,23 @@ bool QCoreApplicationPrivate::sendThroughApplicationEventFilters(QObject *receiv
             QObject *obj = extraData->eventFilters.at(i);
             if (!obj)
                 continue;
+			// 硬性规定当前的obj必须和app在同一个线程
             if (obj->d_func()->threadData != threadData) {
                 qWarning("QCoreApplication: Application event filter cannot be in a different thread.");
                 continue;
             }
             if (obj->eventFilter(receiver, event))
-                return true;
+                return true;   // 如果处理了此事件,返回true
         }
     }
-    return false;
+    return false; // 无过滤器处理此消息
 }
 
 bool QCoreApplicationPrivate::sendThroughObjectEventFilters(QObject *receiver, QEvent *event)
 {
+	// 确保receiver不是App类, 同时, 有filter
     if (receiver != QCoreApplication::instance() && receiver->d_func()->extraData) {
+		
         for (int i = 0; i < receiver->d_func()->extraData->eventFilters.size(); ++i) {
             QObject *obj = receiver->d_func()->extraData->eventFilters.at(i);
             if (!obj)

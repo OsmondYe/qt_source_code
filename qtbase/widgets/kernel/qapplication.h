@@ -47,6 +47,13 @@ public:
     QApplication(int &argc, char **argv, int = ApplicationFlags);
     virtual ~QApplication();
 
+public:  // 比较重要的Fun
+
+	// oye isWidget -> use it,  
+	//     isWindow -> use GUIAppication::notify,
+	//     others   -> use QCoreAppication::notify
+    bool notify(QObject *, QEvent *) override;
+
     static QStyle *style();
     static void setStyle(QStyle*);
     static QStyle *setStyle(const QString&);
@@ -115,10 +122,7 @@ public:
 
     static int exec(){return QGuiApplication::exec();}
 	
-	// oye isWidget -> use it,  
-	//     isWindow -> use GUIAppication::notify,
-	//     others   -> use QCoreAppication::notify
-    bool notify(QObject *, QEvent *) override;
+
 
 #ifdef QT_KEYPAD_NAVIGATION
     static Q_DECL_DEPRECATED void setKeypadNavigationEnabled(bool);

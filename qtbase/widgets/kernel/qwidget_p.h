@@ -366,7 +366,7 @@ public:
     void updateIsOpaque();
     void setOpaque(bool opaque);
     void updateIsTranslucent();
-    bool paintOnScreen() const;
+    bool paintOnScreen() const;   // 屏幕直接rgb绘制,不要特效和透明之类的了,一般默认没有
 
     void invalidateGraphicsEffectsRecursively();
 

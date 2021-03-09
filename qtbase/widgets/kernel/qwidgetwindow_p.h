@@ -1,8 +1,6 @@
 #ifndef QWIDGETWINDOW_P_H
 #define QWIDGETWINDOW_P_H
 
-
-
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtGui/qwindow.h>
 
@@ -16,9 +14,15 @@ QT_BEGIN_NAMESPACE
 class QCloseEvent;
 class QMoveEvent;
 
+// 就是一个窗口, 但叫了widget, 持有widget对象
 class QWidgetWindow : public QWindow
 {
-    Q_OBJECT
+    //Q_OBJECT
+
+	QPointer<QWidget> m_widget;
+    QPointer<QWidget> m_implicit_mouse_grabber;
+	// dragdrop only
+    QPointer<QWidget> m_dragTarget;
 public:
     QWidgetWindow(QWidget *widget);
     ~QWidgetWindow();
@@ -26,8 +30,10 @@ public:
     QWidget *widget() const { return m_widget; }
 
     QObject *focusObject() const Q_DECL_OVERRIDE;
+	
 protected:
     bool event(QEvent *) Q_DECL_OVERRIDE;
+    bool nativeEvent(const QByteArray &eventType, void *message, long *result) Q_DECL_OVERRIDE;
 
     void handleCloseEvent(QCloseEvent *);
     void handleEnterLeaveEvent(QEvent *);
@@ -38,26 +44,17 @@ protected:
     void handleTouchEvent(QTouchEvent *);
     void handleMoveEvent(QMoveEvent *);
     void handleResizeEvent(QResizeEvent *);
-#if QT_CONFIG(wheelevent)
     void handleWheelEvent(QWheelEvent *);
-#endif
-#ifndef QT_NO_DRAGANDDROP
+
+	// DragDrop
     void handleDragEnterMoveEvent(QDragMoveEvent *);
     void handleDragLeaveEvent(QDragLeaveEvent *);
     void handleDropEvent(QDropEvent *);
-#endif
     void handleExposeEvent(QExposeEvent *);
     void handleWindowStateChangedEvent(QWindowStateChangeEvent *event);
-    bool nativeEvent(const QByteArray &eventType, void *message, long *result) Q_DECL_OVERRIDE;
-#if QT_CONFIG(tabletevent)
-    void handleTabletEvent(QTabletEvent *);
-#endif
-#ifndef QT_NO_GESTURES
-    void handleGestureEvent(QNativeGestureEvent *);
-#endif
-#ifndef QT_NO_CONTEXTMENU
+
+	//CONTEXTMENU
     void handleContextMenuEvent(QContextMenuEvent *);
-#endif
 
 private slots:
     void updateObjectName();
@@ -76,11 +73,7 @@ private:
     };
     QWidget *getFocusWidget(FocusWidgets fw);
 
-    QPointer<QWidget> m_widget;
-    QPointer<QWidget> m_implicit_mouse_grabber;
-#ifndef QT_NO_DRAGANDDROP
-    QPointer<QWidget> m_dragTarget;
-#endif
+
 };
 
 QT_END_NAMESPACE

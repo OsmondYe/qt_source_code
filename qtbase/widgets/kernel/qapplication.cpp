@@ -3167,16 +3167,19 @@ bool QApplication::notify(QObject *receiver, QEvent *e) override
     return res;
 }
 
+
 bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
 {
-	// oye 给APP基本的过滤器一个机会来处理event
-    // send to all application event filters
+	// oye 给APP基本的过滤器一个机会来处理event	
     if (threadRequiresCoreApplication()
         && receiver->d_func()->threadData->thread == mainThread()
-        && sendThroughApplicationEventFilters(receiver, e))
+        && sendThroughApplicationEventFilters(receiver, e)
+      	)
         return true;
 
-		
+	// oye widget类型的receivcer, 
+	//  - 根据鼠标的位置范围, 设置widget的attribute
+	//  - 给widget里的layout一个机会, 让layout先于widget处理一些感兴趣的事件 QEvent::Resize:,QEvent::LayoutRequest:
     if (receiver->isWidgetType()) {
         QWidget *widget = static_cast<QWidget *>(receiver);
 		
@@ -3188,22 +3191,17 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
         else if (e->type() == QEvent::Leave || e->type() == QEvent::DragLeave)
             widget->setAttribute(Qt::WA_UnderMouse, false);
 		
-		// oye receiver是Widget,那么拿出来widget的layout,
-		// 给layout一个机会来处理发给receiver的事件,
-		// 比如 QEvent::Resize:,QEvent::LayoutRequest:
-        if (QLayout *layout=widget->d_func()->layout) {
-            layout->widgetEvent(e);
-        }
+        if (QLayout *layout=widget->d_func()->layout) { layout->widgetEvent(e);  }
     }
 
 	
-    // send to all receiver event filters
+    // oye 给receiver的EventFilters机会,看是否拦截
     if (sendThroughObjectEventFilters(receiver, e))
         return true;
 
-    // deliver the event
-    // oye 让receiver来处理此事件
-    bool consumed = receiver->event(e);  // 这里由会出发虚函数机制
+
+    // oye 最终在此让receiver处理事件
+    bool consumed = receiver->event(e);  // virtual function被触发
     QCoreApplicationPrivate::setEventSpontaneous(e, false);
     return consumed;
 }

@@ -1,51 +1,10 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWidgets module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #include "private/qwindow_p.h"
 #include "qwidgetwindow_p.h"
 #include "qlayout.h"
 
 #include "private/qwidget_p.h"
 #include "private/qapplication_p.h"
-#ifndef QT_NO_ACCESSIBILITY
-#include <QtGui/qaccessible.h>
-#endif
+
 #include <private/qwidgetbackingstore_p.h>
 #include <qpa/qwindowsysteminterface_p.h>
 #include <qpa/qplatformtheme.h>
@@ -55,7 +14,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_WIDGETS_EXPORT extern bool qt_tab_all_widgets();
+extern bool qt_tab_all_widgets();
 
 QWidget *qt_button_down = 0; // widget got last button-down
 
@@ -65,9 +24,10 @@ extern int openPopupCount;
 bool qt_replay_popup_mouse_event = false;
 extern bool qt_try_modal(QWidget *widget, QEvent::Type type);
 
+
 class QWidgetWindowPrivate : public QWindowPrivate
 {
-    Q_DECLARE_PUBLIC(QWidgetWindow)
+    //Q_DECLARE_PUBLIC(QWidgetWindow)
 public:
     QWindow *eventReceiver() Q_DECL_OVERRIDE {
         Q_Q(QWidgetWindow);
@@ -888,9 +848,11 @@ void QWidgetWindow::handleDropEvent(QDropEvent *event)
 
 #endif // QT_NO_DRAGANDDROP
 
+// oye MainWindow的Paint事件会来这里
 void QWidgetWindow::handleExposeEvent(QExposeEvent *event)
 {
     QWidgetPrivate *wPriv = m_widget->d_func();
+	
     const bool exposed = isExposed();
 
     if (wPriv->childrenHiddenByWState) {
@@ -974,56 +936,6 @@ bool QWidgetWindow::nativeEvent(const QByteArray &eventType, void *message, long
     return m_widget->nativeEvent(eventType, message, result);
 }
 
-#if QT_CONFIG(tabletevent)
-void QWidgetWindow::handleTabletEvent(QTabletEvent *event)
-{
-    static QPointer<QWidget> qt_tablet_target = 0;
-
-    QWidget *widget = qt_tablet_target;
-
-    if (!widget) {
-        widget = m_widget->childAt(event->pos());
-        if (event->type() == QEvent::TabletPress) {
-            if (!widget)
-                widget = m_widget;
-            qt_tablet_target = widget;
-        }
-    }
-
-    if (widget) {
-        QPointF delta = event->globalPosF() - event->globalPos();
-        QPointF mapped = widget->mapFromGlobal(event->globalPos()) + delta;
-        QTabletEvent ev(event->type(), mapped, event->globalPosF(), event->device(), event->pointerType(),
-                        event->pressure(), event->xTilt(), event->yTilt(), event->tangentialPressure(),
-                        event->rotation(), event->z(), event->modifiers(), event->uniqueId(), event->button(), event->buttons());
-        ev.setTimestamp(event->timestamp());
-        QGuiApplication::sendSpontaneousEvent(widget, &ev);
-        event->setAccepted(ev.isAccepted());
-    }
-
-    if (event->type() == QEvent::TabletRelease && event->buttons() == Qt::NoButton)
-        qt_tablet_target = 0;
-}
-#endif // QT_CONFIG(tabletevent)
-
-#ifndef QT_NO_GESTURES
-void QWidgetWindow::handleGestureEvent(QNativeGestureEvent *e)
-{
-    // copy-pasted code to find correct widget follows:
-    QObject *receiver = 0;
-    if (QApplicationPrivate::inPopupMode()) {
-        QWidget *popup = QApplication::activePopupWidget();
-        QWidget *popupFocusWidget = popup->focusWidget();
-        receiver = popupFocusWidget ? popupFocusWidget : popup;
-    }
-    if (!receiver)
-        receiver = QApplication::widgetAt(e->globalPos());
-    if (!receiver)
-        receiver = m_widget; // last resort
-
-    QApplication::sendSpontaneousEvent(receiver, e);
-}
-#endif // QT_NO_GESTURES
 
 #ifndef QT_NO_CONTEXTMENU
 void QWidgetWindow::handleContextMenuEvent(QContextMenuEvent *e)

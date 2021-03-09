@@ -79,6 +79,8 @@ class  QObject
 //----------------------------------------------------------
 public:     
 	//0ye : 经过moc后,这些信息会在另一个 moc_XXX.cpp文件中被写入
+	//  QObject 其本身应该具有的在Meta方面的特征
+	// [className, SuperMetaObject,User_extra, MetaCall[????? 重点关注]]
     static const QMetaObject staticMetaObject; 
 
     virtual const QMetaObject *metaObject() const; 	
@@ -198,7 +200,8 @@ public:
 
     //Connect a signal to a pointer to qobject member function
     template <typename Func1, typename Func2>
-    static inline QMetaObject::Connection connect(
+    static inline 
+    QMetaObject::Connection connect(
     		const typename QtPrivate::FunctionPointer<Func1>::Object *sender, 	Func1 signal,
             const typename QtPrivate::FunctionPointer<Func2>::Object *receiver, Func2 slot,
             Qt::ConnectionType type = Qt::AutoConnection)
@@ -206,14 +209,19 @@ public:
         typedef QtPrivate::FunctionPointer<Func1> SignalType;
         typedef QtPrivate::FunctionPointer<Func2> SlotType;
 
+		// oye sender 必须是Q_OBJECT兼容的类类型
         Q_STATIC_ASSERT_X(QtPrivate::HasQ_OBJECT_Macro<typename SignalType::Object>::Value,
                           "No Q_OBJECT in the class with the signal");
 
+		// oye sender receiver 函数参数计数不对, 栈崩溃
         //compilation error if the arguments does not match.
         Q_STATIC_ASSERT_X(int(SignalType::ArgumentCount) >= int(SlotType::ArgumentCount),
                           "The slot requires more arguments than the signal provides.");
+
+		// oye 参数不匹配				  
         Q_STATIC_ASSERT_X((QtPrivate::CheckCompatibleArguments<typename SignalType::Arguments, typename SlotType::Arguments>::value),
                           "Signal and slot arguments are not compatible.");
+		// 返回值类型不匹配
         Q_STATIC_ASSERT_X((QtPrivate::AreArgumentsCompatible<typename SlotType::ReturnType, typename SignalType::ReturnType>::value),
                           "Return type of the slot is not compatible with the return type of the signal.");
 
@@ -221,26 +229,54 @@ public:
         if (type == Qt::QueuedConnection || type == Qt::BlockingQueuedConnection)
             types = QtPrivate::ConnectionTypes<typename SignalType::Arguments>::types();
 
-        return connectImpl(sender, reinterpret_cast<void **>(&signal),
-                           receiver, reinterpret_cast<void **>(&slot),
-                           new QtPrivate::QSlotObject<Func2, typename QtPrivate::List_Left<typename SignalType::Arguments, SlotType::ArgumentCount>::Value,
-                                           typename SignalType::ReturnType>(slot),
-                            type, types, &SignalType::Object::staticMetaObject);
+        return connectImpl(
+        		sender, reinterpret_cast<void **>(&signal),
+                receiver, reinterpret_cast<void **>(&slot),
+               new QtPrivate::QSlotObject<
+               				Func2, 
+               				typename QtPrivate::List_Left<typename SignalType::Arguments, SlotType::ArgumentCount>::Value,
+                            typename SignalType::ReturnType
+                            >(slot),
+                type, types, 
+                // 直接拿sender所对应的Object中的staticMetaObject
+                &SignalType::Object::staticMetaObject);
     }
 
+
+	//oye  标配Lambda,或者其它函数指针,因为函数指针相对了Process的Module而言, 他装在后就是固定的
     //connect to a function pointer  (not a member)
+    //
     template <typename Func1, typename Func2>
-    static inline typename std::enable_if<int(QtPrivate::FunctionPointer<Func2>::ArgumentCount) >= 0, QMetaObject::Connection>::type
-            connect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal, Func2 slot)
+    static inline 
+    typename 
+    // Oye Func2函数具有的参数有意义, 强制传入的一定是一个函数指针
+    // 这这样的情况下 此模板函数connect的返回值为 QMetaObject::Connection
+    std::enable_if<int(QtPrivate::FunctionPointer<Func2>::ArgumentCount) >= 0, QMetaObject::Connection>::type
+    
+    connect(
+    	// 从这里看 Func1必然是一个类的成员函数, 并且这里要拿到这个类的class
+    	const typename QtPrivate::FunctionPointer<Func1>::Object *sender, 
+    	// 从第一个参数的要求来看, 这里就必须写成类成员函数指针的形式
+    	Func1 signal, 
+    	Func2 slot)
     {
         return connect(sender, signal, sender, slot, Qt::DirectConnection);
     }
 
+
     //connect to a function pointer  (not a member)
     template <typename Func1, typename Func2>
-    static inline typename std::enable_if<int(QtPrivate::FunctionPointer<Func2>::ArgumentCount) >= 0 &&
-                                          !QtPrivate::FunctionPointer<Func2>::IsPointerToMemberFunction, QMetaObject::Connection>::type
-            connect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal, const QObject *context, Func2 slot,
+    static inline typename 
+
+	//oye 确保Func2有效, 同时是一般函数指针
+    std::enable_if<int(QtPrivate::FunctionPointer<Func2>::ArgumentCount) >= 0 
+    					&& !QtPrivate::FunctionPointer<Func2>::IsPointerToMemberFunction, 
+                   QMetaObject::Connection
+                   >::type
+                   
+    connect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, 
+    				Func1 signal, 
+    				const QObject *context, Func2 slot,
                     Qt::ConnectionType type = Qt::AutoConnection)
     {
         typedef QtPrivate::FunctionPointer<Func1> SignalType;
@@ -270,8 +306,11 @@ public:
 
     //connect to a functor
     template <typename Func1, typename Func2>
-    static inline typename std::enable_if<QtPrivate::FunctionPointer<Func2>::ArgumentCount == -1, QMetaObject::Connection>::type
-            connect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal, Func2 slot)
+    static inline typename 
+    std::enable_if<QtPrivate::FunctionPointer<Func2>::ArgumentCount == -1, 
+    QMetaObject::Connection>::type
+
+	connect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal, Func2 slot)
     {
         return connect(sender, signal, sender, slot, Qt::DirectConnection);
     }

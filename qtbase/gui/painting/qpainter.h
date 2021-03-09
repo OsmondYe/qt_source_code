@@ -40,10 +40,10 @@ class QGlyphRun;
 
 class QPainterPrivateDeleter;
 
-class Q_GUI_EXPORT QPainter
+class  QPainter
 {
-    Q_DECLARE_PRIVATE(QPainter)
-    Q_GADGET
+    //Q_DECLARE_PRIVATE(QPainter)
+    //Q_GADGET
 
 public:
     enum RenderHint {
@@ -54,10 +54,18 @@ public:
         NonCosmeticDefaultPen = 0x10,
         Qt4CompatiblePainting = 0x20
     };
-    Q_FLAG(RenderHint)
+    //Q_FLAG(RenderHint)
 
-    Q_DECLARE_FLAGS(RenderHints, RenderHint)
-    Q_FLAG(RenderHints)
+    //Q_DECLARE_FLAGS(RenderHints, RenderHint)
+    enum RenderHints {
+        Antialiasing = 0x01,
+        TextAntialiasing = 0x02,
+        SmoothPixmapTransform = 0x04,
+        HighQualityAntialiasing = 0x08,
+        NonCosmeticDefaultPen = 0x10,
+        Qt4CompatiblePainting = 0x20
+    };
+    //Q_FLAG(RenderHints)
 
     class PixmapFragment {
     public:
@@ -79,8 +87,11 @@ public:
     enum PixmapFragmentHint {
         OpaqueHint = 0x01
     };
+	enum PixmapFragmentHints {
+    OpaqueHint = 0x01
+    };
 
-    Q_DECLARE_FLAGS(PixmapFragmentHints, PixmapFragmentHint)
+    //Q_DECLARE_FLAGS(PixmapFragmentHints, PixmapFragmentHint)
 
     QPainter();
     explicit QPainter(QPaintDevice *);

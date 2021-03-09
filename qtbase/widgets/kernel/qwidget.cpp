@@ -1206,16 +1206,20 @@ bool QWidgetPrivate::isOverlapped(const QRect &rect) const
 
 void QWidgetPrivate::syncBackingStore()
 {
+	// 直接绘图就没有各种画面特效了,一般没有这个选型
     if (paintOnScreen()) {
         repaint_sys(dirty);
         dirty = QRegion();
-    } else if (QWidgetBackingStore *bs = maybeBackingStore()) {
+    } 
+	else if (QWidgetBackingStore *bs = maybeBackingStore()) {
         bs->sync();
     }
 }
 
+// 后备存储
 void QWidgetPrivate::syncBackingStore(const QRegion &region)
 {
+	// 直接绘图就没有各种画面特效了,一般没有这个选型
     if (paintOnScreen())
         repaint_sys(region);
     else if (QWidgetBackingStore *bs = maybeBackingStore()) {
@@ -1246,11 +1250,13 @@ void QWidgetPrivate::setUpdatesEnabled_helper(bool enable)
 }
 
 /*!
-    \internal
+    Propagate [this widget's palette] to all children, 
 
-    Propagate this widget's palette to all children, except style sheet
-    widgets, and windows that don't enable window propagation (palettes don't
-    normally propagate to windows).
+    except style sheet widgets, 
+
+    and windows that don't enable window propagation 
+
+    (palettes don't normally propagate to windows).
 */
 void QWidgetPrivate::propagatePaletteChange()
 {
@@ -1271,7 +1277,13 @@ void QWidgetPrivate::propagatePaletteChange()
         QCoreApplication::testAttribute(Qt::AA_UseStyleSheetPropagationInWidgetStyles);
 
     QEvent pc(QEvent::PaletteChange);
+	// sendEvent 是 QCoreApplication里面的static, 这里默认给继承下来了
     QApplication::sendEvent(q, &pc);  //  until q handled
+
+	// children是QObjectData里面专门设计的
+	// QWidgetPrivate <-  QObjectPrivate <- QObjectData
+	// Qt的Private系列中,基本上都是这样的继承体系
+	// Qt的明暗2条线
     for (int i = 0; i < children.size(); ++i) {
         QWidget *w = qobject_cast<QWidget*>(children.at(i));
         if (w && (!w->testAttribute(Qt::WA_StyleSheet) || useStyleSheetPropagationInWidgetStyles)
@@ -1556,9 +1568,6 @@ void QWidgetPrivate::clipToEffectiveMask(QRegion &region) const
 
 bool QWidgetPrivate::paintOnScreen() const
 {
-#if defined(QT_NO_BACKINGSTORE)
-    return true;
-#else
     Q_Q(const QWidget);
     if (q->testAttribute(Qt::WA_PaintOnScreen)
             || (!q->isWindow() && q->window()->testAttribute(Qt::WA_PaintOnScreen))) {
@@ -1566,7 +1575,6 @@ bool QWidgetPrivate::paintOnScreen() const
     }
 
     return false;
-#endif
 }
 
 void QWidgetPrivate::updateIsOpaque()
