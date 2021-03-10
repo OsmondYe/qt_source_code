@@ -98,7 +98,7 @@ public:
 
 		// QObject做基类的event_filter
 		// QCoreApplicationPrivate::sendThroughApplicationEventFilters
-        QList<QPointer<QObject> > eventFilters;  
+        QList<QPointer<QObject> > eventFilters;  // QObject里面的标准方法 installEventFilter
         QString objectName;
     };
 

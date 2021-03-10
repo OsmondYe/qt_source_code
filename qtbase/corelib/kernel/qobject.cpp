@@ -1836,19 +1836,6 @@ void QObject::installEventFilter(QObject *obj)
     d->extraData->eventFilters.prepend(obj);
 }
 
-/*!
-    Removes an event filter object \a obj from this object. The
-    request is ignored if such an event filter has not been installed.
-
-    All event filters for this object are automatically removed when
-    this object is destroyed.
-
-    It is always safe to remove an event filter, even during event
-    filter activation (i.e. from the eventFilter() function).
-
-    \sa installEventFilter(), eventFilter(), event()
-*/
-
 void QObject::removeEventFilter(QObject *obj)
 {
     QObjectPrivate * const d = d_func();

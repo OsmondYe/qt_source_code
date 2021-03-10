@@ -68,7 +68,13 @@ public:
 
 /*
 	oye
-	- 先天的对象树思想, 需要有 parent() 方法
+	- 先天的对象树思想, 需要有 parent() 方法  parent + children
+	- event handle + 虚函数 子类自动分配机制
+	- event filter, install, remove
+	- signal slot
+	- dynamic property
+	- user defined data
+	
 */
 class  QObject
 {
@@ -131,6 +137,9 @@ public:
 	// oye, widget overrides it to expand ui event
     virtual bool event(QEvent *event);
     virtual bool eventFilter(QObject *watched, QEvent *event);
+		// 做Event过滤
+    void installEventFilter(QObject *filterObj);
+    void removeEventFilter(QObject *obj);
 
 
     QString objectName() const;
@@ -153,9 +162,23 @@ public:
     }
     void killTimer(int id);
 
-		// 做Event过滤
-    void installEventFilter(QObject *filterObj);
-    void removeEventFilter(QObject *obj);
+public:
+	bool setProperty(const char *name, const QVariant &value);
+	QVariant property(const char *name) const;
+	QList<QByteArray> dynamicPropertyNames() const;
+
+	static uint registerUserData();
+	void setUserData(uint id, QObjectUserData* data);
+	QObjectUserData* userData(uint id) const;
+	inline QObject *parent() const { return d_ptr->parent; }
+
+	inline bool inherits(const char *classname) const
+		{ return const_cast<QObject *>(this)->qt_metacast(classname) != Q_NULLPTR; }
+
+	inline const QObjectList &children() const { return d_ptr->children; }
+
+	void setParent(QObject *parent);
+
 	
 
     template<typename T>
@@ -195,9 +218,6 @@ public:
         return list;
     }
 
-    inline const QObjectList &children() const { return d_ptr->children; }
-
-    void setParent(QObject *parent);
 
 
 
@@ -394,23 +414,13 @@ public:
     }
 
 
-    bool setProperty(const char *name, const QVariant &value);
-    QVariant property(const char *name) const;
-    QList<QByteArray> dynamicPropertyNames() const;
 
-    static uint registerUserData();
-    void setUserData(uint id, QObjectUserData* data);
-    QObjectUserData* userData(uint id) const;
 
 Q_SIGNALS:
     void destroyed(QObject * = Q_NULLPTR);
     void objectNameChanged(const QString &objectName, QPrivateSignal);
 
-public:
-    inline QObject *parent() const { return d_ptr->parent; }
 
-    inline bool inherits(const char *classname) const
-        { return const_cast<QObject *>(this)->qt_metacast(classname) != Q_NULLPTR; }
 
 public Q_SLOTS:
     void deleteLater();
