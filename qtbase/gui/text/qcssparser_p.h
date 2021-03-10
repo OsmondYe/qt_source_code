@@ -1,55 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtGui module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #ifndef QCSSPARSER_P_H
 #define QCSSPARSER_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API. It exists purely as an
-// implementation detail. This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
 
 #include <QtGui/private/qtguiglobal_p.h>
 #include <QtCore/QStringList>
@@ -62,30 +12,12 @@
 #include <QtGui/QPalette>
 #include <QtCore/QSharedData>
 
-QT_BEGIN_NAMESPACE
-class QIcon;
-QT_END_NAMESPACE
 
-#ifndef QT_NO_CSSPARSER
 
-// VxWorks defines NONE as (-1) "for times when NULL won't do"
-#if defined(Q_OS_VXWORKS) && defined(NONE)
-#  undef NONE
-#endif
-#if defined(Q_OS_INTEGRITY)
-#  undef Value
-#endif
-// Hurd has #define TILDE 0x00080000 from <sys/ioctl.h>
-#if defined(TILDE)
-#  undef TILDE
-#endif
-
-#define QT_CSS_DECLARE_TYPEINFO(Class, Type) \
-    } /* namespace QCss */ \
-    Q_DECLARE_TYPEINFO(QCss:: Class, Type); \
-    namespace QCss {
-
-QT_BEGIN_NAMESPACE
+//#define QT_CSS_DECLARE_TYPEINFO(Class, Type) \
+//    } /* namespace QCss */ \
+//    Q_DECLARE_TYPEINFO(QCss:: Class, Type); \
+//    namespace QCss {
 
 namespace QCss
 {
@@ -382,9 +314,9 @@ struct Value
     Type type;
     QVariant variant;
 
-    Q_GUI_EXPORT QString toString() const;
+     QString toString() const;
 };
-QT_CSS_DECLARE_TYPEINFO(Value, Q_MOVABLE_TYPE)
+//QT_CSS_DECLARE_TYPEINFO(Value, Q_MOVABLE_TYPE)
 
 struct ColorData {
     ColorData() : role(QPalette::NoRole), type(Invalid) {}
@@ -394,7 +326,7 @@ struct ColorData {
     QPalette::ColorRole role;
     enum { Invalid, Color, Role} type;
 };
-QT_CSS_DECLARE_TYPEINFO(ColorData, Q_MOVABLE_TYPE)
+//QT_CSS_DECLARE_TYPEINFO(ColorData, Q_MOVABLE_TYPE)
 
 struct BrushData {
     BrushData() : role(QPalette::NoRole), type(Invalid) {}
@@ -404,7 +336,7 @@ struct BrushData {
     QPalette::ColorRole role;
     enum { Invalid, Brush, Role, DependsOnThePalette } type;
 };
-QT_CSS_DECLARE_TYPEINFO(BrushData, Q_MOVABLE_TYPE)
+//QT_CSS_DECLARE_TYPEINFO(BrushData, Q_MOVABLE_TYPE)
 
 struct BackgroundData {
     BrushData brush;
@@ -412,20 +344,20 @@ struct BackgroundData {
     Repeat repeat;
     Qt::Alignment alignment;
 };
-QT_CSS_DECLARE_TYPEINFO(BackgroundData, Q_MOVABLE_TYPE)
+//QT_CSS_DECLARE_TYPEINFO(BackgroundData, Q_MOVABLE_TYPE)
 
 struct LengthData {
     qreal number;
     enum { None, Px, Ex, Em } unit;
 };
-QT_CSS_DECLARE_TYPEINFO(LengthData, Q_PRIMITIVE_TYPE)
+//QT_CSS_DECLARE_TYPEINFO(LengthData, Q_PRIMITIVE_TYPE)
 
 struct BorderData {
     LengthData width;
     BorderStyle style;
     BrushData color;
 };
-QT_CSS_DECLARE_TYPEINFO(BorderData, Q_MOVABLE_TYPE)
+//QT_CSS_DECLARE_TYPEINFO(BorderData, Q_MOVABLE_TYPE)
 
 
 // 1. StyleRule - x:hover, y:clicked > z:checked { prop1: value1; prop2: value2; }
@@ -434,7 +366,7 @@ QT_CSS_DECLARE_TYPEINFO(BorderData, Q_MOVABLE_TYPE)
 // 4. QVector<Declaration> - { prop1: value1; prop2: value2; }
 // 5. Declaration - prop1: value1;
 
-struct Q_GUI_EXPORT Declaration
+struct  Declaration
 {
     struct DeclarationData : public QSharedData
     {
@@ -476,7 +408,7 @@ struct Q_GUI_EXPORT Declaration
 
     void borderImageValue(QString *image, int *cuts, TileMode *h, TileMode *v) const;
 };
-QT_CSS_DECLARE_TYPEINFO(Declaration, Q_MOVABLE_TYPE)
+//QT_CSS_DECLARE_TYPEINFO(Declaration, Q_MOVABLE_TYPE)
 
 const quint64 PseudoClass_Unknown          = Q_UINT64_C(0x0000000000000000);
 const quint64 PseudoClass_Enabled          = Q_UINT64_C(0x0000000000000001);
@@ -536,7 +468,7 @@ struct Pseudo
     QString function;
     bool negated;
 };
-QT_CSS_DECLARE_TYPEINFO(Pseudo, Q_MOVABLE_TYPE)
+//QT_CSS_DECLARE_TYPEINFO(Pseudo, Q_MOVABLE_TYPE)
 
 struct AttributeSelector
 {
@@ -555,7 +487,7 @@ struct AttributeSelector
     QString value;
     ValueMatchType valueMatchCriterium;
 };
-QT_CSS_DECLARE_TYPEINFO(AttributeSelector, Q_MOVABLE_TYPE)
+//QT_CSS_DECLARE_TYPEINFO(AttributeSelector, Q_MOVABLE_TYPE)
 
 struct BasicSelector
 {
@@ -577,16 +509,16 @@ struct BasicSelector
 
     Relation relationToNext;
 };
-QT_CSS_DECLARE_TYPEINFO(BasicSelector, Q_MOVABLE_TYPE)
+//QT_CSS_DECLARE_TYPEINFO(BasicSelector, Q_MOVABLE_TYPE)
 
-struct Q_GUI_EXPORT Selector
+struct  Selector
 {
     QVector<BasicSelector> basicSelectors;
     int specificity() const;
     quint64 pseudoClass(quint64 *negated = 0) const;
     QString pseudoElement() const;
 };
-QT_CSS_DECLARE_TYPEINFO(Selector, Q_MOVABLE_TYPE)
+//QT_CSS_DECLARE_TYPEINFO(Selector, Q_MOVABLE_TYPE)
 
 struct StyleRule
 {
@@ -595,28 +527,28 @@ struct StyleRule
     QVector<Declaration> declarations;
     int order;
 };
-QT_CSS_DECLARE_TYPEINFO(StyleRule, Q_MOVABLE_TYPE)
+//QT_CSS_DECLARE_TYPEINFO(StyleRule, Q_MOVABLE_TYPE)
 
 struct MediaRule
 {
     QStringList media;
     QVector<StyleRule> styleRules;
 };
-QT_CSS_DECLARE_TYPEINFO(MediaRule, Q_MOVABLE_TYPE)
+//QT_CSS_DECLARE_TYPEINFO(MediaRule, Q_MOVABLE_TYPE)
 
 struct PageRule
 {
     QString selector;
     QVector<Declaration> declarations;
 };
-QT_CSS_DECLARE_TYPEINFO(PageRule, Q_MOVABLE_TYPE)
+//QT_CSS_DECLARE_TYPEINFO(PageRule, Q_MOVABLE_TYPE)
 
 struct ImportRule
 {
     QString href;
     QStringList media;
 };
-QT_CSS_DECLARE_TYPEINFO(ImportRule, Q_MOVABLE_TYPE)
+//QT_CSS_DECLARE_TYPEINFO(ImportRule, Q_MOVABLE_TYPE)
 
 enum StyleSheetOrigin {
     StyleSheetOrigin_Unspecified,
@@ -638,12 +570,12 @@ struct StyleSheet
     QMultiHash<QString, StyleRule> nameIndex;
     QMultiHash<QString, StyleRule> idIndex;
 
-    Q_GUI_EXPORT void buildIndexes(Qt::CaseSensitivity nameCaseSensitivity = Qt::CaseSensitive);
+     void buildIndexes(Qt::CaseSensitivity nameCaseSensitivity = Qt::CaseSensitive);
 };
 QT_CSS_DECLARE_TYPEINFO(StyleSheet, Q_MOVABLE_TYPE)
 
 
-class Q_GUI_EXPORT StyleSelector
+class  StyleSelector
 {
 public:
     StyleSelector() : nameCaseSensitivity(Qt::CaseSensitive)  {}
@@ -738,16 +670,16 @@ struct Symbol
     int start, len;
     Q_GUI_EXPORT QString lexem() const;
 };
-QT_CSS_DECLARE_TYPEINFO(Symbol, Q_MOVABLE_TYPE)
+//QT_CSS_DECLARE_TYPEINFO(Symbol, Q_MOVABLE_TYPE)
 
-class Q_GUI_EXPORT Scanner
+class  Scanner
 {
 public:
     static QString preprocess(const QString &input, bool *hasEscapeSequences = 0);
     static void scan(const QString &preprocessedInput, QVector<Symbol> *symbols);
 };
 
-class Q_GUI_EXPORT Parser
+class  Parser
 {
 public:
     Parser();
@@ -834,7 +766,7 @@ public:
     QString sourcePath;
 };
 
-struct Q_GUI_EXPORT ValueExtractor
+struct  ValueExtractor
 {
     ValueExtractor(const QVector<Declaration> &declarations, const QPalette & = QPalette());
 
@@ -870,14 +802,12 @@ private:
 
 } // namespace QCss
 
-QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE( QCss::BackgroundData )
-Q_DECLARE_METATYPE( QCss::LengthData )
-Q_DECLARE_METATYPE( QCss::BorderData )
 
-#undef QT_CSS_DECLARE_TYPEINFO
+//Q_DECLARE_METATYPE( QCss::BackgroundData )
+//Q_DECLARE_METATYPE( QCss::LengthData )
+//Q_DECLARE_METATYPE( QCss::BorderData )
 
-#endif // QT_NO_CSSPARSER
+
 
 #endif

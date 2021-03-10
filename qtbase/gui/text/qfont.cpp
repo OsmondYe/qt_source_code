@@ -251,7 +251,6 @@ QFontPrivate *QFontPrivate::smallCapsFontPrivate() const
 
 void QFontPrivate::resolve(uint mask, const QFontPrivate *other)
 {
-    Q_ASSERT(other != 0);
 
     dpi = other->dpi;
 
@@ -1742,8 +1741,9 @@ bool QFont::rawMode() const
 #endif
 
 /*!
-    Returns a new QFont that has attributes copied from \a other that
-    have not been previously set on this font.
+    Returns a new QFont that has attributes copied from other 
+
+    that have not been previously set on this font.
 */
 QFont QFont::resolve(const QFont &other) const
 {

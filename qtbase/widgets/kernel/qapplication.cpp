@@ -1094,8 +1094,6 @@ void QApplicationPrivate::setSystemPalette(const QPalette &pal)
 
 /*!
     Returns the default application font.
-
-    \sa fontMetrics(), QWidget::font()
 */
 QFont QApplication::font()
 {
@@ -1104,10 +1102,7 @@ QFont QApplication::font()
 
 /*!
     \overload
-
     Returns the default font for the \a widget.
-
-    \sa fontMetrics(), QWidget::setFont()
 */
 
 QFont QApplication::font(const QWidget *widget)
@@ -1117,14 +1112,6 @@ QFont QApplication::font(const QWidget *widget)
     FontHash *hash = app_fonts();
 
     if (widget && hash  && hash->size()) {
-#ifdef Q_OS_MAC
-        // short circuit for small and mini controls
-        if (widget->testAttribute(Qt::WA_MacSmallSize)) {
-            return hash->value(QByteArrayLiteral("QSmallFont"));
-        } else if (widget->testAttribute(Qt::WA_MacMiniSize)) {
-            return hash->value(QByteArrayLiteral("QMiniFont"));
-        }
-#endif
         FontHashConstIt it = hash->constFind(widget->metaObject()->className());
         const FontHashConstIt cend = hash->constEnd();
         if (it != cend)
@@ -1138,11 +1125,7 @@ QFont QApplication::font(const QWidget *widget)
 }
 
 /*!
-    \overload
-
     Returns the font for widgets of the given \a className.
-
-    \sa setFont(), QWidget::font()
 */
 QFont QApplication::font(const char *className)
 {

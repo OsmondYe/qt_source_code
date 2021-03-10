@@ -1,42 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtGui module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #ifndef QEVENT_H
 #define QEVENT_H
 
@@ -80,7 +41,7 @@ protected:
     ulong ts;
 };
 
-class Q_GUI_EXPORT QEnterEvent : public QEvent
+class QEnterEvent : public QEvent
 {
 public:
     QEnterEvent(const QPointF &localPos, const QPointF &windowPos, const QPointF &screenPos);
@@ -102,7 +63,7 @@ protected:
     QPointF l, w, s;
 };
 
-class Q_GUI_EXPORT QMouseEvent : public QInputEvent
+class  QMouseEvent : public QInputEvent
 {
 public:
     QMouseEvent(Type type, const QPointF &localPos, Qt::MouseButton button,
@@ -152,7 +113,7 @@ protected:
     friend class QGuiApplicationPrivate;
 };
 
-class Q_GUI_EXPORT QHoverEvent : public QInputEvent
+class  QHoverEvent : public QInputEvent
 {
 public:
     QHoverEvent(Type type, const QPointF &pos, const QPointF &oldPos, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
@@ -171,7 +132,7 @@ protected:
 };
 
 #if QT_CONFIG(wheelevent)
-class Q_GUI_EXPORT QWheelEvent : public QInputEvent
+class  QWheelEvent : public QInputEvent
 {
 public:
     enum { DefaultDeltasPerStep = 120 };
@@ -239,9 +200,9 @@ protected:
 #endif
 
 #if QT_CONFIG(tabletevent)
-class Q_GUI_EXPORT QTabletEvent : public QInputEvent
+class  QTabletEvent : public QInputEvent
 {
-    Q_GADGET
+    //Q_GADGET
 public:
     enum TabletDevice { NoDevice, Puck, Stylus, Airbrush, FourDMouse,
                         XFreeEraser /*internal*/, RotationStylus };
@@ -299,7 +260,7 @@ protected:
 #endif // QT_CONFIG(tabletevent)
 
 #ifndef QT_NO_GESTURES
-class Q_GUI_EXPORT QNativeGestureEvent : public QInputEvent
+class  QNativeGestureEvent : public QInputEvent
 {
 public:
     QNativeGestureEvent(Qt::NativeGestureType type, const QPointF &localPos, const QPointF &windowPos,
@@ -326,7 +287,7 @@ protected:
 };
 #endif // QT_NO_GESTURES
 
-class Q_GUI_EXPORT QKeyEvent : public QInputEvent
+class QKeyEvent : public QInputEvent
 {
 public:
     QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers, const QString& text = QString(),
@@ -349,22 +310,6 @@ public:
     inline quint32 nativeVirtualKey() const { return nVirtualKey; }
     inline quint32 nativeModifiers() const { return nModifiers; }
 
-    // Functions for the extended key event information
-#if QT_DEPRECATED_SINCE(5, 0)
-    static inline QKeyEvent *createExtendedKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers,
-                                             quint32 nativeScanCode, quint32 nativeVirtualKey,
-                                             quint32 nativeModifiers,
-                                             const QString& text = QString(), bool autorep = false,
-                                             ushort count = 1)
-    {
-        return new QKeyEvent(type, key, modifiers,
-                             nativeScanCode, nativeVirtualKey, nativeModifiers,
-                             text, autorep, count);
-    }
-
-    inline bool hasExtendedInfo() const { return true; }
-#endif
-
 protected:
     QString txt;
     int k;
@@ -377,7 +322,7 @@ protected:
 };
 
 
-class Q_GUI_EXPORT QFocusEvent : public QEvent
+class  QFocusEvent : public QEvent
 {
 public:
     explicit QFocusEvent(Type type, Qt::FocusReason reason=Qt::OtherFocusReason);
@@ -393,7 +338,7 @@ private:
 };
 
 
-class Q_GUI_EXPORT QPaintEvent : public QEvent
+class  QPaintEvent : public QEvent
 {
 public:
     explicit QPaintEvent(const QRegion& paintRegion);
@@ -409,7 +354,7 @@ protected:
     bool m_erased;
 };
 
-class Q_GUI_EXPORT QMoveEvent : public QEvent
+class  QMoveEvent : public QEvent
 {
 public:
     QMoveEvent(const QPoint &pos, const QPoint &oldPos);
@@ -689,7 +634,7 @@ private:
 };
 
 #ifndef QT_NO_STATUSTIP
-class Q_GUI_EXPORT QStatusTipEvent : public QEvent
+class QStatusTipEvent : public QEvent
 {
 public:
     explicit QStatusTipEvent(const QString &tip);

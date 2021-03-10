@@ -1,42 +1,4 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtGui module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
+// oye 删去和mac有关的变量,函数
 #include "qkeysequence.h"
 #include "qkeysequence_p.h"
 #include <qpa/qplatformtheme.h>
@@ -63,107 +25,25 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_MACX)
-static bool qt_sequence_no_mnemonics = true;
-struct MacSpecialKey {
-    int key;
-    ushort macSymbol;
-};
-
-static const int NumEntries = 21;
-static const MacSpecialKey entries[NumEntries] = {
-    { Qt::Key_Escape, 0x238B },
-    { Qt::Key_Tab, 0x21E5 },
-    { Qt::Key_Backtab, 0x21E4 },
-    { Qt::Key_Backspace, 0x232B },
-    { Qt::Key_Return, 0x21B5 },
-    { Qt::Key_Enter, 0x2324 },
-    { Qt::Key_Delete, 0x2326 },
-    { Qt::Key_Home, 0x2196 },
-    { Qt::Key_End, 0x2198 },
-    { Qt::Key_Left, 0x2190 },
-    { Qt::Key_Up, 0x2191 },
-    { Qt::Key_Right, 0x2192 },
-    { Qt::Key_Down, 0x2193 },
-    { Qt::Key_PageUp, 0x21DE },
-    { Qt::Key_PageDown, 0x21DF },
-    { Qt::Key_Shift, kShiftUnicode },
-    { Qt::Key_Control, kCommandUnicode },
-    { Qt::Key_Meta, kControlUnicode },
-    { Qt::Key_Alt, kOptionUnicode },
-    { Qt::Key_CapsLock, 0x21EA },
-};
-
-static bool operator<(const MacSpecialKey &entry, int key)
-{
-    return entry.key < key;
-}
-
-static bool operator<(int key, const MacSpecialKey &entry)
-{
-    return key < entry.key;
-}
-
-static const MacSpecialKey * const MacSpecialKeyEntriesEnd = entries + NumEntries;
-
-QChar qt_macSymbolForQtKey(int key)
-{
-    const MacSpecialKey *i = std::lower_bound(entries, MacSpecialKeyEntriesEnd, key);
-    if ((i == MacSpecialKeyEntriesEnd) || (key < *i))
-        return QChar();
-    ushort macSymbol = i->macSymbol;
-    if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)
-            && (macSymbol == kControlUnicode || macSymbol == kCommandUnicode)) {
-        if (macSymbol == kControlUnicode)
-            macSymbol = kCommandUnicode;
-        else
-            macSymbol = kControlUnicode;
-    }
-
-    return QChar(macSymbol);
-}
-
-static int qtkeyForMacSymbol(const QChar ch)
-{
-    const ushort unicode = ch.unicode();
-    for (int i = 0; i < NumEntries; ++i) {
-        const MacSpecialKey &entry = entries[i];
-        if (entry.macSymbol == unicode) {
-            int key = entry.key;
-            if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)
-                    && (unicode == kControlUnicode || unicode == kCommandUnicode)) {
-                if (unicode == kControlUnicode)
-                    key = Qt::Key_Control;
-                else
-                    key = Qt::Key_Meta;
-            }
-            return key;
-        }
-    }
-    return -1;
-}
-
-#else
-static bool qt_sequence_no_mnemonics = false;
-#endif
+static bool qt_sequence_no_mnemonics= false;
 
 /*!
-    \fn void qt_set_sequence_auto_mnemonic(bool b)
-    \relates QKeySequence
+    Specifies whether mnemonics for menu items, labels, etc., should be honored or not.
+     
+    On Windows and X11, this feature is on by default; 
 
-    Specifies whether mnemonics for menu items, labels, etc., should
-    be honored or not. On Windows and X11, this feature is
-    on by default; on \macos, it is off. When this feature is off
-    (that is, when \a b is false), QKeySequence::mnemonic() always
+    When this feature is off (that is, when \a b is false), QKeySequence::mnemonic() always
     returns an empty string.
 
-    \note This function is not declared in any of Qt's header files.
+    Note:
+    This function is not declared in any of Qt's header files.
     To use it in your application, declare the function prototype
     before calling it.
 
     \sa QShortcut
 */
-void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemonics = !b; }
+void  qt_set_sequence_auto_mnemonic(bool b) 
+	{ qt_sequence_no_mnemonics = !b; }
 
 /*!
     \class QKeySequence
@@ -1602,80 +1482,10 @@ QString QKeySequence::listToString(const QList<QKeySequence> &list, SequenceForm
     return result;
 }
 
-/*****************************************************************************
-  QKeySequence stream functions
- *****************************************************************************/
-#if !defined(QT_NO_DATASTREAM)
-/*!
-    \fn QDataStream &operator<<(QDataStream &stream, const QKeySequence &sequence)
-    \relates QKeySequence
 
-    Writes the key \a sequence to the \a stream.
-
-    \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
-*/
-QDataStream &operator<<(QDataStream &s, const QKeySequence &keysequence)
-{
-    Q_STATIC_ASSERT_X(QKeySequencePrivate::MaxKeyCount == 4, "Forgot to adapt QDataStream &operator<<(QDataStream &s, const QKeySequence &keysequence) to new QKeySequence::MaxKeyCount");
-    const bool extended = s.version() >= 5 && keysequence.count() > 1;
-    s << quint32(extended ? 4 : 1) << quint32(keysequence.d->key[0]);
-    if (extended) {
-        s << quint32(keysequence.d->key[1])
-          << quint32(keysequence.d->key[2])
-          << quint32(keysequence.d->key[3]);
-    }
-    return s;
-}
-
-
-/*!
-    \fn QDataStream &operator>>(QDataStream &stream, QKeySequence &sequence)
-    \relates QKeySequence
-
-    Reads a key sequence from the \a stream into the key \a sequence.
-
-    \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
-*/
-QDataStream &operator>>(QDataStream &s, QKeySequence &keysequence)
-{
-    const quint32 MaxKeys = QKeySequencePrivate::MaxKeyCount;
-    quint32 c;
-    s >> c;
-    quint32 keys[MaxKeys] = {0};
-    for (uint i = 0; i < qMin(c, MaxKeys); ++i) {
-        if (s.atEnd()) {
-            qWarning("Premature EOF while reading QKeySequence");
-            return s;
-        }
-        s >> keys[i];
-    }
-    qAtomicDetach(keysequence.d);
-    std::copy(keys, keys + MaxKeys, QT_MAKE_CHECKED_ARRAY_ITERATOR(keysequence.d->key, MaxKeys));
-    return s;
-}
-
-#endif //QT_NO_DATASTREAM
-
-#ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug dbg, const QKeySequence &p)
-{
-    QDebugStateSaver saver(dbg);
-    dbg.nospace() << "QKeySequence(" << p.toString() << ')';
-    return dbg;
-}
-#endif
 
 #endif // QT_NO_SHORTCUT
 
 
-/*!
-    \typedef QKeySequence::DataPtr
-    \internal
-*/
-
- /*!
-    \fn DataPtr &QKeySequence::data_ptr()
-    \internal
-*/
 
 QT_END_NAMESPACE

@@ -1,42 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWidgets module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #include "qpainter.h"
 #include "qevent.h"
 #include "qdrawutil.h"
@@ -59,7 +20,6 @@
 #include <qaccessible.h>
 #endif
 
-QT_BEGIN_NAMESPACE
 
 QLabelPrivate::QLabelPrivate()
     : QFramePrivate(),
@@ -212,7 +172,7 @@ const QPicture *QLabel::picture() const
 QLabel::QLabel(QWidget *parent, Qt::WindowFlags f)
     : QFrame(*new QLabelPrivate(), parent, f)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     d->init();
 }
 
@@ -238,7 +198,7 @@ QLabel::QLabel(const QString &text, QWidget *parent, Qt::WindowFlags f)
 
 QLabel::~QLabel()
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     d->clearContents();
 }
 
@@ -283,7 +243,7 @@ void QLabelPrivate::init()
 
 void QLabel::setText(const QString &text)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     if (d->text == text)
         return;
 
@@ -319,12 +279,7 @@ void QLabel::setText(const QString &text)
 
     d->updateLabel();
 
-#ifndef QT_NO_ACCESSIBILITY
-    if (accessibleName().isEmpty()) {
-        QAccessibleEvent event(this, QAccessible::NameChanged);
-        QAccessible::updateAccessibility(&event);
-    }
-#endif
+
 }
 
 QString QLabel::text() const
@@ -339,7 +294,7 @@ QString QLabel::text() const
 
 void QLabel::clear()
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     d->clearContents();
     d->updateLabel();
 }
@@ -355,7 +310,7 @@ void QLabel::clear()
 */
 void QLabel::setPixmap(const QPixmap &pixmap)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     if (!d->pixmap || d->pixmap->cacheKey() != pixmap.cacheKey()) {
         d->clearContents();
         d->pixmap = new QPixmap(pixmap);
@@ -385,7 +340,7 @@ const QPixmap *QLabel::pixmap() const
 
 void QLabel::setPicture(const QPicture &picture)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     d->clearContents();
     d->picture = new QPicture(picture);
 
@@ -442,7 +397,7 @@ void QLabel::setNum(double num)
 
 void QLabel::setAlignment(Qt::Alignment alignment)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     if (alignment == (d->align & (Qt::AlignVertical_Mask|Qt::AlignHorizontal_Mask)))
         return;
     d->align = (d->align & ~(Qt::AlignVertical_Mask|Qt::AlignHorizontal_Mask))
@@ -459,20 +414,10 @@ Qt::Alignment QLabel::alignment() const
 }
 
 
-/*!
-    \property QLabel::wordWrap
-    \brief the label's word-wrapping policy
 
-    If this property is \c true then label text is wrapped where
-    necessary at word-breaks; otherwise it is not wrapped at all.
-
-    By default, word wrap is disabled.
-
-    \sa text
-*/
 void QLabel::setWordWrap(bool on)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     if (on)
         d->align |= Qt::TextWordWrap;
     else
@@ -510,7 +455,7 @@ bool QLabel::wordWrap() const
 
 void QLabel::setIndent(int indent)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     d->indent = indent;
     d->updateLabel();
 }
@@ -541,7 +486,7 @@ int QLabel::margin() const
 
 void QLabel::setMargin(int margin)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     if (d->margin == margin)
         return;
     d->margin = margin;
@@ -679,7 +624,7 @@ bool QLabel::openExternalLinks() const
 
 void QLabel::setOpenExternalLinks(bool open)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     d->openExternalLinks = open;
     if (d->control)
         d->control->setOpenExternalLinks(open);
@@ -699,7 +644,7 @@ void QLabel::setOpenExternalLinks(bool open)
 */
 void QLabel::setTextInteractionFlags(Qt::TextInteractionFlags flags)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     if (d->textInteractionFlags == flags)
         return;
     d->textInteractionFlags = flags;
@@ -739,7 +684,7 @@ Qt::TextInteractionFlags QLabel::textInteractionFlags() const
 */
 void QLabel::setSelection(int start, int length)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     if (d->control) {
         d->ensureTextPopulated();
         QTextCursor cursor = d->control->textCursor();
@@ -859,7 +804,7 @@ QSize QLabel::minimumSizeHint() const
 */
 void QLabel::mousePressEvent(QMouseEvent *ev)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     d->sendControlEvent(ev);
 }
 
@@ -867,7 +812,7 @@ void QLabel::mousePressEvent(QMouseEvent *ev)
 */
 void QLabel::mouseMoveEvent(QMouseEvent *ev)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     d->sendControlEvent(ev);
 }
 
@@ -875,7 +820,7 @@ void QLabel::mouseMoveEvent(QMouseEvent *ev)
 */
 void QLabel::mouseReleaseEvent(QMouseEvent *ev)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     d->sendControlEvent(ev);
 }
 
@@ -884,7 +829,7 @@ void QLabel::mouseReleaseEvent(QMouseEvent *ev)
 */
 void QLabel::contextMenuEvent(QContextMenuEvent *ev)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     if (!d->isTextLabel) {
         ev->ignore();
         return;
@@ -905,7 +850,7 @@ void QLabel::contextMenuEvent(QContextMenuEvent *ev)
 */
 void QLabel::focusInEvent(QFocusEvent *ev)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     if (d->isTextLabel) {
         d->ensureTextControl();
         d->sendControlEvent(ev);
@@ -918,7 +863,7 @@ void QLabel::focusInEvent(QFocusEvent *ev)
 */
 void QLabel::focusOutEvent(QFocusEvent *ev)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     if (d->control) {
         d->sendControlEvent(ev);
         QTextCursor cursor = d->control->textCursor();
@@ -938,7 +883,7 @@ void QLabel::focusOutEvent(QFocusEvent *ev)
 */
 bool QLabel::focusNextPrevChild(bool next)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     if (d->control && d->control->setFocusToNextOrPreviousAnchor(next))
         return true;
     return QFrame::focusNextPrevChild(next);
@@ -948,7 +893,7 @@ bool QLabel::focusNextPrevChild(bool next)
 */
 void QLabel::keyPressEvent(QKeyEvent *ev)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     d->sendControlEvent(ev);
 }
 
@@ -956,7 +901,7 @@ void QLabel::keyPressEvent(QKeyEvent *ev)
 */
 bool QLabel::event(QEvent *e)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     QEvent::Type type = e->type();
 
 #ifndef QT_NO_SHORTCUT
@@ -998,7 +943,7 @@ bool QLabel::event(QEvent *e)
 */
 void QLabel::paintEvent(QPaintEvent *)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     QStyle *style = QWidget::style();
     QPainter painter(this);
     drawFrame(&painter);
@@ -1113,10 +1058,6 @@ void QLabel::paintEvent(QPaintEvent *)
 }
 
 
-/*!
-    Updates the label, but not the frame.
-*/
-
 void QLabelPrivate::updateLabel()
 {
     Q_Q(QLabel);
@@ -1164,7 +1105,7 @@ void QLabelPrivate::updateLabel()
 
 void QLabel::setBuddy(QWidget *buddy)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     d->buddy = buddy;
     if (d->isTextLabel) {
         if (d->shortcutId)
@@ -1252,7 +1193,7 @@ void QLabelPrivate::_q_movieResized(const QSize& size)
 
 void QLabel::setMovie(QMovie *movie)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     d->clearContents();
 
     if (!movie)
@@ -1358,7 +1299,7 @@ Qt::TextFormat QLabel::textFormat() const
 
 void QLabel::setTextFormat(Qt::TextFormat format)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     if (format != d->textformat) {
         d->textformat = format;
         QString t = d->text;
@@ -1374,7 +1315,7 @@ void QLabel::setTextFormat(Qt::TextFormat format)
 */
 void QLabel::changeEvent(QEvent *ev)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     if(ev->type() == QEvent::FontChange || ev->type() == QEvent::ApplicationFontChange) {
         if (d->isTextLabel) {
             if (d->control)
@@ -1407,7 +1348,7 @@ bool QLabel::hasScaledContents() const
 
 void QLabel::setScaledContents(bool enable)
 {
-    Q_D(QLabel);
+    QLabelPrivate * const d = d_func();
     if ((bool)d->scaledcontents == enable)
         return;
     d->scaledcontents = enable;
@@ -1620,27 +1561,6 @@ QMenu *QLabelPrivate::createStandardContextMenu(const QPoint &pos)
 }
 #endif
 
-/*!
-    \fn void QLabel::linkHovered(const QString &link)
-    \since 4.2
 
-    This signal is emitted when the user hovers over a link. The URL
-    referred to by the anchor is passed in \a link.
-
-    \sa linkActivated()
-*/
-
-
-/*!
-    \fn void QLabel::linkActivated(const QString &link)
-    \since 4.2
-
-    This signal is emitted when the user clicks a link. The URL
-    referred to by the anchor is passed in \a link.
-
-    \sa linkHovered()
-*/
-
-QT_END_NAMESPACE
 
 #include "moc_qlabel.cpp"

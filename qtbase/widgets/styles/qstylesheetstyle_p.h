@@ -60,7 +60,7 @@ public:
     
     void ref() { ++refcount; }
     void deref() { Q_ASSERT(refcount > 0); if (!--refcount) delete this; }
-
+	// oye qss 自己的font设置特色
     void updateStyleSheetFont(QWidget* w) const;
     void saveWidgetFont(QWidget* w, const QFont& font) const;
     void clearWidgetFont(QWidget* w) const;

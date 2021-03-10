@@ -35,41 +35,33 @@ public:
     void unregisterWidget(QWidget *w);
     void unregisterWidgetSubtree(QWidget *w);
 
-    inline QWidgetBackingStore* data()
-    {
-        return m_ptr;
-    }
-
-    inline QWidgetBackingStore* operator->()
-    {
-        return m_ptr;
-    }
-
-    inline QWidgetBackingStore& operator*()
-    {
-        return *m_ptr;
-    }
-
-    inline operator bool() const
-    {
-        return (0 != m_ptr);
-    }
+    inline QWidgetBackingStore* data()   {      return m_ptr;    }
+    inline QWidgetBackingStore* operator->()    {        return m_ptr;    }
+    inline QWidgetBackingStore& operator*()    {        return *m_ptr;    }
+    inline operator bool() const    {        return (0 != m_ptr);    }
 
 private:
-    Q_DISABLE_COPY(QWidgetBackingStoreTracker)
+    //Q_DISABLE_COPY(QWidgetBackingStoreTracker)
 
 private:
     QWidgetBackingStore* m_ptr;
     QSet<QWidget *> m_widgets;
 };
 
+/*
+	OYE
+	Top-Level Window Extra
+	# 当Widget是TopLevel的window时,其实从win32platfom来看, 他就是一个main_window了
+	# 所以,此时一个win32 window所具有的功能,它都应该含有
+
+*/
 struct QTLWExtra {
     // *************************** Cross-platform variables *****************************
     QIcon *icon; // widget icon
-    QWidgetBackingStoreTracker backingStoreTracker;
-    QBackingStore *backingStore;
+    QWidgetBackingStoreTracker backingStoreTracker;			// top level window中放它干什么
+    QBackingStore *backingStore;							// 光栅操作试的window直接画图
     QPainter *sharedPainter;
-    QWindow *window;
+    QWindow *window;										// 本Widget是否给关联了一个window
     QOpenGLContext *shareContext;
 
     // Implicit pointers (shared_null).
@@ -90,7 +82,7 @@ struct QTLWExtra {
     QVector<QPlatformTextureList *> widgetTextures;
 
     // *************************** Cross-platform bit fields ****************************
-    uint opacity : 8;
+    uint opacity : 8;										// 主窗口有透明度
     uint posIncludesFrame : 1;
     uint sizeAdjusted : 1;
     uint inTopLevelResize : 1;
@@ -111,12 +103,12 @@ struct QWExtra {
     QCursor *curs;
 
     QPointer<QStyle> 		style;				// oye style
-    QPointer<QWidget> 		focus_proxy;
+    QPointer<QWidget> 		focus_proxy;		// oye focus
 
     // Implicit pointers (shared_empty/shared_null).
     QRegion 				mask; // widget mask
     
-    QString 				styleSheet;			// CSS 
+    QString 				styleSheet;			// CSS   , 有了style 为什么还要暂存这个string???
 
     // Other variables.
     qint32 minw;
@@ -238,7 +230,7 @@ public:	// Variables.
 	uint childrenShownByExpose : 1;
 
 	// *************************** Platform specific ************************************
-	uint noPaintOnScreen : 1; // 0 by default  see qwidget.cpp ::paintEngine()
+	uint noPaintOnScreen : 1; // 1 by default  see qwidget.cpp ::paintEngine()
 
 public:
     // *************************** Cross-platform ***************************************

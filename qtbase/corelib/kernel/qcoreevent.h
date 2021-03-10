@@ -22,8 +22,9 @@ private:
 	// oye true after  call data->postEventList.addEvent()
 	//     false in  QCoreApplicationPrivate::sendPostedEvents 
     ushort posted : 1; 		
-    ushort spont : 1;  		//oye spontaneous, true -> Event from win32_msg_queue || false -> Customized Defined Event
-    ushort m_accept : 1;	// oye whether user want this event, receiver不要的,会propagate给其parent
+
+    ushort spont : 1;  		//oye spontaneous, true -> 系统事件
+    ushort m_accept : 1;	// oye false -> receiver不要的,会propagate给其parent
     ushort reserved : 13;
 	
 
@@ -126,7 +127,7 @@ public:
 
         ToolTip = 110,
         WhatsThis = 111,
-        StatusTip = 112,
+        StatusTip = 112,						
 
         ActionChanged = 113,
         ActionAdded = 114,
@@ -141,10 +142,6 @@ public:
 
         ToolBarChange = 120,                    // toolbar visibility toggled
 
-        ApplicationActivate = 121,              // deprecated. Use ApplicationStateChange instead.
-        ApplicationActivated = ApplicationActivate, // deprecated
-        ApplicationDeactivate = 122,            // deprecated. Use ApplicationStateChange instead.
-        ApplicationDeactivated = ApplicationDeactivate, // deprecated
 
         QueryWhatsThis = 123,                   // query what's this widget help
         EnterWhatsThisMode = 124,
@@ -232,7 +229,7 @@ public:
         ScrollPrepare = 204,
         Scroll = 205,
 
-        Expose = 206,
+        Expose = 206,						// Oye 感觉和窗口重绘有关
 
         InputMethodQuery = 207,
         OrientationChange = 208,                // Screen orientation has changed

@@ -9,21 +9,21 @@ QT_REQUIRE_CONFIG(label);
 
 class QLabelPrivate;
 
-class Q_WIDGETS_EXPORT QLabel : public QFrame
+class  QLabel : public QFrame
 {
-    Q_OBJECT
-    Q_PROPERTY(QString text READ text WRITE setText)
-    Q_PROPERTY(Qt::TextFormat textFormat READ textFormat WRITE setTextFormat)
-    Q_PROPERTY(QPixmap pixmap READ pixmap WRITE setPixmap)
-    Q_PROPERTY(bool scaledContents READ hasScaledContents WRITE setScaledContents)
-    Q_PROPERTY(Qt::Alignment alignment READ alignment WRITE setAlignment)
-    Q_PROPERTY(bool wordWrap READ wordWrap WRITE setWordWrap)
-    Q_PROPERTY(int margin READ margin WRITE setMargin)
-    Q_PROPERTY(int indent READ indent WRITE setIndent)
-    Q_PROPERTY(bool openExternalLinks READ openExternalLinks WRITE setOpenExternalLinks)
-    Q_PROPERTY(Qt::TextInteractionFlags textInteractionFlags READ textInteractionFlags WRITE setTextInteractionFlags)
-    Q_PROPERTY(bool hasSelectedText READ hasSelectedText)
-    Q_PROPERTY(QString selectedText READ selectedText)
+    //Q_OBJECT
+    //Q_PROPERTY(QString text READ text WRITE setText)
+//    Q_PROPERTY(Qt::TextFormat textFormat READ textFormat WRITE setTextFormat)
+//    Q_PROPERTY(QPixmap pixmap READ pixmap WRITE setPixmap)
+//    Q_PROPERTY(bool scaledContents READ hasScaledContents WRITE setScaledContents)
+//    Q_PROPERTY(Qt::Alignment alignment READ alignment WRITE setAlignment)
+//    Q_PROPERTY(bool wordWrap READ wordWrap WRITE setWordWrap)
+//    Q_PROPERTY(int margin READ margin WRITE setMargin)
+//    Q_PROPERTY(int indent READ indent WRITE setIndent)
+//    Q_PROPERTY(bool openExternalLinks READ openExternalLinks WRITE setOpenExternalLinks)
+//    Q_PROPERTY(Qt::TextInteractionFlags textInteractionFlags READ textInteractionFlags WRITE setTextInteractionFlags)
+//    Q_PROPERTY(bool hasSelectedText READ hasSelectedText)
+//    Q_PROPERTY(QString selectedText READ selectedText)
 
 public:
     explicit QLabel(QWidget *parent=Q_NULLPTR, Qt::WindowFlags f=Qt::WindowFlags());
@@ -109,13 +109,13 @@ protected:
 
 
 private:
-    Q_DISABLE_COPY(QLabel)
-    Q_DECLARE_PRIVATE(QLabel)
+   // Q_DISABLE_COPY(QLabel)
+    //Q_DECLARE_PRIVATE(QLabel)
 #if QT_CONFIG(movie)
-    Q_PRIVATE_SLOT(d_func(), void _q_movieUpdated(const QRect&))
-    Q_PRIVATE_SLOT(d_func(), void _q_movieResized(const QSize&))
+    //Q_PRIVATE_SLOT(d_func(), void _q_movieUpdated(const QRect&))
+    //Q_PRIVATE_SLOT(d_func(), void _q_movieResized(const QSize&))
 #endif
-    Q_PRIVATE_SLOT(d_func(), void _q_linkHovered(const QString &))
+    //Q_PRIVATE_SLOT(d_func(), void _q_linkHovered(const QString &))
 
     friend class QTipLabel;
     friend class QMessageBoxPrivate;

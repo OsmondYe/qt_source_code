@@ -1817,48 +1817,6 @@ void QObjectPrivate::setParent_helper(QObject *o)
         QAbstractDeclarativeData::parentChanged(declarativeData, q, o);
 }
 
-/*!
-    \fn void QObject::installEventFilter(QObject *filterObj)
-
-    Installs an event filter \a filterObj on this object. For example:
-    \snippet code/src_corelib_kernel_qobject.cpp 14
-
-    An event filter is an object that receives all events that are
-    sent to this object. The filter can either stop the event or
-    forward it to this object. The event filter \a filterObj receives
-    events via its eventFilter() function. The eventFilter() function
-    must return true if the event should be filtered, (i.e. stopped);
-    otherwise it must return false.
-
-    If multiple event filters are installed on a single object, the
-    filter that was installed last is activated first.
-
-    Here's a \c KeyPressEater class that eats the key presses of its
-    monitored objects:
-
-    \snippet code/src_corelib_kernel_qobject.cpp 15
-
-    And here's how to install it on two widgets:
-
-    \snippet code/src_corelib_kernel_qobject.cpp 16
-
-    The QShortcut class, for example, uses this technique to intercept
-    shortcut key presses.
-
-    \warning If you delete the receiver object in your eventFilter()
-    function, be sure to return true. If you return false, Qt sends
-    the event to the deleted object and the program will crash.
-
-    Note that the filtering object must be in the same thread as this
-    object. If \a filterObj is in a different thread, this function does
-    nothing. If either \a filterObj or this object are moved to a different
-    thread after calling this function, the event filter will not be
-    called until both objects have the same thread affinity again (it
-    is \e not removed).
-
-    \sa removeEventFilter(), eventFilter(), event()
-*/
-
 void QObject::installEventFilter(QObject *obj)
 {
     QObjectPrivate * const d = d_func();

@@ -64,8 +64,8 @@ public:  // 比较重要的Fun
     static QPalette palette(const QWidget *);
     static QPalette palette(const char *className);
     static void setPalette(const QPalette &, const char* className = Q_NULLPTR);
-    static QFont font();
-    static QFont font(const QWidget*);
+    static QFont font(); // 系统默认font
+    static QFont font(const QWidget*);  // 根据widget的metadata中的类名,找个className对应的font
     static QFont font(const char *className);
     static void setFont(const QFont &, const char* className = Q_NULLPTR);
     static QFontMetrics fontMetrics();
@@ -149,8 +149,8 @@ protected:
     bool compressEvent(QEvent *, QObject *receiver, QPostEventList *) override;
 
 private:
-    Q_DISABLE_COPY(QApplication)
-    Q_DECLARE_PRIVATE(QApplication)
+    //Q_DISABLE_COPY(QApplication)
+    //Q_DECLARE_PRIVATE(QApplication)
 
     friend class QGraphicsWidget;
     friend class QGraphicsItem;

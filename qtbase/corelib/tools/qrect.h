@@ -1,10 +1,14 @@
 #ifndef QRECT_H
 #define QRECT_H
 
-
-
 class  QRect
 {
+private:
+    int x1;
+    int y1;
+    int x2;
+    int y2;
+
 public:
      QRect()  : x1(0), y1(0), x2(-1), y2(-1) {}
      QRect(const QPoint &topleft, const QPoint &bottomright) ;
@@ -101,11 +105,7 @@ public:
 
 
 
-private:
-    int x1;
-    int y1;
-    int x2;
-    int y2;
+
 };
 
 

@@ -22,7 +22,7 @@ public:
     QStyle();
     virtual ~QStyle();
 
-    virtual void polish(QWidget *widget);
+    virtual void polish(QWidget *widget); // 基类是空实现
     virtual void unpolish(QWidget *widget);
 
     virtual void polish(QApplication *application);

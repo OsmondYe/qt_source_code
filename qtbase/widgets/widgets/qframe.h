@@ -4,21 +4,17 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
 
-QT_BEGIN_NAMESPACE
 
-
-
-
-class  QFrame : public QWidget
+class QFrame : public QWidget
 {
-    Q_OBJECT
-
-    Q_PROPERTY(Shape frameShape READ frameShape WRITE setFrameShape)
-    Q_PROPERTY(Shadow frameShadow READ frameShadow WRITE setFrameShadow)
-    Q_PROPERTY(int lineWidth READ lineWidth WRITE setLineWidth)
-    Q_PROPERTY(int midLineWidth READ midLineWidth WRITE setMidLineWidth)
-    Q_PROPERTY(int frameWidth READ frameWidth)
-    Q_PROPERTY(QRect frameRect READ frameRect WRITE setFrameRect DESIGNABLE false)
+//    Q_OBJECT
+//
+//    Q_PROPERTY(Shape frameShape READ frameShape WRITE setFrameShape)
+//    Q_PROPERTY(Shadow frameShadow READ frameShadow WRITE setFrameShadow)
+//    Q_PROPERTY(int lineWidth READ lineWidth WRITE setLineWidth)
+//    Q_PROPERTY(int midLineWidth READ midLineWidth WRITE setMidLineWidth)
+//    Q_PROPERTY(int frameWidth READ frameWidth)
+//    Q_PROPERTY(QRect frameRect READ frameRect WRITE setFrameRect DESIGNABLE false)
 
 public:
     explicit QFrame(QWidget* parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
@@ -40,13 +36,16 @@ public:
         VLine = 0x0005, // vertical line
         StyledPanel = 0x0006 // rectangular panel depending on the GUI style
     };
-    Q_ENUM(Shape)
-    enum Shadow {
+		
+    //Q_ENUM(Shape)
+
+	enum Shadow {
         Plain = 0x0010, // plain line
         Raised = 0x0020, // raised shadow effect
         Sunken = 0x0030 // sunken shadow effect
     };
-    Q_ENUM(Shadow)
+		
+    //Q_ENUM(Shadow)
 
     enum StyleMask {
         Shadow_Mask = 0x00f0, // mask for the shadow
@@ -68,9 +67,10 @@ public:
     void setFrameRect(const QRect &);
 
 protected:
-    bool event(QEvent *e) Q_DECL_OVERRIDE;
-    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
-    void changeEvent(QEvent *) Q_DECL_OVERRIDE;
+	
+    bool event(QEvent *e) override;
+    void paintEvent(QPaintEvent *) override;
+    void changeEvent(QEvent *) override;
     void drawFrame(QPainter *);
 
 
@@ -79,10 +79,10 @@ protected:
     void initStyleOption(QStyleOptionFrame *option) const;
 
 private:
-    Q_DISABLE_COPY(QFrame)
-    Q_DECLARE_PRIVATE(QFrame)
+    //Q_DISABLE_COPY(QFrame)
+    //Q_DECLARE_PRIVATE(QFrame)
 };
 
-QT_END_NAMESPACE
+
 
 #endif // QFRAME_H

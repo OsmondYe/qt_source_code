@@ -9,6 +9,10 @@ struct CGSize;
 
 class  QSize
 {
+private:
+    int wd;
+    int ht;
+
 public:
      QSize() ;
      QSize(int w, int h) ;
@@ -32,6 +36,7 @@ public:
       inline QSize expandedTo(const QSize &) const ;
       inline QSize boundedTo(const QSize &) const ;
 
+	  // reference to width
      inline int &rwidth() ;
      inline int &rheight() ;
 
@@ -47,10 +52,6 @@ public:
     friend inline  const QSize operator*(const QSize &, qreal) ;
     friend inline  const QSize operator*(qreal, const QSize &) ;
     friend inline const QSize operator/(const QSize &, qreal);
-
-private:
-    int wd;
-    int ht;
 };
 
 

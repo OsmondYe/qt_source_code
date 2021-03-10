@@ -527,19 +527,6 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
     if (QApplicationPrivate::testAttribute(Qt::AA_NativeWindows))
         setAttribute(Qt::WA_NativeWindow);
 
-#ifdef ALIEN_DEBUG
-    qDebug() << "QWidget::create:" << this << "parent:" << parentWidget()
-             << "Alien?" << !testAttribute(Qt::WA_NativeWindow);
-#endif
-
-#if 0 /* Used to be included in Qt4 for Q_WS_WIN */ && !defined(QT_NO_DRAGANDDROP)
-    // Unregister the dropsite (if already registered) before we
-    // re-create the widget with a native window.
-    if (testAttribute(Qt::WA_WState_Created) && !internalWinId() && testAttribute(Qt::WA_NativeWindow)
-            && d->extra && d->extra->dropTarget) {
-        d->registerDropSite(false);
-    }
-#endif
 
     d->updateIsOpaque();
 
@@ -1874,8 +1861,9 @@ void QWidget::setStyleSheet(const QString& styleSheet)
     }
 	// oye stylesheetStyle的构造,是否需要含有原始style的一些特征
     if (testAttribute(Qt::WA_SetStyle)) {
+		// 更新属性,并且要传播给孩子
         d->setStyle_helper(new QStyleSheetStyle(d->extra->style), true);
-    } else {
+    } else {    
         d->setStyle_helper(new QStyleSheetStyle(0), true);
     }
 }
@@ -1897,8 +1885,8 @@ QStyle *QWidget::style() const
 }
 
 /*!
-    Sets the widget's GUI style to \a style. The ownership of the style
-    object is not transferred.
+    Sets the widget's GUI style to [style]. 
+    The ownership of the style object is not transferred.
 
     If no style is set, the widget uses the application's style,
     QApplication::style() instead.
@@ -1921,7 +1909,7 @@ void QWidget::setStyle(QStyle *style)
 {
     QWidgetPrivate * const d = d_func();
     setAttribute(Qt::WA_SetStyle, style != 0);
-    d->createExtra();
+    d->createExtra(); // oye  lazy-init
 
 	
     if (QStyleSheetStyle *proxy = qobject_cast<QStyleSheetStyle *>(style)) {
@@ -1936,6 +1924,10 @@ void QWidget::setStyle(QStyle *style)
         d->setStyle_helper(style, false);
 }
 
+/*
+	oye
+	set style by send the event(QEvent::StyleChange) to current widget
+*/
 void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate, bool)
 {
 	QWidget * const q = q_func();
@@ -3753,8 +3745,8 @@ void QWidget::setFont(const QFont &font)
 /*
     \internal
 
-    Returns the font that the widget \a w inherits from its ancestors and
-    QApplication::font. \a inheritedMask is the combination of the widget's
+    Returns the font that the widget  inherits from its ancestors and
+    QApplication::font.  inheritedMask is the combination of the widget's
     ancestors font request masks (i.e., which attributes from the parent
     widget's font are implicitly imposed on this widget by the user). Note
     that this font does not take into account the font set on \a w itself.
@@ -3776,7 +3768,8 @@ QFont QWidgetPrivate::naturalWidgetFont(uint inheritedMask) const
             || (extra && extra->proxyWidget)
 #endif // QT_CONFIG(graphicsview)
             )) {
-        if (QWidget *p = q->parentWidget()) {
+        if (QWidget *p = q->parentWidget()) 
+			{
             if (!p->testAttribute(Qt::WA_StyleSheet) || useStyleSheetPropagationInWidgetStyles) {
                 if (!naturalFont.isCopyOf(QApplication::font())) {
                     if (inheritedMask != 0) {
@@ -3799,6 +3792,7 @@ QFont QWidgetPrivate::naturalWidgetFont(uint inheritedMask) const
         }
 #endif // QT_CONFIG(graphicsview)
     }
+			
     naturalFont.resolve(0);
     return naturalFont;
 }
@@ -3813,35 +3807,34 @@ QFont QWidgetPrivate::naturalWidgetFont(uint inheritedMask) const
 */
 void QWidgetPrivate::resolveFont()
 {
-    QFont naturalFont = naturalWidgetFont(inheritedFontResolveMask);
-    QFont resolvedFont = data.fnt.resolve(naturalFont);
-    setFont_helper(resolvedFont);
+    QFont naturalFont = naturalWidgetFont(inheritedFontResolveMask);	
+    QFont resolvedFont = data.fnt.resolve(naturalFont);// naturalFont里面的属性构造data.fnt类型的font
+    setFont_helper(resolvedFont); // will call updateFont();
 }
 
 /*!
-    \internal
+    \internal    
 
-    Assign \a font to this widget, and propagate it to all children, except
+    Assign font to this widget, and propagate it to all children, except
     style sheet widgets (handled differently) and windows that don't enable
     window propagation.  \a implicitMask is the union of all ancestor widgets'
     font request masks, and determines which attributes from this widget's
     font should propagate.
+
+    oye
+    -> sendEvent QEvent::FontChange
 */
 void QWidgetPrivate::updateFont(const QFont &font)
 {
     QWidget* const q = q_func();
-#ifndef QT_NO_STYLE_STYLESHEET
+		
     const QStyleSheetStyle* cssStyle;
     cssStyle = extra ? qobject_cast<const QStyleSheetStyle*>(extra->style) : 0;
     const bool useStyleSheetPropagationInWidgetStyles =
         QCoreApplication::testAttribute(Qt::AA_UseStyleSheetPropagationInWidgetStyles);
-#endif
 
-    data.fnt = QFont(font, q);
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-    // make sure the font set on this widget is associated with the correct screen
-    data.fnt.x11SetScreen(xinfo.screen());
-#endif
+    data.fnt = QFont(font, q); // new font updated
+
     // Combine new mask with natural mask and propagate to children.
 #if QT_CONFIG(graphicsview)
     if (!q->parentWidget() && extra && extra->proxyWidget) {
@@ -3849,21 +3842,20 @@ void QWidgetPrivate::updateFont(const QFont &font)
         inheritedFontResolveMask = p->d_func()->inheritedFontResolveMask | p->font().resolve();
     } else
 #endif // QT_CONFIG(graphicsview)
+
     if (q->isWindow() && !q->testAttribute(Qt::WA_WindowPropagation)) {
         inheritedFontResolveMask = 0;
     }
     uint newMask = data.fnt.resolve() | inheritedFontResolveMask;
-
+	// 更新widget的子widget
     for (int i = 0; i < children.size(); ++i) {
         QWidget *w = qobject_cast<QWidget*>(children.at(i));
         if (w) {
             if (0) {
-#ifndef QT_NO_STYLE_STYLESHEET
             } else if (!useStyleSheetPropagationInWidgetStyles && w->testAttribute(Qt::WA_StyleSheet)) {
                 // Style sheets follow a different font propagation scheme.
                 if (cssStyle)
-                    cssStyle->updateStyleSheetFont(w);
-#endif
+                    cssStyle->updateStyleSheetFont(w); 
             } else if ((!w->isWindow() || w->testAttribute(Qt::WA_WindowPropagation))) {
                 // Propagate font changes.
                 QWidgetPrivate *wd = w->d_func();
@@ -5242,16 +5234,8 @@ void QWidgetPrivate::setWindowIcon_helper()
         if (w && !w->isWindow())
             QApplication::sendEvent(w, &e);
     }
+	// 告诉所有子Widget windowIcon改变了, 他的意义是什么?
 }
-
-/*!
-    \fn void QWidget::windowIconChanged(const QIcon &icon)
-
-    This signal is emitted when the window's icon has changed, with the
-    new \a icon as an argument.
-
-    \since 5.2
-*/
 
 void QWidget::setWindowIcon(const QIcon &icon)
 {
@@ -7236,28 +7220,7 @@ void QWidgetPrivate::hide_sys()
         window->setVisible(false);
 }
 
-/*!
-    \fn bool QWidget::isHidden() const
 
-    Returns \c true if the widget is hidden, otherwise returns \c false.
-
-    A hidden widget will only become visible when show() is called on
-    it. It will not be automatically shown when the parent is shown.
-
-    To check visibility, use !isVisible() instead (notice the exclamation mark).
-
-    isHidden() implies !isVisible(), but a widget can be not visible
-    and not hidden at the same time. This is the case for widgets that are children of
-    widgets that are not visible.
-
-
-    Widgets are hidden if:
-    \list
-        \li they were created as independent windows,
-        \li they were created as children of visible widgets,
-        \li hide() or setVisible(false) was called.
-    \endlist
-*/
 
 
 void QWidget::setVisible(bool visible)
@@ -7338,16 +7301,6 @@ void QWidget::setVisible(bool visible)
     } else { // hide
         if (testAttribute(Qt::WA_WState_ExplicitShowHide) && testAttribute(Qt::WA_WState_Hidden))
             return;
-#if 0 // Used to be included in Qt4 for Q_WS_WIN
-        // reset WS_DISABLED style in a Blocked window
-        if(isWindow() && testAttribute(Qt::WA_WState_Created)
-           && QApplicationPrivate::isBlockedByModal(this))
-        {
-            LONG dwStyle = GetWindowLong(winId(), GWL_STYLE);
-            dwStyle &= ~WS_DISABLED;
-            SetWindowLong(winId(), GWL_STYLE, dwStyle);
-        }
-#endif
         if (QApplicationPrivate::hidden_focus_widget == this)
             QApplicationPrivate::hidden_focus_widget = 0;
 
@@ -7822,37 +7775,28 @@ inline void setDisabledStyle(QWidget *w, bool setStyle)
     }
 }
 #endif
-
-/*****************************************************************************
-  QWidget event handling
- *****************************************************************************/
-
 /*!
-    This is the main event handler; it handles event \a event. You can
-    reimplement this function in a subclass, but we recommend using
-    one of the specialized event handlers instead.
+    This is the main event handler; it handles event event. 
+    
+    You can reimplement this function in a subclass, but we recommend using one of the specialized event handlers instead.
 
-    Key press and release events are treated differently from other
-    events. event() checks for Tab and Shift+Tab and tries to move the
-    focus appropriately. If there is no widget to move the focus to
-    (or the key press is not Tab or Shift+Tab), event() calls
-    keyPressEvent().
+    Key press and release events are treated differently from other events. 
+    
+    event() checks for Tab and Shift+Tab and tries to move the focus appropriately. 
 
-    Mouse and tablet event handling is also slightly special: only
-    when the widget is \l enabled, event() will call the specialized
+    If there is no widget to move the focus to (or the key press is not Tab or Shift+Tab), event() calls keyPressEvent().
+
+    Mouse and tablet event handling is also slightly special: 
+    
+    only when the widget is enabled, event() will call the specialized
     handlers such as mousePressEvent(); otherwise it will discard the
     event.
 
-    This function returns \c true if the event was recognized, otherwise
-    it returns \c false.  If the recognized event was accepted (see \l
-    QEvent::accepted), any further processing such as event
-    propagation to the parent widget stops.
+    This function returns true if the event was recognized, 
+    otherwise it returns  false.  
 
-    \sa closeEvent(), focusInEvent(), focusOutEvent(), enterEvent(),
-    keyPressEvent(), keyReleaseEvent(), leaveEvent(),
-    mouseDoubleClickEvent(), mouseMoveEvent(), mousePressEvent(),
-    mouseReleaseEvent(), moveEvent(), paintEvent(), resizeEvent(),
-    QObject::event(), QObject::timerEvent()
+    If the recognized event was accepted (see QEvent::accepted), any further processing such as event
+    propagation to the parent widget stops.
 */
 
 bool QWidget::event(QEvent *event)
@@ -7876,14 +7820,13 @@ bool QWidget::event(QEvent *event)
         case QEvent::ContextMenu:
         case QEvent::KeyPress:
         case QEvent::KeyRelease:
-#if QT_CONFIG(wheelevent)
         case QEvent::Wheel:
-#endif
             return false;
         default:
             break;
         }
     }
+	
     switch (event->type()) {
     case QEvent::MouseMove:
         mouseMoveEvent((QMouseEvent*)event);
@@ -7900,26 +7843,21 @@ bool QWidget::event(QEvent *event)
     case QEvent::MouseButtonDblClick:
         mouseDoubleClickEvent((QMouseEvent*)event);
         break;
-#if QT_CONFIG(wheelevent)
     case QEvent::Wheel:
         wheelEvent((QWheelEvent*)event);
         break;
-#endif
-#if QT_CONFIG(tabletevent)
     case QEvent::TabletMove:
         if (static_cast<QTabletEvent *>(event)->buttons() == Qt::NoButton && !testAttribute(Qt::WA_TabletTracking))
             break;
-        Q_FALLTHROUGH();
     case QEvent::TabletPress:
     case QEvent::TabletRelease:
         tabletEvent((QTabletEvent*)event);
         break;
-#endif
     case QEvent::KeyPress: {
         QKeyEvent *k = (QKeyEvent *)event;
         bool res = false;
-        if (!(k->modifiers() & (Qt::ControlModifier | Qt::AltModifier))) {  //### Add MetaModifier?
-            if (k->key() == Qt::Key_Backtab
+        if (!(k->modifiers() & (Qt::ControlModifier | Qt::AltModifier))) {  
+            if (k->key() == Qt::Key_Backtab  // oye shift + tab = back_tab
                 || (k->key() == Qt::Key_Tab && (k->modifiers() & Qt::ShiftModifier)))
                 res = focusNextPrevChild(false);
             else if (k->key() == Qt::Key_Tab)
@@ -7965,7 +7903,6 @@ bool QWidget::event(QEvent *event)
 
     case QEvent::KeyRelease:
         keyReleaseEvent((QKeyEvent*)event);
-        Q_FALLTHROUGH();
     case QEvent::ShortcutOverride:
         break;
 
@@ -7990,13 +7927,14 @@ bool QWidget::event(QEvent *event)
         }
         break;
 
-    case QEvent::PolishRequest:
+    case QEvent::PolishRequest:    // widget shoude be polished
         ensurePolished();
         break;
 
-    case QEvent::Polish: {
-        style()->polish(this);
+    case QEvent::Polish: {			// widget is polished
+        style()->polish(this);	// 把widget交给style()来做着色, style有可能是QStyleSheetStyle, qss在这里起作用
         setAttribute(Qt::WA_WState_Polished);
+		// style 作色时不管 font和palette吗?
         if (!QApplication::font(this).isCopyOf(QApplication::font()))
             d->resolveFont();
         if (!QApplication::palette(this).isCopyOf(QApplication::palette()))
@@ -8012,7 +7950,7 @@ bool QWidget::event(QEvent *event)
         break;
     case QEvent::FocusIn:
         focusInEvent((QFocusEvent*)event);
-        d->updateWidgetTransform(event);
+        d->updateWidgetTransform(event);  // 和输入法有关
         break;
 
     case QEvent::FocusOut:
@@ -8021,6 +7959,7 @@ bool QWidget::event(QEvent *event)
 
     case QEvent::Enter:
 #if QT_CONFIG(statustip)
+		// 鼠标进入,给额外发送一个status_tip消息, 只要tip_string有值
         if (d->statusTip.size()) {
             QStatusTipEvent tip(d->statusTip);
             QApplication::sendEvent(const_cast<QWidget *>(this), &tip);
@@ -8136,7 +8075,7 @@ bool QWidget::event(QEvent *event)
     case QEvent::ActivationChange:
     case QEvent::EnabledChange:
     case QEvent::FontChange:
-    case QEvent::StyleChange:
+    case QEvent::StyleChange:				// oye: qss style
     case QEvent::PaletteChange:
     case QEvent::WindowTitleChange:
     case QEvent::IconTextChange:
@@ -8239,9 +8178,6 @@ bool QWidget::event(QEvent *event)
                 }
             }
         }
-#if 0 // Used to be included in Qt4 for Q_WS_WIN
-            setDisabledStyle(this, (event->type() == QEvent::WindowBlocked));
-#endif
         break;
 #ifndef QT_NO_TOOLTIP
     case QEvent::ToolTip:
@@ -8266,9 +8202,6 @@ bool QWidget::event(QEvent *event)
     case QEvent::EmbeddingControl:
         d->topData()->frameStrut.setCoords(0 ,0, 0, 0);
         data->fstrut_dirty = false;
-#if 0 /* Used to be included in Qt4 for Q_WS_WIN */ || 0 /* Used to be included in Qt4 for Q_WS_X11 */
-        d->topData()->embedded = 1;
-#endif
         break;
 #ifndef QT_NO_ACTION
     case QEvent::ActionAdded:
@@ -8291,11 +8224,6 @@ bool QWidget::event(QEvent *event)
             }
             break;
         }
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    case QEvent::MacGLWindowChange:
-        d->needWindowChange = false;
-        break;
-#endif
     case QEvent::TouchBegin:
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:
@@ -8562,12 +8490,10 @@ void QWidget::tabletEvent(QTabletEvent *event)
 
 void QWidget::keyPressEvent(QKeyEvent *event)
 {
-#ifndef QT_NO_SHORTCUT
     if ((windowType() == Qt::Popup) && event->matches(QKeySequence::Cancel)) {
         event->accept();
-        close();
+        close(); 		// popui-win and cancel_key, close the window
     } else
-#endif
     {
         event->ignore();
     }
@@ -8844,7 +8770,7 @@ void QWidget::contextMenuEvent(QContextMenuEvent *event)
 
 
 /*!
-    This event handler, for event \a event, can be reimplemented in a
+    can be reimplemented in a
     subclass to receive Input Method composition events. This handler
     is called when the state of the input method changes.
 
@@ -8857,7 +8783,6 @@ void QWidget::contextMenuEvent(QContextMenuEvent *event)
     Input Method event. See the \l QInputMethodEvent documentation for more
     details.
 
-    \sa event(), QInputMethodEvent
 */
 void QWidget::inputMethodEvent(QInputMethodEvent *event)
 {
@@ -9111,6 +9036,7 @@ void QWidget::ensurePolished() const
 	
     d->polished = m;
 
+	// 自己给自己发消息QEvent::Polish, 上色完成
     QEvent e(QEvent::Polish);
     QCoreApplication::sendEvent(const_cast<QWidget *>(this), &e);
 
@@ -9118,8 +9044,8 @@ void QWidget::ensurePolished() const
     QList<QObject*> children = d->children;
     for (int i = 0; i < children.size(); ++i) {
         QObject *o = children.at(i);
-        if(!o->isWidgetType())
-            continue;
+        if(!o->isWidgetType()) continue;
+		
         if (QWidget *w = qobject_cast<QWidget *>(o))
             w->ensurePolished();
     }
@@ -10049,11 +9975,8 @@ void QWidgetPrivate::macUpdateSizeAttribute()
 }
 #endif
 
-/*!
-    Sets the attribute \a attribute on this widget if \a on is true;
-    otherwise clears the attribute.
+/*
 
-    \sa testAttribute()
 */
 void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
 {
@@ -10061,10 +9984,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         return;
 
     QWidgetPrivate * const d = d_func();
-    Q_STATIC_ASSERT_X(sizeof(d->high_attributes)*8 >= (Qt::WA_AttributeCount - sizeof(uint)*8),
-                      "QWidget::setAttribute(WidgetAttribute, bool): "
-                      "QWidgetPrivate::high_attributes[] too small to contain all attributes in WidgetAttribute");
-#ifdef Q_OS_WIN
+
     // ### Don't use PaintOnScreen+paintEngine() to do native painting in some future release
     if (attribute == Qt::WA_PaintOnScreen && on && windowType() != Qt::Desktop && !inherits("QGLWidget")) {
         // see ::paintEngine for details
@@ -10072,7 +9992,6 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         if (d->noPaintOnScreen)
             return;
     }
-#endif
 
     // Don't set WA_NativeWindow on platforms that don't support it -- except for QGLWidget, which depends on it
     if (attribute == Qt::WA_NativeWindow && !d->mustHaveWindowHandle) {
@@ -10250,20 +10169,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         d->resolveFont();
         d->resolveLocale();
         break;
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-    case Qt::WA_NoX11EventCompression:
-        if (!d->extra)
-            d->createExtra();
-        d->extra->compress_events = on;
-        break;
-    case Qt::WA_X11OpenGLOverlay:
-        d->updateIsOpaque();
-        break;
-    case Qt::WA_X11DoNotAcceptFocus:
-        if (testAttribute(Qt::WA_WState_Created))
-            d->updateX11AcceptFocus();
-        break;
-#endif
+
     case Qt::WA_DontShowOnScreen: {
         if (on && isVisible()) {
             // Make sure we keep the current state and only hide the widget
@@ -10366,8 +10272,7 @@ qreal QWidget::windowOpacity() const
 void QWidget::setWindowOpacity(qreal opacity)
 {
     QWidgetPrivate * const d = d_func();
-    if (!isWindow())
-        return;
+    if (!isWindow())  return;
 
     opacity = qBound(qreal(0.0), opacity, qreal(1.0));
     QTLWExtra *extra = d->topData();
@@ -11235,15 +11140,7 @@ void QWidgetPrivate::sendComposeStatus(QWidget *w, bool end)
 }
 #endif // QT_NO_OPENGL
 
-Q_WIDGETS_EXPORT QWidgetData *qt_qwidget_data(QWidget *widget)
-{
-    return widget->data;
-}
 
-Q_WIDGETS_EXPORT QWidgetPrivate *qt_widget_private(QWidget *widget)
-{
-    return widget->d_func();
-}
 
 
 #if QT_CONFIG(graphicsview)
@@ -11325,16 +11222,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
     }
 }
 
-/*!
-    \fn QPaintEngine *QWidget::paintEngine() const
 
-    Returns the widget's paint engine.
-
-    Note that this function should not be called explicitly by the
-    user, since it's meant for reimplementation purposes only. The
-    function is called by Qt internally, and the default
-    implementation may not always return a valid pointer.
-*/
 QPaintEngine *QWidget::paintEngine() const
 {
     qWarning("QWidget::paintEngine: Should no longer be called");

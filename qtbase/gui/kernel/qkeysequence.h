@@ -1,42 +1,4 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtGui module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
+// oye 我删去了 operator >>  <<  < > 这些意义都能猜出来
 #ifndef QKEYSEQUENCE_H
 #define QKEYSEQUENCE_H
 
@@ -47,30 +9,23 @@
 QT_BEGIN_NAMESPACE
 
 
-#ifndef QT_NO_SHORTCUT
-
 class QKeySequence;
 
 /*****************************************************************************
   QKeySequence stream functions
  *****************************************************************************/
-#ifndef QT_NO_DATASTREAM
-Q_GUI_EXPORT QDataStream &operator<<(QDataStream &in, const QKeySequence &ks);
-Q_GUI_EXPORT QDataStream &operator>>(QDataStream &out, QKeySequence &ks);
-#endif
 
-#ifdef Q_QDOC
 void qt_set_sequence_auto_mnemonic(bool b);
-#endif
 
 class QVariant;
 class QKeySequencePrivate;
 
-Q_GUI_EXPORT Q_DECL_PURE_FUNCTION uint qHash(const QKeySequence &key, uint seed = 0) Q_DECL_NOTHROW;
+uint qHash(const QKeySequence &key, uint seed = 0) ;
 
-class Q_GUI_EXPORT QKeySequence
+// 在 shortcut的context下才有意义
+class  QKeySequence
 {
-    Q_GADGET
+    //Q_GADGET
 
 public:
     enum StandardKey {
@@ -146,7 +101,7 @@ public:
         Backspace,
         Cancel
      };
-     Q_ENUM(StandardKey)
+     //Q_ENUM(StandardKey)
 
     enum SequenceFormat {
         NativeText,
@@ -179,17 +134,10 @@ public:
     static QKeySequence mnemonic(const QString &text);
     static QList<QKeySequence> keyBindings(StandardKey key);
 
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED operator QString() const { return toString(QKeySequence::NativeText); }
-    QT_DEPRECATED operator int() const { if (1 <= count()) return operator [](0); return 0; }
-#endif
     operator QVariant() const;
     int operator[](uint i) const;
     QKeySequence &operator=(const QKeySequence &other);
-#ifdef Q_COMPILER_RVALUE_REFS
-    QKeySequence &operator=(QKeySequence &&other) Q_DECL_NOTHROW { swap(other); return *this; }
-#endif
-    void swap(QKeySequence &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+    void swap(QKeySequence &other)  { qSwap(d, other.d); }
 
     bool operator==(const QKeySequence &other) const;
     inline bool operator!= (const QKeySequence &other) const
@@ -212,9 +160,9 @@ private:
 
     QKeySequencePrivate *d;
 
-    friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &in, const QKeySequence &ks);
-    friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &in, QKeySequence &ks);
-    friend Q_GUI_EXPORT uint qHash(const QKeySequence &key, uint seed) Q_DECL_NOTHROW;
+    friend  QDataStream &operator<<(QDataStream &in, const QKeySequence &ks);
+    friend  QDataStream &operator>>(QDataStream &in, QKeySequence &ks);
+    friend  uint qHash(const QKeySequence &key, uint seed) Q_DECL_NOTHROW;
     friend class QShortcutMap;
     friend class QShortcut;
 
@@ -223,23 +171,7 @@ public:
     inline DataPtr &data_ptr() { return d; }
 };
 
-Q_DECLARE_SHARED(QKeySequence)
-
-#ifndef QT_NO_DEBUG_STREAM
-Q_GUI_EXPORT QDebug operator<<(QDebug, const QKeySequence &);
-#endif
-
-#else
-
-class Q_GUI_EXPORT QKeySequence
-{
-public:
-    QKeySequence() {}
-    QKeySequence(int) {}
-};
-
-#endif // QT_NO_SHORTCUT
-
+//Q_DECLARE_SHARED(QKeySequence)
 QT_END_NAMESPACE
 
 #endif // QKEYSEQUENCE_H

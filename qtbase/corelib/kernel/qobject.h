@@ -153,6 +153,11 @@ public:
     }
     void killTimer(int id);
 
+		// ×öEvent¹ýÂË
+    void installEventFilter(QObject *filterObj);
+    void removeEventFilter(QObject *obj);
+	
+
     template<typename T>
     inline T findChild(const QString &aName = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
     {
@@ -193,8 +198,8 @@ public:
     inline const QObjectList &children() const { return d_ptr->children; }
 
     void setParent(QObject *parent);
-    void installEventFilter(QObject *filterObj);
-    void removeEventFilter(QObject *obj);
+
+
 
 
 

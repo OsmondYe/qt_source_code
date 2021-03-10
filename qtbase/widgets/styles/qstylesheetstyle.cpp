@@ -79,7 +79,7 @@ using namespace QCss;
 
 class QStyleSheetStylePrivate : public QWindowsStylePrivate
 {
-    Q_DECLARE_PUBLIC(QStyleSheetStyle)
+    //Q_DECLARE_PUBLIC(QStyleSheetStyle)
 public:
     QStyleSheetStylePrivate() { }
 };
@@ -2386,7 +2386,7 @@ static bool unstylable(const QWidget *w)
     if (!w->styleSheet().isEmpty())
         return false;
 
-    if (containerWidget(w) != w)
+    if (containerWidget(w) != w) // w是widget里面的子widget,那就不能style了, 会默认继承父的吗?
         return true;
 
 #ifndef QT_NO_FRAME
@@ -2699,6 +2699,7 @@ QStyle *QStyleSheetStyle::baseStyle() const
     return QApplication::style();
 }
 
+// oye 当Widget要销毁时,给这里发信号,来处理些系统预先记录的和css有关的信息
 void QStyleSheetStyleCaches::objectDestroyed(QObject *o)
 {
     styleRulesCache.remove(o);
@@ -2726,19 +2727,27 @@ bool QStyleSheetStyle::initObject(const QObject *obj) const
     if (const QWidget *w = qobject_cast<const QWidget*>(obj)) {
         if (w->testAttribute(Qt::WA_StyleSheet))
             return true;
-        if (unstylable(w))
+        if (unstylable(w)) //w 不能style,
             return false;
         const_cast<QWidget *>(w)->setAttribute(Qt::WA_StyleSheet, true);
     }
-
+	// obj 作为widget, 死亡时,给styleSheetCaches发信号, 让styleSheetCaches 去除有关obj的style的记录
     QObject::connect(obj, SIGNAL(destroyed(QObject*)), styleSheetCaches, SLOT(objectDestroyed(QObject*)), Qt::UniqueConnection);
     return true;
 }
 
+/*
+	CSS的技术创新点之一
+*/
 void QStyleSheetStyle::polish(QWidget *w)
 {
     baseStyle()->polish(w);
-    RECURSION_GUARD(return)
+    RECURSION_GUARD(return) 
+    // 做RECURSION_GUARD宏扩展, 和BasePEP的防止冲入是类似
+    	if (globalStyleSheetStyle != 0 && globalStyleSheetStyle != this) { return; } 
+    	QStyleSheetStyleRecursionGuard recursion_guard(this);
+	//
+	// oye end  expand RECURSION_GUARD
 
     if (!initObject(w))
         return;
@@ -5924,7 +5933,7 @@ void QStyleSheetStyle::updateStyleSheetFont(QWidget* w) const
     if (w->objectName() == QLatin1String("qt_fontDialog_sampleEdit"))
         return;
 
-    QWidget *container = containerWidget(w);
+    QWidget *container = containerWidget(w);// 如果w是内嵌式的组合widget,拿到container
     QRenderRule rule = renderRule(container, PseudoElement_None,
             PseudoClass_Active | PseudoClass_Enabled | extendedPseudoClass(container));
 
@@ -5932,6 +5941,7 @@ void QStyleSheetStyle::updateStyleSheetFont(QWidget* w) const
         QCoreApplication::testAttribute(Qt::AA_UseStyleSheetPropagationInWidgetStyles);
 
     if (useStyleSheetPropagationInWidgetStyles) {
+		
         unsetStyleSheetFont(w);
 
         if (rule.font.resolve()) {

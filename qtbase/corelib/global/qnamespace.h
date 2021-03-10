@@ -249,7 +249,7 @@ public:
         Widget = 0x00000000,
         Window = 0x00000001,
         Dialog = 0x00000002 | Window,
-        Sheet = 0x00000004 | Window,
+        Sheet = 0x00000004 | Window,			// sheet是Mac上面的概念
         Drawer = Sheet | Dialog,
         Popup = 0x00000008 | Window,
         Tool = Popup | Dialog,
@@ -283,7 +283,7 @@ public:
         WindowStaysOnBottomHint = 0x04000000,
         WindowCloseButtonHint = 0x08000000,
         MacWindowToolBarButtonHint = 0x10000000,
-        BypassGraphicsProxyWidget = 0x20000000,
+        BypassGraphicsProxyWidget = 0x20000000,  						// oye Tooltip的tipLabel里面第一次看到
         NoDropShadowWindowHint = 0x40000000,
         WindowFullscreenButtonHint = 0x80000000
     };
@@ -368,45 +368,40 @@ public:
 
 
     enum WidgetAttribute {
-        WA_Disabled = 0,
-        WA_UnderMouse = 1,
-        WA_MouseTracking = 2,
-        WA_ContentsPropagated = 3, // ## deprecated
+        WA_Disabled = 0,				// oye !isEnabled
+        WA_UnderMouse = 1,				// oye 鼠标在widget的显示空间坐标内
+        WA_MouseTracking = 2,			// oye isUnderMouse
         WA_OpaquePaintEvent = 4,
-        WA_NoBackground = WA_OpaquePaintEvent, // ## deprecated
         WA_StaticContents = 5,
         WA_LaidOut = 7,
-        WA_PaintOnScreen = 8,		// 屏幕直接绘制,不要特效了, 默认是没有的
+        WA_PaintOnScreen = 8,		// oye 屏幕直接绘制,不要特效了, 默认是没有的
         WA_NoSystemBackground = 9,
-        WA_UpdatesDisabled = 10,
+        WA_UpdatesDisabled = 10,		//oye !isUpdateEnabled
         WA_Mapped = 11,				// widget被map到screen上了
-        WA_MacNoClickThrough = 12, // Mac only
         WA_InputMethodEnabled = 14,
-        WA_WState_Visible = 15,
-        WA_WState_Hidden = 16,
+        WA_WState_Visible = 15,			// oye visible
+        WA_WState_Hidden = 16,			// oye hidden
 
         WA_ForceDisabled = 32,
         WA_KeyCompression = 33,
         WA_PendingMoveEvent = 34,
-        WA_PendingResizeEvent = 35,
+        WA_PendingResizeEvent = 35,				// oye QWidget::resize,  有情况, 数字已经变,但ui没变, 需要后续再变
         WA_SetPalette = 36,
         WA_SetFont = 37,
         WA_SetCursor = 38,
         WA_NoChildEventsFromChildren = 39,
         WA_WindowModified = 41,
-        WA_Resized = 42,
+        WA_Resized = 42,						// oye QWidget::resize will set  
         WA_Moved = 43,
         WA_PendingUpdate = 44,
         WA_InvalidSize = 45,
-        WA_MacBrushedMetal = 46, // Mac only
-        WA_MacMetalStyle = WA_MacBrushedMetal, // obsolete
         WA_CustomWhatsThis = 47,
         WA_LayoutOnEntireRect = 48,
         WA_OutsideWSRange = 49,
         WA_GrabbedShortcut = 50,
         WA_TransparentForMouseEvents = 51,
         WA_PaintUnclipped = 52,
-        WA_SetWindowIcon = 53,
+        WA_SetWindowIcon = 53,			// oye QWidget::setWindowIcon 会设置此属性
         WA_NoMouseReplay = 54,
         WA_DeleteOnClose = 55,
         WA_RightToLeft = 56,
@@ -414,19 +409,16 @@ public:
         WA_NoChildEventsForParent = 58,
         WA_ForceUpdatesDisabled = 59,
 
-        WA_WState_Created = 60,
+        WA_WState_Created = 60,				//oye 我猜,是否创建了window
         WA_WState_CompressKeys = 61,
         WA_WState_InPaintEvent = 62,
         WA_WState_Reparented = 63,
         WA_WState_ConfigPending = 64,
         WA_WState_Polished = 66,
-        WA_WState_DND = 67, // ## deprecated
         WA_WState_OwnSizePolicy = 68,
         WA_WState_ExplicitShowHide = 69,
 
-        WA_ShowModal = 70, // ## deprecated
         WA_MouseNoMask = 71,
-        WA_GroupLeader = 72, // ## deprecated
         WA_NoMousePropagation = 73, // ## for now, might go away.
         WA_Hover = 74,
         WA_InputMethodTransparent = 75, // Don't reset IM when user clicks on this (for virtual keyboards on embedded)
@@ -445,7 +437,7 @@ public:
         WA_X11OpenGLOverlay = 83,
         WA_AlwaysShowToolTips = 84,
         WA_MacOpaqueSizeGrip = 85,
-        WA_SetStyle = 86,
+        WA_SetStyle = 86,					// oye widget自己有style
 
         WA_SetLocale = 87,
         WA_MacShowFocusRect = 88,
@@ -461,7 +453,7 @@ public:
 
         WA_MacAlwaysShowToolWindow = 96, // Mac only
 
-        WA_StyleSheet = 97, // internal
+        WA_StyleSheet = 97, // internal    qss应用在此Widget上了
 
         WA_ShowWithoutActivating = 98,
 
@@ -492,7 +484,7 @@ public:
         WA_MacFrameworkScaled  = 117,
 
         WA_SetWindowModality = 118,
-        WA_WState_WindowOpacitySet = 119, // internal
+        WA_WState_WindowOpacitySet = 119, // internal		// 设置过窗口的透明度
         WA_TranslucentBackground = 120,
 
         WA_AcceptTouchEvents = 121,

@@ -5,6 +5,7 @@
 //oye
 #define WId int*;
 
+// oye  相比WidgetPrivate 这个很直接放置了widget自己可以让client看到的数据
 class QWidgetData
 {
 public:
@@ -12,7 +13,7 @@ public:
     uint widget_attributes;
     Qt::WindowFlags window_flags;
     uint window_state : 4;
-    uint focus_policy : 4;
+    uint focus_policy : 4;				// 有焦点
     uint sizehint_forced :1;
     uint is_closing :1;
     uint in_show : 1;
@@ -60,6 +61,7 @@ public:  // GUI style setting
     void setBackgroundRole(QPalette::ColorRole);
     QPalette::ColorRole backgroundRole() const;
 
+	// oye 调色盘取色时参考的角色Base, Dark, Light,Button???
     void setForegroundRole(QPalette::ColorRole);
     QPalette::ColorRole foregroundRole() const;
 
@@ -104,12 +106,14 @@ public:  // Qt window
     Qt::WindowStates windowState() const;
     void setWindowState(Qt::WindowStates state);
     void overrideWindowState(Qt::WindowStates state);
-
-    inline Qt::WindowType windowType() const;
+	
+	inline Qt::WindowType windowType() const
+	{ return static_cast<Qt::WindowType>(int(data->window_flags & Qt::WindowType_Mask)); }
 	void setWindowFlags(Qt::WindowFlags type);
 	
     inline Qt::WindowFlags windowFlags() const;
     void setWindowFlag(Qt::WindowType, bool on = true);
+	
     void overrideWindowFlags(Qt::WindowFlags type);
 	
 	QWindow *windowHandle() const;
@@ -117,7 +121,10 @@ public:  // Qt window
 				QWindow *window, 
 				QWidget *parent=Q_NULLPTR, 
 				Qt::WindowFlags flags=Qt::WindowFlags());
-
+protected:
+	// 创建widget窗口
+    void create(WId = 0, bool initializeWindow = true,   bool destroyOldWindow = true);
+    void destroy(bool destroyWindow = true,    bool destroySubWindows = true);
 public: // designed for UIC		
     void setupUi(QWidget *widget);
 	
@@ -447,12 +454,11 @@ public:
 
 protected Q_SLOTS:
     void updateMicroFocus();
-protected:
 
-    void create(WId = 0, bool initializeWindow = true,   bool destroyOldWindow = true);
-    void destroy(bool destroyWindow = true,    bool destroySubWindows = true);
+
 
     friend class QDataWidgetMapperPrivate; // for access to focusNextPrevChild
+protected:
     
     virtual bool focusNextPrevChild(bool next);
     inline bool focusNextChild() { return focusNextPrevChild(true); }
@@ -498,7 +504,6 @@ private:
     friend class QGestureManager;
     friend class QWinNativePanGestureRecognizer;
     friend class QWidgetEffectSourcePrivate;
-
     friend class QDesktopScreenWidget;
 
 
@@ -519,9 +524,12 @@ public:
 
 };
 
-
+// oye 把qobject_cast 看成函数重载
+//    这里特化了模板函数qobject_cast
+//    当要转型为QWidget*指针时, 
 template <> inline QWidget *qobject_cast<QWidget*>(QObject *o)
 {
+	// 利用直接在Object里面写有的标记,做快速判断和转化
     if (!o || !o->isWidgetType()) return Q_NULLPTR;
     return static_cast<QWidget*>(o);
 }
@@ -532,11 +540,22 @@ template <> inline const QWidget *qobject_cast<const QWidget*>(const QObject *o)
 }
 
 
+inline QWidgetData *qt_qwidget_data(QWidget *widget)
+{
+    return widget->data;
+}
+
+inline QWidgetPrivate *qt_widget_private(QWidget *widget)
+{
+    return widget->d_func();
+}
+
+
+
 inline QWidget *QWidget::childAt(int ax, int ay) const
 { return childAt(QPoint(ax, ay)); }
 
-inline Qt::WindowType QWidget::windowType() const
-{ return static_cast<Qt::WindowType>(int(data->window_flags & Qt::WindowType_Mask)); }
+
 inline Qt::WindowFlags QWidget::windowFlags() const
 { return data->window_flags; }
 
