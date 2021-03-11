@@ -153,6 +153,8 @@ public:
 
 	// MSG 3tuple[ eventLoops, postEvetnList, eventDispather ] 
     QStack<QEventLoop *> eventLoops;
+
+	// 里面有使用锁
     QPostEventList postEventList;		// OYE 当QT要PostEvent时,存于此地[QPostEvent(receiver, event, priority)]
 	// created by QThreadPrivate::createEventDispatcher()
     QAtomicPointer<QAbstractEventDispatcher> eventDispatcher;    //using QEventDispatcherWin32 

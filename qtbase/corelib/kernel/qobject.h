@@ -1,6 +1,5 @@
 #ifndef QOBJECT_H
 #define QOBJECT_H
-
 #include <QtCore/qobjectdefs.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qbytearray.h>
@@ -8,13 +7,8 @@
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qmetatype.h>
-
 #include <QtCore/qobject_impl.h>
-
 #include <chrono>
-
-
-QT_BEGIN_NAMESPACE
 
 
 class QEvent;
@@ -41,28 +35,32 @@ typedef QList<QObject*> QObjectList;
                                            const QMetaObject &mo, QList<void *> *list, Qt::FindChildOptions options);
  QObject *qt_qFindChild_helper(const QObject *parent, const QString &name, const QMetaObject &mo, Qt::FindChildOptions options);
 
-class  QObjectData {
+class  QObjectData   // Private Class的顶级数据类, QObjectPrivate也继承自此
+{
 public:
-    virtual ~QObjectData() = 0;
-    QObject *q_ptr;					// oye 所有Q_DECLARE_PUBLIC(QLayout)宏都会用到,指向外部实际Qtclass的指针
-    QObject *parent;				// oye widget之类的树形布局中
-    QObjectList children;  			// oye 用在widget上绝了, 控件内涵子控件
+    virtual ~QObjectData(){}
+	QMetaObject *dynamicMetaObject() const{return metaObject->toDynamicMetaObject(q_ptr);}
+public:
+    QObject *q_ptr;						// oye 所有Q_DECLARE_PUBLIC(QLayout)宏都会用到,指向外部实际Qtclass的指针
+    // 存父和一级子节点
+    QObject *parent;					// oye widget之类的树形布局中
+    QObjectList children;  				// oye 用在widget上绝了, 控件内涵子控件
 
-    uint isWidget : 1;				// Widget's PrivateClass will set it to 1
-    uint blockSig : 1;
+    uint isWidget : 1;					// Widget's PrivateClass will set it to 1
+    uint blockSig : 1;					// 是否暂时阻止此Obj发送signal
     uint wasDeleted : 1;
     uint isDeletingChildren : 1;
-    uint sendChildEvents : 1;				// oye, 关注下 SendEvent
+    uint sendChildEvents : 1;			// oye, 关注下 SendEvent
     uint receiveChildEvents : 1;
-    uint isWindow : 1; //for QWindow
+    uint isWindow : 1; 					//for QWindow
     uint deleteLaterCalled : 1;
     uint unused : 24;
 	
 	//	++ in QCoreApplication::postEvent
 	//  -- in QCoreApplicationPrivate::sendPostedEvents
     int postedEvents;                     	// oye  how many Events has been posted
-    QDynamicMetaObjectData *metaObject;
-    QMetaObject *dynamicMetaObject() const;
+    
+    QDynamicMetaObjectData *metaObject;		// 静变动怎么实现?
 };
 
 
@@ -76,11 +74,14 @@ public:
 	- user defined data
 	
 */
-class  QObject
+class  QObject      //QObjectPrivate
 {
-// Q_OBJECT
-// OYE moc 将会处理Q_OBJECT 宏,生成 相对应的moc_QObject.cpp代码
+protected:
+    QScopedPointer<QObjectData> d_ptr;   // 唯一的数据成员
 
+	// Q_OBJECT
+	
+// OYE moc 将会处理Q_OBJECT 宏,生成 相对应的moc_QObject.cpp代码
 // Q_OBJECT will be expanded as 
 //----------------------------------------------------------
 public:     
@@ -88,12 +89,10 @@ public:
 	//  QObject 其本身应该具有的在Meta方面的特征
 	// [className, SuperMetaObject,User_extra, MetaCall[????? 重点关注]]
     static const QMetaObject staticMetaObject; 
-
     virtual const QMetaObject *metaObject() const; 	
 	// 参考实现  return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
 	   
-    virtual void *qt_metacast(const char *); 
-	
+    virtual void *qt_metacast(const char *); 	
     virtual int qt_metacall(QMetaObject::Call, int, void **); 
 	
     static inline QString tr(const char *s, const char *c = Q_NULLPTR, int n = -1) 
@@ -106,81 +105,71 @@ private:
     //QT_ANNOTATE_CLASS(qt_qobject, "")
 //----------------------------------------------------------
 // end enpandsion of the macro O_OBJECT
-
-	
+	friend inline const QMetaObject *qt_getQtMetaObject() { return &QObject::staticQtMetaObject; }	
     //Q_PROPERTY(QString objectName READ objectName WRITE setObjectName NOTIFY objectNameChanged)
-
-
-protected:
-    QScopedPointer<QObjectData> d_ptr;   // 唯一的数据成员
-
-    friend inline const QMetaObject *qt_getQtMetaObject() { return &QObject::staticQtMetaObject; }
-
-    friend struct QMetaObject;
-    friend struct QMetaObjectPrivate;
-    friend class QMetaCallEvent;
-    friend class QApplication;
-    friend class QApplicationPrivate;
-    friend class QCoreApplication;
-    friend class QCoreApplicationPrivate;
-    friend class QWidget;
-    friend class QThreadData;
 
 
 public:
     explicit QObject(QObject *parent=Q_NULLPTR);
     virtual ~QObject();
-
 	    //Q_DECLARE_PRIVATE(QObject)    
-	inline QObjectPrivate* d_func() { return reinterpret_cast<QObjectPrivate *>(qGetPtrHelper(d_ptr)); } 
-	
-	// oye, widget overrides it to expand ui event
+	inline QObjectPrivate* d_func() { return reinterpret_cast<QObjectPrivate *>(qGetPtrHelper(d_ptr)); } 	
+Q_SIGNALS:
+    void destroyed(QObject * = Q_NULLPTR);
+    void objectNameChanged(const QString &objectName, QPrivateSignal);  //emit in call setObjectName
+public Q_SLOTS:
+    void deleteLater();		
+public: // oye, widget overrides it to expand ui event
+	//虚函数导致了,叶子类是最先被call到, 基类的event是最后,来做默认响应
     virtual bool event(QEvent *event);
     virtual bool eventFilter(QObject *watched, QEvent *event);
-		// 做Event过滤
+	// 给当前的Obj安装过滤,  比如 给PushButton安装Filter,Qt对象有qt功能的都必须继承自QObject
     void installEventFilter(QObject *filterObj);
     void removeEventFilter(QObject *obj);
+protected:
+	// 让派生类来保护继承, 扩展自己的feature,
+	virtual void timerEvent(QTimerEvent *event){}
+	virtual void childEvent(QChildEvent *event){}
+	virtual void customEvent(QEvent *event){}
 
+	virtual void connectNotify(const QMetaMethod &signal){	 Q_UNUSED(signal);}
+	virtual void disconnectNotify(const QMetaMethod &signal){	Q_UNUSED(signal);}
 
+public: 
     QString objectName() const;
     void setObjectName(const QString &name);
 
     inline bool isWidgetType() const { return d_ptr->isWidget; }
     inline bool isWindowType() const { return d_ptr->isWindow; }
-
+public: 
     inline bool signalsBlocked() const  { return d_ptr->blockSig; }
     bool blockSignals(bool b) ;
-
+	public: 
+public:
     QThread *thread() const;
     void moveToThread(QThread *thread);
-
-    int startTimer(int interval, Qt::TimerType timerType = Qt::CoarseTimer);
-    
-    int startTimer(std::chrono::milliseconds time, Qt::TimerType timerType = Qt::CoarseTimer)
-    {
+public: 
+    int startTimer(int interval, Qt::TimerType timerType = Qt::CoarseTimer);    
+    int startTimer(std::chrono::milliseconds time, Qt::TimerType timerType = Qt::CoarseTimer)    {
         return startTimer(int(time.count()), timerType);
     }
     void killTimer(int id);
-
 public:
 	bool setProperty(const char *name, const QVariant &value);
 	QVariant property(const char *name) const;
 	QList<QByteArray> dynamicPropertyNames() const;
-
+public:
 	static uint registerUserData();
 	void setUserData(uint id, QObjectUserData* data);
 	QObjectUserData* userData(uint id) const;
+public:	
+	void setParent(QObject *parent);
 	inline QObject *parent() const { return d_ptr->parent; }
-
+	inline const QObjectList &children() const { return d_ptr->children; }
 	inline bool inherits(const char *classname) const
 		{ return const_cast<QObject *>(this)->qt_metacast(classname) != Q_NULLPTR; }
 
-	inline const QObjectList &children() const { return d_ptr->children; }
-
-	void setParent(QObject *parent);
-
-	
-
+public:
     template<typename T>
     inline T findChild(const QString &aName = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
     {
@@ -217,11 +206,6 @@ public:
                                 reinterpret_cast<QList<void *> *>(&list), options);
         return list;
     }
-
-
-
-
-
 
     //Connect a signal to a pointer to qobject member function
     template <typename Func1, typename Func2>
@@ -412,31 +396,13 @@ public:
         return disconnectImpl(sender, reinterpret_cast<void **>(&signal), receiver, zero,
                               &SignalType::Object::staticMetaObject);
     }
-
-
-
-
-Q_SIGNALS:
-    void destroyed(QObject * = Q_NULLPTR);
-    void objectNameChanged(const QString &objectName, QPrivateSignal);
-
-
-
-public Q_SLOTS:
-    void deleteLater();
-
 protected:
     QObject *sender() const;
     int senderSignalIndex() const;
     int receivers(const char* signal) const;
     bool isSignalConnected(const QMetaMethod &signal) const;
 
-    virtual void timerEvent(QTimerEvent *event);
-    virtual void childEvent(QChildEvent *event);
-    virtual void customEvent(QEvent *event);
 
-    virtual void connectNotify(const QMetaMethod &signal){   Q_UNUSED(signal);}
-    virtual void disconnectNotify(const QMetaMethod &signal){   Q_UNUSED(signal);}
 
 protected:
     QObject(QObjectPrivate &dd, QObject *parent = Q_NULLPTR);
@@ -452,6 +418,16 @@ private:
 
     static bool disconnectImpl(const QObject *sender, void **signal, const QObject *receiver, void **slot,
                                const QMetaObject *senderMetaObject);
+	
+    friend struct QMetaObject;
+    friend struct QMetaObjectPrivate;
+    friend class QMetaCallEvent;
+    friend class QApplication;
+    friend class QApplicationPrivate;
+    friend class QCoreApplication;
+    friend class QCoreApplicationPrivate;
+    friend class QWidget;
+    friend class QThreadData;
 
 };
 
@@ -544,8 +520,6 @@ namespace QtPrivate {
     inline QObject & deref_for_methodcall(QObject *o) { return *o; }
 }
 #define Q_SET_OBJECT_NAME(obj) QT_PREPEND_NAMESPACE(QtPrivate)::deref_for_methodcall(obj).setObjectName(QLatin1String(#obj))
-
-QT_END_NAMESPACE
 
 
 

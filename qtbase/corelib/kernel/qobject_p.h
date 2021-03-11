@@ -11,7 +11,7 @@
 #include "QtCore/qvariant.h"
 #include "QtCore/qreadwritelock.h"
 
-QT_BEGIN_NAMESPACE
+
 
 class QVariant;
 class QThreadData;
@@ -69,6 +69,9 @@ public:
     ExtraData *extraData;    // extra data set by the user
 
 	// oye 每个这样的Object对象都关联了threadData, 相同线程的值必然相同
+	// 我在QCoreApplication::postEvent中看到,  当给对象投递消息时, 系统会判断此对象的threadData值是否发生了改变
+	// 对上的所属线程在运行时有可能发生改变
+	// 若果值为NULL, 则Obj正在被析构
     QThreadData *threadData; // id of the thread that owns the object
 
 	// oye sender 存放sig-slot connection的地方
@@ -388,19 +391,23 @@ private:
 
 void  qDeleteInEventHandler(QObject *o);
 
+/*
+	前项声明
+	让基类QDynamicMetaObjectData 会返回一个子类的对象指针,
+*/
 struct QAbstractDynamicMetaObject;
 struct  QDynamicMetaObjectData
 {
-    virtual ~QDynamicMetaObjectData();
+    virtual ~QDynamicMetaObjectData(){}
     virtual void objectDestroyed(QObject *) { delete this; }
-
+	// 基类里面,返回子类的对象指针
     virtual QAbstractDynamicMetaObject *toDynamicMetaObject(QObject *) = 0;
-    virtual int metaCall(QObject *, QMetaObject::Call, int _id, void **) = 0;
+    virtual int metaCall(QObject *, QMetaObject::Call, int _id,  void **) = 0;
 };
 
 struct  QAbstractDynamicMetaObject : public QDynamicMetaObjectData, public QMetaObject
 {
-    ~QAbstractDynamicMetaObject();
+    ~QAbstractDynamicMetaObject(){}
 
     virtual QAbstractDynamicMetaObject *toDynamicMetaObject(QObject *) Q_DECL_OVERRIDE { return this; }
     virtual int createProperty(const char *, const char *) { return -1; }
@@ -409,6 +416,5 @@ struct  QAbstractDynamicMetaObject : public QDynamicMetaObjectData, public QMeta
     virtual int metaCall(QMetaObject::Call, int _id, void **) { return _id; } // Compat overload
 };
 
-QT_END_NAMESPACE
 
 #endif // QOBJECT_P_H

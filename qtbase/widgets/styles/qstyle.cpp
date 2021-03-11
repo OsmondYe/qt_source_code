@@ -375,60 +375,6 @@ QStyle::QStyle(QStylePrivate &dd)
 }
 
 /*!
-    Destroys the style object.
-*/
-QStyle::~QStyle()
-{
-}
-
-/*!
-    Initializes the appearance of the given \a widget.
-
-    This function is called for every widget at some point after it
-    has been fully created but just \e before it is shown for the very
-    first time.
-
-    Note that the default implementation does nothing. Reasonable
-    actions in this function might be to call the
-    QWidget::setBackgroundMode() function for the widget. Do not use
-    the function to set, for example, the geometry. Reimplementing
-    this function provides a back-door through which the appearance
-    of a widget can be changed, but with Qt's style engine it is
-    rarely necessary to implement this function; reimplement
-    drawItemPixmap(), drawItemText(), drawPrimitive(), etc. instead.
-
-    The QWidget::inherits() function may provide enough information to
-    allow class-specific customizations. But because new QStyle
-    subclasses are expected to work reasonably with all current and \e
-    future widgets, limited use of hard-coded customization is
-    recommended.
-
-    \sa unpolish()
-*/
-void QStyle::polish(QWidget * /* widget */)
-{
-}
-
-/*!
-    Uninitialize the given \a{widget}'s appearance.
-
-    This function is the counterpart to polish(). It is called for
-    every polished widget whenever the style is dynamically changed;
-    the former style has to unpolish its settings before the new style
-    can polish them again.
-
-    Note that unpolish() will only be called if the widget is
-    destroyed.  This can cause problems in some cases, e.g, if you
-    remove a widget from the UI, cache it, and then reinsert it after
-    the style has changed; some of Qt's classes cache their widgets.
-
-    \sa polish()
-*/
-void QStyle::unpolish(QWidget * /* widget */)
-{
-}
-
-/*!
     \fn void QStyle::polish(QApplication * application)
     \overload
 

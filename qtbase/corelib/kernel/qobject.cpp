@@ -1,7 +1,6 @@
 #include "qobject.h"
 #include "qobject_p.h"
 #include "qmetaobject_p.h"
-
 #include "qabstracteventdispatcher.h"
 #include "qabstracteventdispatcher_p.h"
 #include "qcoreapplication.h"
@@ -18,28 +17,15 @@
 #include <qset.h>
 #include <qsemaphore.h>
 #include <qsharedpointer.h>
-
 #include <private/qorderedmutexlocker_p.h>
 #include <private/qhooks_p.h>
-
 #include <new>
-
 #include <ctype.h>
 #include <limits.h>
 
-QT_BEGIN_NAMESPACE
+
 
 static int DIRECT_CONNECTION_ONLY = 0;
-
-
-QDynamicMetaObjectData::~QDynamicMetaObjectData()
-{
-}
-
-QAbstractDynamicMetaObject::~QAbstractDynamicMetaObject()
-{
-}
-
 
 struct QSlotObjectBaseDeleter { // for use with QScopedPointer<QSlotObjectBase,...>
     static void cleanup(QtPrivate::QSlotObjectBase *slot) {
@@ -154,12 +140,6 @@ int  (*QAbstractDeclarativeData::receivers)(QAbstractDeclarativeData *, const QO
 bool (*QAbstractDeclarativeData::isSignalConnected)(QAbstractDeclarativeData *, const QObject *, int) = 0;
 void (*QAbstractDeclarativeData::setWidgetParent)(QObject *, QObject *) = 0;
 
-QObjectData::~QObjectData() {}
-
-QMetaObject *QObjectData::dynamicMetaObject() const
-{
-    return metaObject->toDynamicMetaObject(q_ptr);
-}
 
 QObjectPrivate::QObjectPrivate(int version)
     : threadData(0), connectionLists(0), senders(0), currentSender(0), currentChildBeingDeleted(0)
@@ -969,6 +949,7 @@ QObject::~QObject()
 #if QT_VERSION < 0x60000
     qt_removeObject(this);
 #endif
+
     if (Q_UNLIKELY(qtHookData[QHooks::RemoveQObject]))
         reinterpret_cast<QHooks::RemoveQObjectCallback>(qtHookData[QHooks::RemoveQObject])(this);
 
@@ -995,9 +976,6 @@ QString QObject::objectName() const
     return d->extraData ? d->extraData->objectName : QString();
 }
 
-/*
-    Sets the object's name to \a name.
-*/
 void QObject::setObjectName(const QString &name)
 {
     QObjectPrivate * const d = d_func();
@@ -1078,76 +1056,6 @@ bool QObject::event(QEvent *e)
     return true;
 }
 
-/*!
-    \fn void QObject::timerEvent(QTimerEvent *event)
-
-    This event handler can be reimplemented in a subclass to receive
-    timer events for the object.
-
-    QTimer provides a higher-level interface to the timer
-    functionality, and also more general information about timers. The
-    timer event is passed in the \a event parameter.
-
-    \sa startTimer(), killTimer(), event()
-*/
-
-void QObject::timerEvent(QTimerEvent *)
-{
-}
-
-
-/*!
-    This event handler can be reimplemented in a subclass to receive
-    child events. The event is passed in the \a event parameter.
-
-    QEvent::ChildAdded and QEvent::ChildRemoved events are sent to
-    objects when children are added or removed. In both cases you can
-    only rely on the child being a QObject, or if isWidgetType()
-    returns \c true, a QWidget. (This is because, in the
-    \l{QEvent::ChildAdded}{ChildAdded} case, the child is not yet
-    fully constructed, and in the \l{QEvent::ChildRemoved}{ChildRemoved}
-    case it might have been destructed already).
-
-    QEvent::ChildPolished events are sent to widgets when children
-    are polished, or when polished children are added. If you receive
-    a child polished event, the child's construction is usually
-    completed. However, this is not guaranteed, and multiple polish
-    events may be delivered during the execution of a widget's
-    constructor.
-
-    For every child widget, you receive one
-    \l{QEvent::ChildAdded}{ChildAdded} event, zero or more
-    \l{QEvent::ChildPolished}{ChildPolished} events, and one
-    \l{QEvent::ChildRemoved}{ChildRemoved} event.
-
-    The \l{QEvent::ChildPolished}{ChildPolished} event is omitted if
-    a child is removed immediately after it is added. If a child is
-    polished several times during construction and destruction, you
-    may receive several child polished events for the same child,
-    each time with a different virtual table.
-
-    \sa event()
-*/
-
-void QObject::childEvent(QChildEvent * /* event */)
-{
-}
-
-
-/*!
-    This event handler can be reimplemented in a subclass to receive
-    custom events. Custom events are user-defined events with a type
-    value at least as large as the QEvent::User item of the
-    QEvent::Type enum, and is typically a QEvent subclass. The event
-    is passed in the \a event parameter.
-
-    \sa event(), QEvent
-*/
-void QObject::customEvent(QEvent * /* event */)
-{
-}
-
-
 
 /*!
     Filters events if this object has been installed as an event
@@ -1178,7 +1086,7 @@ bool QObject::eventFilter(QObject * /* watched */, QEvent * /* event */)
 }
 
 
-bool QObject::blockSignals(bool block) Q_DECL_NOTHROW
+bool QObject::blockSignals(bool block) 
 {
     QObjectPrivate * const d = d_func();
     bool previous = d->blockSig;
@@ -1848,17 +1756,7 @@ void QObject::removeEventFilter(QObject *obj)
 }
 
 
-/*!
-    \fn QObject::destroyed(QObject *obj)
 
-    This signal is emitted immediately before the object \a obj is
-    destroyed, and can not be blocked.
-
-    All the objects's children are destroyed immediately after this
-    signal is emitted.
-
-    \sa deleteLater(), QPointer
-*/
 
 /*!
     Schedules this object for deletion.
@@ -3464,5 +3362,3 @@ bool QObjectPrivate::disconnect(const QObject *sender, int signal_index, void **
 
     return QMetaObjectPrivate::disconnect(sender, signal_index, senderMetaObject, sender, -1, slot);
 }
-
-QT_END_NAMESPACE

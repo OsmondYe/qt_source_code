@@ -785,7 +785,14 @@ void QCoreApplication::exit(int returnCode)
     }
 }
 
-// public static
+// 
+// 
+/*
+	oye
+	public static 
+	-1 把event放receiver所属线程的postEventList
+	-2 呼叫eventDispatcher, 让native的thread messge queue开始工作
+*/
 void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
 {
 	// oye sanity check
@@ -795,26 +802,26 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
         return;
     }
 
-	// get t_data throught receiver, not current app's thread
+	// get thread_data throught receiver, not current app's thread
 	// sicne the receiver can be moved to another thread
     QThreadData * volatile * pdata = &receiver->d_func()->threadData;
     QThreadData *data = *pdata;
 
-	// oye sanity check
+	// ??? 判断出receiver正在被析构???
     if (!data) {
         // posting during destruction? just delete the event to prevent a leak
         delete event;
         return;
     }
 
-
+	// 下面节没看懂
+	// receiver 的threadData 刚好在此时发生了切换
     data->postEventList.mutex.lock();
-
     // if object has moved to another thread, follow it
     while (data != *pdata) {
         data->postEventList.mutex.unlock();
 
-        data = *pdata;
+        data = *pdata;  // !!!data值被更新
         if (!data) {
             // posting during destruction? just delete the event to prevent a leak
             delete event;
@@ -1014,7 +1021,7 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
     CleanUp cleanup(receiver, event_type, data);
 
 	//
-	//  alog begins
+	//  alog begins, each event in queue, will be consumed by QCoreApplication::sendEvent(r, e);
 	//
     while (i < data->postEventList.size()) {
         // avoid live-lock

@@ -3601,24 +3601,6 @@ void QApplication::beep()
     QGuiApplicationPrivate::platformIntegration()->beep();
 }
 
-/*!
-    \macro qApp
-    \relates QApplication
-
-    A global pointer referring to the unique application object. It is
-    equivalent to QCoreApplication::instance(), but cast as a QApplication pointer,
-    so only valid when the unique application object is a QApplication.
-
-    \sa QCoreApplication::instance(), qGuiApp
-*/
-
-/*!
-    \fn QLocale QApplication::keyboardInputLocale()
-    \since 4.2
-    \obsolete
-
-    Returns the current keyboard input locale. Replaced with QInputMethod::locale()
-*/
 
 bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event)
 {
