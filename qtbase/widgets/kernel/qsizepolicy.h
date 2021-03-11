@@ -6,42 +6,7 @@ inline uint qHash(QSizePolicy key, uint seed = 0) ;
 class  QSizePolicy
 {
 public:
-    enum PolicyFlag {
-        GrowFlag = 1,
-        ExpandFlag = 2,
-        ShrinkFlag = 4,
-        IgnoreFlag = 8
-    };
-
-    enum Policy {
-        Fixed = 0,
-        Minimum = GrowFlag,
-        Maximum = ShrinkFlag,
-        Preferred = GrowFlag | ShrinkFlag,
-        MinimumExpanding = GrowFlag | ExpandFlag,
-        Expanding = GrowFlag | ShrinkFlag | ExpandFlag,
-        Ignored = ShrinkFlag | GrowFlag | IgnoreFlag
-    };
-    
-    enum ControlType {
-        DefaultType      = 0x00000001,
-        ButtonBox        = 0x00000002,
-        CheckBox         = 0x00000004,
-        ComboBox         = 0x00000008,
-        Frame            = 0x00000010,
-        GroupBox         = 0x00000020,
-        Label            = 0x00000040,
-        Line             = 0x00000080,
-        LineEdit         = 0x00000100,
-        PushButton       = 0x00000200,
-        RadioButton      = 0x00000400,
-        Slider           = 0x00000800,
-        SpinBox          = 0x00001000,
-        TabWidget        = 0x00002000,
-        ToolButton       = 0x00004000
-    };
-
-
+ 
      QSizePolicy()  : data(0) { }
 
      QSizePolicy(Policy horizontal, Policy vertical, ControlType type = DefaultType) 
@@ -146,6 +111,42 @@ private:
         Bits bits;
         quint32 data;
     };
+
+public:
+	enum PolicyFlag {
+    GrowFlag = 1,
+    ExpandFlag = 2,
+    ShrinkFlag = 4,
+    IgnoreFlag = 8
+	};
+
+	enum Policy {
+	    Fixed = 0,
+	    Minimum = GrowFlag,
+	    Maximum = ShrinkFlag,
+	    Preferred = GrowFlag | ShrinkFlag,
+	    MinimumExpanding = GrowFlag | ExpandFlag,
+	    Expanding = GrowFlag | ShrinkFlag | ExpandFlag,
+	    Ignored = ShrinkFlag | GrowFlag | IgnoreFlag
+	};
+
+	enum ControlType {
+	    DefaultType      = 0x00000001,
+	    ButtonBox        = 0x00000002,
+	    CheckBox         = 0x00000004,
+	    ComboBox         = 0x00000008,
+	    Frame            = 0x00000010,
+	    GroupBox         = 0x00000020,
+	    Label            = 0x00000040,
+	    Line             = 0x00000080,
+	    LineEdit         = 0x00000100,
+	    PushButton       = 0x00000200,
+	    RadioButton      = 0x00000400,
+	    Slider           = 0x00000800,
+	    SpinBox          = 0x00001000,
+	    TabWidget        = 0x00002000,
+	    ToolButton       = 0x00004000
+	};
 };
 
 QSizePolicy::ControlType QSizePolicy::controlType() const 

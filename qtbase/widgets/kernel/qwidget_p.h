@@ -185,10 +185,12 @@ public:	// Variables.
 	// Other variables.
 	uint inheritedFontResolveMask;
 	uint inheritedPaletteResolveMask;
+	//
 	short leftmargin;
 	short topmargin;
 	short rightmargin;
 	short bottommargin;
+	// 两组margin
 	signed char leftLayoutItemMargin;
 	signed char topLayoutItemMargin;
 	signed char rightLayoutItemMargin;
@@ -199,7 +201,7 @@ public:	// Variables.
 	
 	Qt::HANDLE hd;
 	QWidgetData data;
-	QSizePolicy size_policy;
+	QSizePolicy size_policy;  // oye 横竖轴变动时
 	QLocale locale;
 	QPoint redirectOffset;
 	QList<QAction*> actions;

@@ -31,22 +31,6 @@
 class QStyleOption
 {
 public:
-    enum OptionType {
-                      SO_Default, SO_FocusRect, SO_Button, SO_Tab, SO_MenuItem,
-                      SO_Frame, SO_ProgressBar, SO_ToolBox, SO_Header,
-                      SO_DockWidget, SO_ViewItem, SO_TabWidgetFrame,
-                      SO_TabBarBase, SO_RubberBand, SO_ToolBar, SO_GraphicsItem,
-
-                      SO_Complex = 0xf0000, SO_Slider, SO_SpinBox, SO_ToolButton, SO_ComboBox,
-                      SO_TitleBar, SO_GroupBox, SO_SizeGrip,
-
-                      SO_CustomBase = 0xf00,
-                      SO_ComplexCustomBase = 0xf000000
-                    };
-
-    enum StyleOptionType { Type = SO_Default };
-    enum StyleOptionVersion { Version = 1 };
-
     int version;
     int type;
     QStyle::State state;
@@ -63,7 +47,23 @@ public:
 
     void init(const QWidget *w);
     inline void initFrom(const QWidget *w) { init(w); }
-    QStyleOption &operator=(const QStyleOption &other);
+public:
+	enum OptionType {
+					  SO_Default, SO_FocusRect, SO_Button, SO_Tab, SO_MenuItem,
+					  SO_Frame, SO_ProgressBar, SO_ToolBox, SO_Header,
+					  SO_DockWidget, SO_ViewItem, SO_TabWidgetFrame,
+					  SO_TabBarBase, SO_RubberBand, SO_ToolBar, SO_GraphicsItem,
+
+					  SO_Complex = 0xf0000, SO_Slider, SO_SpinBox, SO_ToolButton, SO_ComboBox,
+					  SO_TitleBar, SO_GroupBox, SO_SizeGrip,
+
+					  SO_CustomBase = 0xf00,
+					  SO_ComplexCustomBase = 0xf000000
+					};
+
+	enum StyleOptionType { Type = SO_Default };
+	enum StyleOptionVersion { Version = 1 };
+
 };
 
 class  QStyleOptionFocusRect : public QStyleOption
@@ -84,19 +84,26 @@ protected:
 class  QStyleOptionFrame : public QStyleOption
 {
 public:
+    int lineWidth;
+    int midLineWidth;
+	FrameFeatures features;
+    QFrame::Shape frameShape;
     enum StyleOptionType { Type = SO_Frame };
     enum StyleOptionVersion { Version = 3 };
 
-    int lineWidth;
-    int midLineWidth;
+
     enum FrameFeature {
         None = 0x00,
         Flat = 0x01,
         Rounded = 0x02
     };
-    Q_DECLARE_FLAGS(FrameFeatures, FrameFeature)
-    FrameFeatures features;
-    QFrame::Shape frameShape;
+	enum FrameFeatures {
+    None = 0x00,
+    Flat = 0x01,
+    Rounded = 0x02
+    };
+    //Q_DECLARE_FLAGS(FrameFeatures, FrameFeature)
+
 
     QStyleOptionFrame();
     QStyleOptionFrame(const QStyleOptionFrame &other) : QStyleOption(Version, Type) { *this = other; }

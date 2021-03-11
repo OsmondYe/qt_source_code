@@ -4,7 +4,6 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
 
-
 class QFrame : public QWidget
 {
 //    Q_OBJECT
@@ -18,44 +17,19 @@ class QFrame : public QWidget
 
 public:
     explicit QFrame(QWidget* parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
-    ~QFrame();
+    ~QFrame(){}
 
-    int frameStyle() const;
+    int frameStyle() const; //QFrame::Plain.
+    // shape +shadow
     void setFrameStyle(int);
-
-    int frameWidth() const;
-
-    QSize sizeHint() const ;
-
-    enum Shape {
-        NoFrame  = 0, // no frame
-        Box = 0x0001, // rectangular box
-        Panel = 0x0002, // rectangular panel
-        WinPanel = 0x0003, // rectangular panel (Windows)
-        HLine = 0x0004, // horizontal line
-        VLine = 0x0005, // vertical line
-        StyledPanel = 0x0006 // rectangular panel depending on the GUI style
-    };
-		
-    //Q_ENUM(Shape)
-
-	enum Shadow {
-        Plain = 0x0010, // plain line
-        Raised = 0x0020, // raised shadow effect
-        Sunken = 0x0030 // sunken shadow effect
-    };
-		
-    //Q_ENUM(Shadow)
-
-    enum StyleMask {
-        Shadow_Mask = 0x00f0, // mask for the shadow
-        Shape_Mask = 0x000f // mask for the shape
-    };
-
-    Shape frameShape() const;
+	    Shape frameShape() const;
     void setFrameShape(Shape);
     Shadow frameShadow() const;
     void setFrameShadow(Shadow);
+
+    int frameWidth() const;	
+    QSize sizeHint() const ;  
+
 
     int lineWidth() const;
     void setLineWidth(int);
@@ -66,21 +40,69 @@ public:
     QRect frameRect() const;
     void setFrameRect(const QRect &);
 
-protected:
-	
+protected:	
     bool event(QEvent *e) override;
     void paintEvent(QPaintEvent *) override;
     void changeEvent(QEvent *) override;
-    void drawFrame(QPainter *);
-
+    void drawFrame(QPainter *);		// ¶ÀÓÐµÄ,»­frame
 
 protected:
     QFrame(QFramePrivate &dd, QWidget* parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
     void initStyleOption(QStyleOptionFrame *option) const;
 
+public:
+	enum Shape {
+	  NoFrame  = 0, // no frame
+	  Box = 0x0001, // rectangular box
+	  Panel = 0x0002, // rectangular panel
+	  WinPanel = 0x0003, // rectangular panel (Windows)
+	  HLine = 0x0004, // horizontal line
+	  VLine = 0x0005, // vertical line
+	  StyledPanel = 0x0006 // rectangular panel depending on the GUI style
+	};
+	  
+	//Q_ENUM(Shape)
+
+	enum Shadow {
+	  Plain = 0x0010, // plain line
+	  Raised = 0x0020, // raised shadow effect
+	  Sunken = 0x0030 // sunken shadow effect
+	};
+	  
+	//Q_ENUM(Shadow)
+
+	enum StyleMask {
+	  Shadow_Mask = 0x00f0, // mask for the shadow
+	  Shape_Mask = 0x000f // mask for the shape
+	};
+
+
 private:
     //Q_DISABLE_COPY(QFrame)
     //Q_DECLARE_PRIVATE(QFrame)
+};
+
+
+
+class QFramePrivate : public QWidgetPrivate
+{
+    //Q_DECLARE_PUBLIC(QFrame)
+public:
+	QRect		frect;
+	int 		frameStyle;
+	short		lineWidth;
+	short		midLineWidth;
+	short		frameWidth;
+	short		leftFrameWidth, rightFrameWidth;
+	short		topFrameWidth, bottomFrameWidth;
+public:
+    QFramePrivate();
+    ~QFramePrivate();
+
+    void        updateFrameWidth();
+    void        updateStyledFrameWidths();
+    inline void init();
+
 };
 
 

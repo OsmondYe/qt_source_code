@@ -8,7 +8,6 @@
 QT_BEGIN_NAMESPACE
 
 
-
 class QPaintEngine;
 
 class QPaintDevicePrivate;
@@ -23,21 +22,6 @@ class QPaintDevice                                // device for QPainter
     ushort        painters;                        // refcount
 
 public:
-    enum PaintDeviceMetric {
-        PdmWidth = 1,
-        PdmHeight,
-        PdmWidthMM,
-        PdmHeightMM,
-        PdmNumColors,
-        PdmDepth,
-        PdmDpiX,
-        PdmDpiY,
-        PdmPhysicalDpiX,
-        PdmPhysicalDpiY,
-        PdmDevicePixelRatio,
-        PdmDevicePixelRatioScaled
-    };
-
     virtual ~QPaintDevice(){
 		if (paintingActive())
 	        qWarning("QPaintDevice: Cannot destroy paint device that is being "
@@ -47,7 +31,6 @@ public:
 	virtual int devType() const { return QInternal::UnknownDevice; }	
     bool paintingActive() const {return painters != 0;}
     virtual QPaintEngine *paintEngine() const = 0;
-
 
     int width() const { return metric(PdmWidth); }
     int height() const { return metric(PdmHeight); }
@@ -70,6 +53,22 @@ protected:
     virtual QPaintDevice *redirected(QPoint *offset) const { return 0;}
     virtual QPainter *sharedPainter() const{return 0;}
 
+public:
+	enum PaintDeviceMetric {
+		PdmWidth = 1,
+		PdmHeight,
+		PdmWidthMM,
+		PdmHeightMM,
+		PdmNumColors,
+		PdmDepth,
+		PdmDpiX,
+		PdmDpiY,
+		PdmPhysicalDpiX,
+		PdmPhysicalDpiY,
+		PdmDevicePixelRatio,
+		PdmDevicePixelRatioScaled
+	};
+
 
 private:
     //Q_DISABLE_COPY(QPaintDevice)
@@ -79,6 +78,7 @@ private:
     friend class QFontEngineMac;
     friend class QX11PaintEngine;
     friend  int qt_paint_device_metric(const QPaintDevice *device, PaintDeviceMetric metric);
+
 };
 
 int qt_paint_device_metric(const QPaintDevice *device, QPaintDevice::PaintDeviceMetric metric)

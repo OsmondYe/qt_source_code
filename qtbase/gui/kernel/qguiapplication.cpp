@@ -2478,12 +2478,9 @@ void QGuiApplicationPrivate::applyWindowGeometrySpecificationTo(QWindow *window)
 
 /*!
     Returns the default application font.
-
-    \sa setFont()
 */
 QFont QGuiApplication::font()
 {
-    Q_ASSERT_X(QGuiApplicationPrivate::self, "QGuiApplication::font()", "no QGuiApplication instance");
     QMutexLocker locker(&applicationFontMutex);
     initFontUnlocked();
     return *QGuiApplicationPrivate::app_font;

@@ -18,9 +18,6 @@
 class  QStyle : public QObject
 {
 public:
-    QStyle();
-    virtual ~QStyle(){}
-
 	// 绘制给定widget的外观
     virtual void polish(QWidget *widget){} 
 	// widget的样式动态有改变时, 需要用此先反初始化先前的样式,在画新的
@@ -29,8 +26,8 @@ public:
 
     virtual void polish(QApplication *application);
     virtual void unpolish(QApplication *application);
-
     virtual void polish(QPalette &palette);
+public:
 
     virtual QRect itemTextRect(const QFontMetrics &fm, const QRect &r,
                            int flags, bool enabled,
@@ -72,17 +69,12 @@ public:
 	*/
     virtual int pixelMetric(PixelMetric metric, const QStyleOption *option = Q_NULLPTR,
                             const QWidget *widget = Q_NULLPTR) const = 0;
-
     
     virtual QSize sizeFromContents(ContentsType ct, const QStyleOption *opt,
-                                   const QSize &contentsSize, const QWidget *w = Q_NULLPTR) const = 0;
-
-    
+                                   const QSize &contentsSize, const QWidget *w = Q_NULLPTR) const = 0;   
 	
     virtual int styleHint(StyleHint stylehint, const QStyleOption *opt = Q_NULLPTR,
-                          const QWidget *widget = Q_NULLPTR, QStyleHintReturn* returnData = Q_NULLPTR) const = 0;
-
-   
+                          const QWidget *widget = Q_NULLPTR, QStyleHintReturn* returnData = Q_NULLPTR) const = 0;   
 
     virtual QPixmap standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt = Q_NULLPTR,
                                    const QWidget *widget = Q_NULLPTR) const = 0;
@@ -119,6 +111,9 @@ protected:
 		QStyle(QStylePrivate &dd);
 
 public:	
+    QStyle();
+    virtual ~QStyle(){}
+	
 	enum StateFlag {
 		State_None =				0x00000000,
 		State_Enabled = 			0x00000001,
@@ -153,7 +148,7 @@ public:
 		State_Mini =				0x08000000
 	};
 
-	enum PrimitiveElement {		
+	enum PrimitiveElement { 	
 		PE_Frame,
 		PE_FrameDefaultButton,
 		PE_FrameDockWidget,
@@ -168,14 +163,14 @@ public:
 		PE_FrameButtonBevel,
 		PE_FrameButtonTool,
 		PE_FrameTabBarBase,
-
+	
 		PE_PanelButtonCommand,
 		PE_PanelButtonBevel,
 		PE_PanelButtonTool,
 		PE_PanelMenuBar,
 		PE_PanelToolBar,
 		PE_PanelLineEdit,
-
+	
 		PE_IndicatorArrowDown,
 		PE_IndicatorArrowLeft,
 		PE_IndicatorArrowRight,
@@ -200,25 +195,27 @@ public:
 		PE_IndicatorTabTear,
 		PE_IndicatorTabTearLeft = PE_IndicatorTabTear,
 		PE_PanelScrollAreaCorner,
-
+	
 		PE_Widget,
-
+	
 		PE_IndicatorColumnViewArrow,
 		PE_IndicatorItemViewItemDrop,
-
+	
 		PE_PanelItemViewItem,
 		PE_PanelItemViewRow, // ### Qt 6: remove
-
+	
 		PE_PanelStatusBar,
-
+	
 		PE_IndicatorTabClose,
 		PE_PanelMenu,
-
+	
 		PE_IndicatorTabTearRight,
-
+	
 		// do not add any values below/greater this
 		PE_CustomBase = 0xf000000
 	};
+
+
 
 	enum ControlElement {
 		CE_PushButton,
@@ -576,7 +573,6 @@ public:
 		PM_CustomBase = 0xf0000000
 	};
 
-
 	enum ContentsType {
 		CT_PushButton,
 		CT_CheckBox,
@@ -604,6 +600,7 @@ public:
 		// do not add any values below/greater than this
 		CT_CustomBase = 0xf0000000
 	};
+
 	enum RequestSoftwareInputPanel {
 		RSIP_OnMouseClickAndAlreadyFocused,
 		RSIP_OnMouseClick

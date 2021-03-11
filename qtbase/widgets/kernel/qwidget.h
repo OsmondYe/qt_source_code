@@ -50,6 +50,33 @@ public: // override QPaintDevice
     void initPainter(QPainter *painter) const override;
     QPaintDevice *redirected(QPoint *offset) const override;
     QPainter *sharedPainter() const override;
+public:
+    void stackUnder(QWidget*);
+    void move(int x, int y);
+    void move(const QPoint &);
+    void resize(int w, int h);
+    void resize(const QSize &);
+    inline void setGeometry(int x, int y, int w, int h);
+    void setGeometry(const QRect &);
+    QByteArray saveGeometry() const;
+    bool restoreGeometry(const QByteArray &geometry);
+    void adjustSize();
+    bool isVisible() const;
+    bool isVisibleTo(const QWidget *) const;
+    inline bool isHidden() const;
+
+    bool isMinimized() const;
+    bool isMaximized() const;
+    bool isFullScreen() const;
+
+    virtual QSize sizeHint() const;
+    virtual QSize minimumSizeHint() const;
+
+    QSizePolicy sizePolicy() const;
+    void setSizePolicy(QSizePolicy); // size发生变化时, 横竖轴各自的策略
+    inline void setSizePolicy(QSizePolicy::Policy horizontal, QSizePolicy::Policy vertical);
+    virtual int heightForWidth(int) const;
+    virtual bool hasHeightForWidth() const;
 
 public:  // GUI style setting    
     QStyle *style() const;
@@ -74,6 +101,48 @@ public:  // GUI style setting
     QString styleSheet() const;
 public Q_SLOTS:
     void setStyleSheet(const QString& styleSheet);
+
+protected:      // Event handlers
+	// 自然而言的模板思想, 在event的switch中,通过调用虚函数,比如paintEvent,给基类一个机会来处理	
+    bool event(QEvent *event) override;
+    virtual void mousePressEvent(QMouseEvent *event);
+    virtual void mouseReleaseEvent(QMouseEvent *event);
+    virtual void mouseDoubleClickEvent(QMouseEvent *event);
+    virtual void mouseMoveEvent(QMouseEvent *event);
+    virtual void wheelEvent(QWheelEvent *event);
+    virtual void keyPressEvent(QKeyEvent *event);
+    virtual void keyReleaseEvent(QKeyEvent *event);
+    virtual void focusInEvent(QFocusEvent *event);
+    virtual void focusOutEvent(QFocusEvent *event);
+    virtual void enterEvent(QEvent *event){}
+    virtual void leaveEvent(QEvent *event){}
+    virtual void paintEvent(QPaintEvent *event){}	// 子类才知道怎么画自己
+    virtual void moveEvent(QMoveEvent *event){}
+    virtual void resizeEvent(QResizeEvent *event){}
+    virtual void actionEvent(QActionEvent *event){}
+    virtual void closeEvent(QCloseEvent *event);
+    virtual void contextMenuEvent(QContextMenuEvent *event);
+    virtual void tabletEvent(QTabletEvent *event);
+
+    virtual void dragEnterEvent(QDragEnterEvent *event);
+    virtual void dragMoveEvent(QDragMoveEvent *event);
+    virtual void dragLeaveEvent(QDragLeaveEvent *event);
+    virtual void dropEvent(QDropEvent *event);
+
+    virtual void showEvent(QShowEvent *event);
+    virtual void hideEvent(QHideEvent *event);
+    virtual bool nativeEvent(const QByteArray &eventType, void *message, long *result);
+
+	// oye 各种状态改变的统一扩展点, 给子类机会参与
+	// theme, style, keyboard, font,palette,
+	// WindowStateChange, LanguageChange,LayoutDirectionChange
+	// 很多子控件会重载此函数来监控StyleChange, 进而修改自己的style,并重绘
+    // Misc. protected functions
+    virtual void changeEvent(QEvent *); 
+
+    virtual void inputMethodEvent(QInputMethodEvent *);
+
+
 
 public:  // Qt window
     WId winId() const;
@@ -317,34 +386,9 @@ public Q_SLOTS:
     void raise();
     void lower();
 
+
+
 public:
-    void stackUnder(QWidget*);
-    void move(int x, int y);
-    void move(const QPoint &);
-    void resize(int w, int h);
-    void resize(const QSize &);
-    inline void setGeometry(int x, int y, int w, int h);
-    void setGeometry(const QRect &);
-    QByteArray saveGeometry() const;
-    bool restoreGeometry(const QByteArray &geometry);
-    void adjustSize();
-    bool isVisible() const;
-    bool isVisibleTo(const QWidget *) const;
-    inline bool isHidden() const;
-
-    bool isMinimized() const;
-    bool isMaximized() const;
-    bool isFullScreen() const;
-
-    virtual QSize sizeHint() const;
-    virtual QSize minimumSizeHint() const;
-
-    QSizePolicy sizePolicy() const;
-    void setSizePolicy(QSizePolicy);
-    inline void setSizePolicy(QSizePolicy::Policy horizontal, QSizePolicy::Policy vertical);
-    virtual int heightForWidth(int) const;
-    virtual bool hasHeightForWidth() const;
-
     QRegion visibleRegion() const;
 
     void setContentsMargins(int left, int top, int right, int bottom);
@@ -392,6 +436,7 @@ public:
     void setAttribute(Qt::WidgetAttribute, bool on = true);
     inline bool testAttribute(Qt::WidgetAttribute) const;
 
+	// oye widget作为基类,居然给的是空实现
     QPaintEngine *paintEngine() const Q_DECL_OVERRIDE;
 
     void ensurePolished() const;
@@ -412,41 +457,7 @@ Q_SIGNALS:
     void windowIconTextChanged(const QString &iconText);
     void customContextMenuRequested(const QPoint &pos);
 
-protected:
-    // Event handlers
-    bool event(QEvent *event) Q_DECL_OVERRIDE;
-    virtual void mousePressEvent(QMouseEvent *event);
-    virtual void mouseReleaseEvent(QMouseEvent *event);
-    virtual void mouseDoubleClickEvent(QMouseEvent *event);
-    virtual void mouseMoveEvent(QMouseEvent *event);
-    virtual void wheelEvent(QWheelEvent *event);
-    virtual void keyPressEvent(QKeyEvent *event);
-    virtual void keyReleaseEvent(QKeyEvent *event);
-    virtual void focusInEvent(QFocusEvent *event);
-    virtual void focusOutEvent(QFocusEvent *event);
-    virtual void enterEvent(QEvent *event);
-    virtual void leaveEvent(QEvent *event);
-    virtual void paintEvent(QPaintEvent *event);
-    virtual void moveEvent(QMoveEvent *event);
-    virtual void resizeEvent(QResizeEvent *event);
-    virtual void closeEvent(QCloseEvent *event);
-    virtual void contextMenuEvent(QContextMenuEvent *event);
-    virtual void tabletEvent(QTabletEvent *event);
-    virtual void actionEvent(QActionEvent *event);
 
-    virtual void dragEnterEvent(QDragEnterEvent *event);
-    virtual void dragMoveEvent(QDragMoveEvent *event);
-    virtual void dragLeaveEvent(QDragLeaveEvent *event);
-    virtual void dropEvent(QDropEvent *event);
-
-    virtual void showEvent(QShowEvent *event);
-    virtual void hideEvent(QHideEvent *event);
-    virtual bool nativeEvent(const QByteArray &eventType, void *message, long *result);
-
-    // Misc. protected functions
-    virtual void changeEvent(QEvent *);
-
-    virtual void inputMethodEvent(QInputMethodEvent *);
 public:
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery) const;
     Qt::InputMethodHints inputMethodHints() const;	

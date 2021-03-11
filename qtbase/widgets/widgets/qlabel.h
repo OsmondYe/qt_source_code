@@ -6,9 +6,7 @@
 
 QT_REQUIRE_CONFIG(label);
 
-
 class QLabelPrivate;
-
 class  QLabel : public QFrame
 {
     //Q_OBJECT
@@ -30,15 +28,24 @@ public:
     explicit QLabel(const QString &text, QWidget *parent=Q_NULLPTR, Qt::WindowFlags f=Qt::WindowFlags());
     ~QLabel();
 
+public Q_SLOTS:
+    void setText(const QString &);
+    void setPixmap(const QPixmap &);
+    void setPicture(const QPicture &);
+    void setMovie(QMovie *movie);
+    void setNum(int);
+    void setNum(double);
+    void clear();
+
+Q_SIGNALS:
+    void linkActivated(const QString& link);
+    void linkHovered(const QString& link);
+public:
     QString text() const;
     const QPixmap *pixmap() const;
-#ifndef QT_NO_PICTURE
     const QPicture *picture() const;
-#endif
-#if QT_CONFIG(movie)
     QMovie *movie() const;
-#endif
-
+public:
     Qt::TextFormat textFormat() const;
     void setTextFormat(Qt::TextFormat);
 
@@ -56,13 +63,13 @@ public:
 
     bool hasScaledContents() const;
     void setScaledContents(bool);
-    QSize sizeHint() const Q_DECL_OVERRIDE;
-    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
+    QSize sizeHint() const override;
+    QSize minimumSizeHint() const override;
 #ifndef QT_NO_SHORTCUT
     void setBuddy(QWidget *);
     QWidget *buddy() const;
 #endif
-    int heightForWidth(int) const Q_DECL_OVERRIDE;
+    int heightForWidth(int) const override;
 
     bool openExternalLinks() const;
     void setOpenExternalLinks(bool open);
@@ -75,46 +82,27 @@ public:
     QString selectedText() const;
     int selectionStart() const;
 
-public Q_SLOTS:
-    void setText(const QString &);
-    void setPixmap(const QPixmap &);
-#ifndef QT_NO_PICTURE
-    void setPicture(const QPicture &);
-#endif
-#if QT_CONFIG(movie)
-    void setMovie(QMovie *movie);
-#endif
-    void setNum(int);
-    void setNum(double);
-    void clear();
-
-Q_SIGNALS:
-    void linkActivated(const QString& link);
-    void linkHovered(const QString& link);
-
 protected:
-    bool event(QEvent *e) Q_DECL_OVERRIDE;
-    void keyPressEvent(QKeyEvent *ev) Q_DECL_OVERRIDE;
-    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
-    void changeEvent(QEvent *) Q_DECL_OVERRIDE;
-    void mousePressEvent(QMouseEvent *ev) Q_DECL_OVERRIDE;
-    void mouseMoveEvent(QMouseEvent *ev) Q_DECL_OVERRIDE;
-    void mouseReleaseEvent(QMouseEvent *ev) Q_DECL_OVERRIDE;
+    bool event(QEvent *e) override;
+    void keyPressEvent(QKeyEvent *ev) override;
+    void paintEvent(QPaintEvent *) override;
+    void changeEvent(QEvent *) override;
+    void mousePressEvent(QMouseEvent *ev) override;
+    void mouseMoveEvent(QMouseEvent *ev) override;
+    void mouseReleaseEvent(QMouseEvent *ev) override;
 #ifndef QT_NO_CONTEXTMENU
-    void contextMenuEvent(QContextMenuEvent *ev) Q_DECL_OVERRIDE;
+    void contextMenuEvent(QContextMenuEvent *ev) override;
 #endif // QT_NO_CONTEXTMENU
-    void focusInEvent(QFocusEvent *ev) Q_DECL_OVERRIDE;
-    void focusOutEvent(QFocusEvent *ev) Q_DECL_OVERRIDE;
-    bool focusNextPrevChild(bool next) Q_DECL_OVERRIDE;
+    void focusInEvent(QFocusEvent *ev) override;
+    void focusOutEvent(QFocusEvent *ev) override;
+    bool focusNextPrevChild(bool next) override;
 
 
 private:
    // Q_DISABLE_COPY(QLabel)
     //Q_DECLARE_PRIVATE(QLabel)
-#if QT_CONFIG(movie)
     //Q_PRIVATE_SLOT(d_func(), void _q_movieUpdated(const QRect&))
     //Q_PRIVATE_SLOT(d_func(), void _q_movieResized(const QSize&))
-#endif
     //Q_PRIVATE_SLOT(d_func(), void _q_linkHovered(const QString &))
 
     friend class QTipLabel;

@@ -58,18 +58,6 @@ QStyleOption::QStyleOption(const QStyleOption &other)
 }
 
 
-QStyleOption &QStyleOption::operator=(const QStyleOption &other)
-{
-    state = other.state;
-    direction = other.direction;
-    rect = other.rect;
-    fontMetrics = other.fontMetrics;
-    palette = other.palette;
-    styleObject = other.styleObject;
-    return *this;
-}
-
-
 QStyleOptionFocusRect::QStyleOptionFocusRect()
     : QStyleOption(Version, SO_FocusRect)
 {

@@ -1,4 +1,3 @@
-
 #ifndef QPAINTER_H
 #define QPAINTER_H
 
@@ -20,9 +19,6 @@
 #include <QtGui/qfontmetrics.h>
 
 
-QT_BEGIN_NAMESPACE
-
-
 class QBrush;
 class QFontInfo;
 class QFontMetrics;
@@ -37,62 +33,15 @@ class QMatrix;
 class QTransform;
 class QStaticText;
 class QGlyphRun;
-
-class QPainterPrivateDeleter;
+//class QPainterPrivateDeleter;
 
 class  QPainter
 {
     //Q_DECLARE_PRIVATE(QPainter)
     //Q_GADGET
-
+private:
+	QScopedPointer<QPainterPrivate> d_ptr;
 public:
-    enum RenderHint {
-        Antialiasing = 0x01,
-        TextAntialiasing = 0x02,
-        SmoothPixmapTransform = 0x04,
-        HighQualityAntialiasing = 0x08,
-        NonCosmeticDefaultPen = 0x10,
-        Qt4CompatiblePainting = 0x20
-    };
-    //Q_FLAG(RenderHint)
-
-    //Q_DECLARE_FLAGS(RenderHints, RenderHint)
-    enum RenderHints {
-        Antialiasing = 0x01,
-        TextAntialiasing = 0x02,
-        SmoothPixmapTransform = 0x04,
-        HighQualityAntialiasing = 0x08,
-        NonCosmeticDefaultPen = 0x10,
-        Qt4CompatiblePainting = 0x20
-    };
-    //Q_FLAG(RenderHints)
-
-    class PixmapFragment {
-    public:
-        qreal x;
-        qreal y;
-        qreal sourceLeft;
-        qreal sourceTop;
-        qreal width;
-        qreal height;
-        qreal scaleX;
-        qreal scaleY;
-        qreal rotation;
-        qreal opacity;
-        static PixmapFragment Q_GUI_EXPORT create(const QPointF &pos, const QRectF &sourceRect,
-                                            qreal scaleX = 1, qreal scaleY = 1,
-                                            qreal rotation = 0, qreal opacity = 1);
-    };
-
-    enum PixmapFragmentHint {
-        OpaqueHint = 0x01
-    };
-	enum PixmapFragmentHints {
-    OpaqueHint = 0x01
-    };
-
-    //Q_DECLARE_FLAGS(PixmapFragmentHints, PixmapFragmentHint)
-
     QPainter();
     explicit QPainter(QPaintDevice *);
     ~QPainter();
@@ -105,50 +54,6 @@ public:
 
     void initFrom(const QPaintDevice *device);
 
-    enum CompositionMode {
-        CompositionMode_SourceOver,
-        CompositionMode_DestinationOver,
-        CompositionMode_Clear,
-        CompositionMode_Source,
-        CompositionMode_Destination,
-        CompositionMode_SourceIn,
-        CompositionMode_DestinationIn,
-        CompositionMode_SourceOut,
-        CompositionMode_DestinationOut,
-        CompositionMode_SourceAtop,
-        CompositionMode_DestinationAtop,
-        CompositionMode_Xor,
-
-        //svg 1.2 blend modes
-        CompositionMode_Plus,
-        CompositionMode_Multiply,
-        CompositionMode_Screen,
-        CompositionMode_Overlay,
-        CompositionMode_Darken,
-        CompositionMode_Lighten,
-        CompositionMode_ColorDodge,
-        CompositionMode_ColorBurn,
-        CompositionMode_HardLight,
-        CompositionMode_SoftLight,
-        CompositionMode_Difference,
-        CompositionMode_Exclusion,
-
-        // ROPs
-        RasterOp_SourceOrDestination,
-        RasterOp_SourceAndDestination,
-        RasterOp_SourceXorDestination,
-        RasterOp_NotSourceAndNotDestination,
-        RasterOp_NotSourceOrNotDestination,
-        RasterOp_NotSourceXorDestination,
-        RasterOp_NotSource,
-        RasterOp_NotSourceAndDestination,
-        RasterOp_SourceAndNotDestination,
-        RasterOp_NotSourceOrDestination,
-        RasterOp_SourceOrNotDestination,
-        RasterOp_ClearDestination,
-        RasterOp_SetDestination,
-        RasterOp_NotDestination
-    };
     void setCompositionMode(CompositionMode mode);
     CompositionMode compositionMode() const;
 
@@ -439,30 +344,121 @@ public:
     void beginNativePainting();
     void endNativePainting();
 
+public:
+	enum RenderHint {
+		Antialiasing = 0x01,
+		TextAntialiasing = 0x02,
+		SmoothPixmapTransform = 0x04,
+		HighQualityAntialiasing = 0x08,
+		NonCosmeticDefaultPen = 0x10,
+		Qt4CompatiblePainting = 0x20
+	};
+	//Q_FLAG(RenderHint)
+	
+	//Q_DECLARE_FLAGS(RenderHints, RenderHint)
+	enum RenderHints {
+		Antialiasing = 0x01,
+		TextAntialiasing = 0x02,
+		SmoothPixmapTransform = 0x04,
+		HighQualityAntialiasing = 0x08,
+		NonCosmeticDefaultPen = 0x10,
+		Qt4CompatiblePainting = 0x20
+	};
+	//Q_FLAG(RenderHints)
+	
+	class PixmapFragment {
+	public:
+		qreal x;
+		qreal y;
+		qreal sourceLeft;
+		qreal sourceTop;
+		qreal width;
+		qreal height;
+		qreal scaleX;
+		qreal scaleY;
+		qreal rotation;
+		qreal opacity;
+		static PixmapFragment Q_GUI_EXPORT create(const QPointF &pos, const QRectF &sourceRect,
+											qreal scaleX = 1, qreal scaleY = 1,
+											qreal rotation = 0, qreal opacity = 1);
+	};
+	
+	enum PixmapFragmentHint {
+		OpaqueHint = 0x01
+	};
+	enum PixmapFragmentHints {
+	OpaqueHint = 0x01
+	};
+	
+	//Q_DECLARE_FLAGS(PixmapFragmentHints, PixmapFragmentHint)
+	
+	enum CompositionMode {
+		CompositionMode_SourceOver,
+		CompositionMode_DestinationOver,
+		CompositionMode_Clear,
+		CompositionMode_Source,
+		CompositionMode_Destination,
+		CompositionMode_SourceIn,
+		CompositionMode_DestinationIn,
+		CompositionMode_SourceOut,
+		CompositionMode_DestinationOut,
+		CompositionMode_SourceAtop,
+		CompositionMode_DestinationAtop,
+		CompositionMode_Xor,
+	
+		//svg 1.2 blend modes
+		CompositionMode_Plus,
+		CompositionMode_Multiply,
+		CompositionMode_Screen,
+		CompositionMode_Overlay,
+		CompositionMode_Darken,
+		CompositionMode_Lighten,
+		CompositionMode_ColorDodge,
+		CompositionMode_ColorBurn,
+		CompositionMode_HardLight,
+		CompositionMode_SoftLight,
+		CompositionMode_Difference,
+		CompositionMode_Exclusion,
+	
+		// ROPs
+		RasterOp_SourceOrDestination,
+		RasterOp_SourceAndDestination,
+		RasterOp_SourceXorDestination,
+		RasterOp_NotSourceAndNotDestination,
+		RasterOp_NotSourceOrNotDestination,
+		RasterOp_NotSourceXorDestination,
+		RasterOp_NotSource,
+		RasterOp_NotSourceAndDestination,
+		RasterOp_SourceAndNotDestination,
+		RasterOp_NotSourceOrDestination,
+		RasterOp_SourceOrNotDestination,
+		RasterOp_ClearDestination,
+		RasterOp_SetDestination,
+		RasterOp_NotDestination
+	};
+	
+	
 private:
-    Q_DISABLE_COPY(QPainter)
-
-    QScopedPointer<QPainterPrivate> d_ptr;
-
-    friend class QWidget;
-    friend class QFontEngine;
-    friend class QFontEngineBox;
-    friend class QFontEngineFT;
-    friend class QFontEngineMac;
-    friend class QFontEngineWin;
-    friend class QPaintEngine;
-    friend class QPaintEngineExPrivate;
-    friend class QOpenGLPaintEngine;
-    friend class QWin32PaintEngine;
-    friend class QWin32PaintEnginePrivate;
-    friend class QRasterPaintEngine;
-    friend class QAlphaPaintEngine;
-    friend class QPreviewPaintEngine;
-    friend class QTextEngine;
+	//Q_DISABLE_COPY(QPainter)
+	friend class QWidget;
+	friend class QFontEngine;
+	friend class QFontEngineBox;
+	friend class QFontEngineFT;
+	friend class QFontEngineMac;
+	friend class QFontEngineWin;
+	friend class QPaintEngine;
+	friend class QPaintEngineExPrivate;
+	friend class QOpenGLPaintEngine;
+	friend class QWin32PaintEngine;
+	friend class QWin32PaintEnginePrivate;
+	friend class QRasterPaintEngine;
+	friend class QAlphaPaintEngine;
+	friend class QPreviewPaintEngine;
+	friend class QTextEngine;
 };
-Q_DECLARE_TYPEINFO(QPainter::PixmapFragment, Q_RELOCATABLE_TYPE);
+//Q_DECLARE_TYPEINFO(QPainter::PixmapFragment, Q_RELOCATABLE_TYPE);
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QPainter::RenderHints)
+//Q_DECLARE_OPERATORS_FOR_FLAGS(QPainter::RenderHints)
 
 //
 // functions
@@ -901,6 +897,5 @@ inline void QPainter::drawPicture(const QPoint &pt, const QPicture &p)
 }
 #endif
 
-QT_END_NAMESPACE
 
 #endif // QPAINTER_H

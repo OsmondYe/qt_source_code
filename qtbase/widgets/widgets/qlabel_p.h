@@ -66,7 +66,7 @@ public:
 
 public:
     QLabelPrivate();
-    ~QLabelPrivate();
+    ~QLabelPrivate(){}
 
     void init();
     void clearContents();

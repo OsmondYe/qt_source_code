@@ -29,21 +29,13 @@ QLabelPrivate::QLabelPrivate()
       pixmap(Q_NULLPTR),
       scaledpixmap(Q_NULLPTR),
       cachedimage(Q_NULLPTR),
-#ifndef QT_NO_PICTURE
       picture(Q_NULLPTR),
-#endif
-#if QT_CONFIG(movie)
       movie(),
-#endif
       control(Q_NULLPTR),
       shortcutCursor(),
-#ifndef QT_NO_CURSOR
       cursor(),
-#endif
-#ifndef QT_NO_SHORTCUT
       buddy(),
       shortcutId(0),
-#endif
       textformat(Qt::AutoText),
       textInteractionFlags(Qt::LinksAccessibleByMouse),
       sizePolicy(),
@@ -65,110 +57,14 @@ QLabelPrivate::QLabelPrivate()
 {
 }
 
-QLabelPrivate::~QLabelPrivate()
-{
-}
-
-/*!
-    \class QLabel
-    \brief The QLabel widget provides a text or image display.
-
-    \ingroup basicwidgets
-    \inmodule QtWidgets
-
-    \image windows-label.png
-
-    QLabel is used for displaying text or an image. No user
-    interaction functionality is provided. The visual appearance of
-    the label can be configured in various ways, and it can be used
-    for specifying a focus mnemonic key for another widget.
-
-    A QLabel can contain any of the following content types:
-
-    \table
-    \header \li Content \li Setting
-    \row \li Plain text
-         \li Pass a QString to setText().
-    \row \li Rich text
-         \li Pass a QString that contains rich text to setText().
-    \row \li A pixmap
-         \li Pass a QPixmap to setPixmap().
-    \row \li A movie
-         \li Pass a QMovie to setMovie().
-    \row \li A number
-         \li Pass an \e int or a \e double to setNum(), which converts
-            the number to plain text.
-    \row \li Nothing
-         \li The same as an empty plain text. This is the default. Set
-            by clear().
-    \endtable
-
-    \warning When passing a QString to the constructor or calling setText(),
-    make sure to sanitize your input, as QLabel tries to guess whether it
-    displays the text as plain text or as rich text, a subset of HTML 4
-    markup. You may want to call
-    setTextFormat() explicitly, e.g. in case you expect the text to be in
-    plain format but cannot control the text source (for instance when
-    displaying data loaded from the Web).
-
-    When the content is changed using any of these functions, any
-    previous content is cleared.
-
-    By default, labels display \l{alignment}{left-aligned, vertically-centered}
-    text and images, where any tabs in the text to be displayed are
-    \l{Qt::TextExpandTabs}{automatically expanded}. However, the look
-    of a QLabel can be adjusted and fine-tuned in several ways.
-
-    The positioning of the content within the QLabel widget area can
-    be tuned with setAlignment() and setIndent(). Text content can
-    also wrap lines along word boundaries with setWordWrap(). For
-    example, this code sets up a sunken panel with a two-line text in
-    the bottom right corner (both lines being flush with the right
-    side of the label):
-
-    \snippet code/src_gui_widgets_qlabel.cpp 0
-
-    The properties and functions QLabel inherits from QFrame can also
-    be used to specify the widget frame to be used for any given label.
-
-    A QLabel is often used as a label for an interactive widget. For
-    this use QLabel provides a useful mechanism for adding an
-    mnemonic (see QKeySequence) that will set the keyboard focus to
-    the other widget (called the QLabel's "buddy"). For example:
-
-    \snippet code/src_gui_widgets_qlabel.cpp 1
-
-    In this example, keyboard focus is transferred to the label's
-    buddy (the QLineEdit) when the user presses Alt+P. If the buddy
-    was a button (inheriting from QAbstractButton), triggering the
-    mnemonic would emulate a button click.
-
-    \sa QLineEdit, QTextEdit, QPixmap, QMovie,
-        {fowler}{GUI Design Handbook: Label}
-*/
-
-#ifndef QT_NO_PICTURE
-/*!
-    Returns the label's picture or 0 if the label doesn't have a
-    picture.
-*/
 
 const QPicture *QLabel::picture() const
 {
-    Q_D(const QLabel);
+    QLabelPrivate * const d = d_func();
     return d->picture;
 }
-#endif
 
 
-/*!
-    Constructs an empty label.
-
-    The \a parent and widget flag \a f, arguments are passed
-    to the QFrame constructor.
-
-    \sa setAlignment(), setFrameStyle(), setIndent()
-*/
 QLabel::QLabel(QWidget *parent, Qt::WindowFlags f)
     : QFrame(*new QLabelPrivate(), parent, f)
 {
@@ -176,25 +72,11 @@ QLabel::QLabel(QWidget *parent, Qt::WindowFlags f)
     d->init();
 }
 
-/*!
-    Constructs a label that displays the text, \a text.
-
-    The \a parent and widget flag \a f, arguments are passed
-    to the QFrame constructor.
-
-    \sa setText(), setAlignment(), setFrameStyle(), setIndent()
-*/
 QLabel::QLabel(const QString &text, QWidget *parent, Qt::WindowFlags f)
     : QLabel(parent, f)
 {
     setText(text);
 }
-
-
-
-/*!
-    Destroys the label.
-*/
 
 QLabel::~QLabel()
 {
@@ -204,7 +86,7 @@ QLabel::~QLabel()
 
 void QLabelPrivate::init()
 {
-    Q_Q(QLabel);
+    QLabel * const q = q_func();
 
     q->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred,
                                  QSizePolicy::Label));
@@ -284,7 +166,7 @@ void QLabel::setText(const QString &text)
 
 QString QLabel::text() const
 {
-    Q_D(const QLabel);
+    QLabelPrivate * const d = d_func();
     return d->text;
 }
 
@@ -324,7 +206,7 @@ void QLabel::setPixmap(const QPixmap &pixmap)
 
 const QPixmap *QLabel::pixmap() const
 {
-    Q_D(const QLabel);
+    QLabelPrivate * const d = d_func();
     return d->pixmap;
 }
 
@@ -409,7 +291,7 @@ void QLabel::setAlignment(Qt::Alignment alignment)
 
 Qt::Alignment QLabel::alignment() const
 {
-    Q_D(const QLabel);
+    QLabelPrivate * const d = d_func();
     return QFlag(d->align & (Qt::AlignVertical_Mask|Qt::AlignHorizontal_Mask));
 }
 
@@ -428,7 +310,7 @@ void QLabel::setWordWrap(bool on)
 
 bool QLabel::wordWrap() const
 {
-    Q_D(const QLabel);
+    QLabelPrivate * const d = d_func();
     return d->align & Qt::TextWordWrap;
 }
 
@@ -462,7 +344,7 @@ void QLabel::setIndent(int indent)
 
 int QLabel::indent() const
 {
-    Q_D(const QLabel);
+    QLabelPrivate * const d = d_func();
     return d->indent;
 }
 
@@ -480,7 +362,7 @@ int QLabel::indent() const
 */
 int QLabel::margin() const
 {
-    Q_D(const QLabel);
+    QLabelPrivate * const d = d_func();
     return d->margin;
 }
 
@@ -595,7 +477,7 @@ QSize QLabelPrivate::sizeForWidth(int w) const
 
 int QLabel::heightForWidth(int w) const
 {
-    Q_D(const QLabel);
+    QLabelPrivate * const d = d_func();
     if (d->isTextLabel)
         return d->sizeForWidth(w).height();
     return QWidget::heightForWidth(w);
@@ -618,7 +500,7 @@ int QLabel::heightForWidth(int w) const
 */
 bool QLabel::openExternalLinks() const
 {
-    Q_D(const QLabel);
+    QLabelPrivate * const d = d_func();
     return d->openExternalLinks;
 }
 
@@ -668,7 +550,7 @@ void QLabel::setTextInteractionFlags(Qt::TextInteractionFlags flags)
 
 Qt::TextInteractionFlags QLabel::textInteractionFlags() const
 {
-    Q_D(const QLabel);
+    QLabelPrivate * const d = d_func();
     return d->textInteractionFlags;
 }
 
@@ -712,7 +594,7 @@ void QLabel::setSelection(int start, int length)
 */
 bool QLabel::hasSelectedText() const
 {
-    Q_D(const QLabel);
+    QLabelPrivate * const d = d_func();
     if (d->control)
         return d->control->textCursor().hasSelection();
     return false;
@@ -736,7 +618,7 @@ bool QLabel::hasSelectedText() const
 */
 QString QLabel::selectedText() const
 {
-    Q_D(const QLabel);
+    QLabelPrivate * const d = d_func();
     if (d->control)
         return d->control->textCursor().selectedText();
     return QString();
@@ -755,7 +637,7 @@ QString QLabel::selectedText() const
 */
 int QLabel::selectionStart() const
 {
-    Q_D(const QLabel);
+    QLabelPrivate * const d = d_func();
     if (d->control && d->control->textCursor().hasSelection())
         return d->control->textCursor().selectionStart();
     return -1;
@@ -765,7 +647,7 @@ int QLabel::selectionStart() const
 */
 QSize QLabel::sizeHint() const
 {
-    Q_D(const QLabel);
+    QLabelPrivate * const d = d_func();
     if (!d->valid_hints)
         (void) QLabel::minimumSizeHint();
     return d->sh;
@@ -776,7 +658,7 @@ QSize QLabel::sizeHint() const
 */
 QSize QLabel::minimumSizeHint() const
 {
-    Q_D(const QLabel);
+    QLabelPrivate * const d = d_func();
     if (d->valid_hints) {
         if (d->sizePolicy == sizePolicy())
             return d->msh;
@@ -1060,7 +942,7 @@ void QLabel::paintEvent(QPaintEvent *)
 
 void QLabelPrivate::updateLabel()
 {
-    Q_Q(QLabel);
+    QLabel * const q = q_func();
     valid_hints = false;
 
     if (isTextLabel) {
@@ -1127,13 +1009,13 @@ void QLabel::setBuddy(QWidget *buddy)
 
 QWidget * QLabel::buddy() const
 {
-    Q_D(const QLabel);
+    QLabelPrivate * const d = d_func();
     return d->buddy;
 }
 
 void QLabelPrivate::updateShortcut()
 {
-    Q_Q(QLabel);
+    QLabel * const q = q_func();
     Q_ASSERT(shortcutId == 0);
     // Introduce an extra boolean to indicate the presence of a shortcut in the
     // text. We cannot use the shortcutId itself because on the mac mnemonics are
@@ -1152,7 +1034,7 @@ void QLabelPrivate::updateShortcut()
 #if QT_CONFIG(movie)
 void QLabelPrivate::_q_movieUpdated(const QRect& rect)
 {
-    Q_Q(QLabel);
+    QLabel * const q = q_func();
     if (movie && movie->isValid()) {
         QRect r;
         if (scaledcontents) {
@@ -1175,7 +1057,7 @@ void QLabelPrivate::_q_movieUpdated(const QRect& rect)
 
 void QLabelPrivate::_q_movieResized(const QSize& size)
 {
-    Q_Q(QLabel);
+    QLabel * const q = q_func();
     q->update(); //we need to refresh the whole background in case the new size is smaler
     valid_hints = false;
     _q_movieUpdated(QRect(QPoint(0,0), size));
@@ -1211,11 +1093,6 @@ void QLabel::setMovie(QMovie *movie)
 
 #endif // QT_CONFIG(movie)
 
-/*!
-  \internal
-
-  Clears any contents, without updating/repainting the label.
-*/
 
 void QLabelPrivate::clearContents()
 {
@@ -1236,7 +1113,7 @@ void QLabelPrivate::clearContents()
     pixmap = 0;
 
     text.clear();
-    Q_Q(QLabel);
+    QLabel * const q = q_func();
 #ifndef QT_NO_SHORTCUT
     if (shortcutId)
         q->releaseShortcut(shortcutId);
@@ -1262,38 +1139,15 @@ void QLabelPrivate::clearContents()
 }
 
 
-#if QT_CONFIG(movie)
-
-/*!
-    Returns a pointer to the label's movie, or 0 if no movie has been
-    set.
-
-    \sa setMovie()
-*/
-
 QMovie *QLabel::movie() const
 {
-    Q_D(const QLabel);
+    QLabelPrivate * const d = d_func();
     return d->movie;
 }
 
-#endif  // QT_CONFIG(movie)
-
-/*!
-    \property QLabel::textFormat
-    \brief the label's text format
-
-    See the Qt::TextFormat enum for an explanation of the possible
-    options.
-
-    The default format is Qt::AutoText.
-
-    \sa text()
-*/
-
 Qt::TextFormat QLabel::textFormat() const
 {
-    Q_D(const QLabel);
+    QLabelPrivate * const d = d_func();
     return d->textformat;
 }
 
@@ -1310,12 +1164,11 @@ void QLabel::setTextFormat(Qt::TextFormat format)
     }
 }
 
-/*!
-  \reimp
-*/
+
 void QLabel::changeEvent(QEvent *ev)
 {
     QLabelPrivate * const d = d_func();
+	// 文字显示委托给了d->control
     if(ev->type() == QEvent::FontChange || ev->type() == QEvent::ApplicationFontChange) {
         if (d->isTextLabel) {
             if (d->control)
@@ -1324,6 +1177,7 @@ void QLabel::changeEvent(QEvent *ev)
         }
     } else if (ev->type() == QEvent::PaletteChange && d->control) {
         d->control->setPalette(palette());
+	// margin改变了
     } else if (ev->type() == QEvent::ContentsRectChange) {
         d->updateLabel();
     }
@@ -1342,7 +1196,7 @@ void QLabel::changeEvent(QEvent *ev)
 */
 bool QLabel::hasScaledContents() const
 {
-    Q_D(const QLabel);
+    QLabelPrivate * const d = d_func();
     return d->scaledcontents;
 }
 
@@ -1488,7 +1342,7 @@ void QLabelPrivate::ensureTextControl() const
 
 void QLabelPrivate::sendControlEvent(QEvent *e)
 {
-    Q_Q(QLabel);
+    QLabel * const q = q_func();
     if (!isTextLabel || !control || textInteractionFlags == Qt::NoTextInteraction) {
         e->ignore();
         return;
@@ -1498,7 +1352,7 @@ void QLabelPrivate::sendControlEvent(QEvent *e)
 
 void QLabelPrivate::_q_linkHovered(const QString &anchor)
 {
-    Q_Q(QLabel);
+    QLabel * const q = q_func();
 #ifndef QT_NO_CURSOR
     if (anchor.isEmpty()) { // restore cursor
         if (validCursor)

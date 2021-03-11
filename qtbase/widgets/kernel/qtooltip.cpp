@@ -118,7 +118,7 @@ void QTipLabel::reuseTip(const QString &text, int msecDisplayTime)
 
 void QTipLabel::paintEvent(QPaintEvent *ev)
 {
-    QStylePainter p(this);
+    QStylePainter p(this);	// painter构造时需要QPaintDevice, 恰好QWidget本身就是QPaintDevice的子类
     QStyleOptionFrame opt;
     opt.init(this);
     p.drawPrimitive(QStyle::PE_PanelTipLabel, opt);

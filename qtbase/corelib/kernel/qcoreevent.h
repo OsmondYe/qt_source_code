@@ -192,6 +192,7 @@ public:
 
         MacSizeChange = 177,                    // when the Qt::WA_Mac{Normal,Small,Mini}Size changes
 
+		// rect本身没变,但有效输入范围变了, margin
         ContentsRectChange = 178,               // sent by QWidget::setContentsMargins (internal)
 
         MacGLWindowChange = 179,                // Internal! the window of the GLWidget has changed
