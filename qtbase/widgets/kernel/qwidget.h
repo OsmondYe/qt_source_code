@@ -18,12 +18,12 @@ public:
     uint is_closing :1;
     uint in_show : 1;
     uint in_set_window_state : 1;
-    mutable uint fstrut_dirty : 1;
+    mutable uint fstrut_dirty : 1;		// frame strut dirty
     uint context_menu_policy : 3;
     uint window_modality : 2;
     uint in_destructor : 1;
     uint unused : 13;
-    QRect crect;
+    QRect crect;						// content rect
     mutable QPalette pal;
     QFont fnt;
     QRect wrect;
@@ -213,7 +213,7 @@ public Q_SLOTS:
     void setWindowModified(bool);
 
 public: // Widget coordinates
-    QRect frameGeometry() const;
+    QRect frameGeometry() const;  // Widget一开始就考虑了frame的问题?
     const QRect &geometry() const;
     QRect normalGeometry() const;
 
@@ -531,8 +531,11 @@ public:
 		DrawChildren = 0x2,
 		IgnoreMask = 0x4
 	};
-
-
+	enum RenderFlags {
+		DrawWindowBackground = 0x1,
+		DrawChildren = 0x2,
+		IgnoreMask = 0x4
+	};
 };
 
 // oye 把qobject_cast 看成函数重载

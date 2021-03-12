@@ -1,42 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtGui module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #ifndef QPIXMAP_H
 #define QPIXMAP_H
 
@@ -49,17 +10,16 @@
 #include <QtGui/qimage.h>
 #include <QtGui/qtransform.h>
 
-QT_BEGIN_NAMESPACE
-
-
 class QImageWriter;
 class QImageReader;
 class QColor;
 class QVariant;
 class QPlatformPixmap;
 
-class Q_GUI_EXPORT QPixmap : public QPaintDevice
+class  QPixmap : public QPaintDevice
 {
+private:
+    QExplicitlySharedDataPointer<QPlatformPixmap> data;
 public:
     QPixmap();
     explicit QPixmap(QPlatformPixmap *data);
@@ -73,11 +33,8 @@ public:
     ~QPixmap();
 
     QPixmap &operator=(const QPixmap &);
-#ifdef Q_COMPILER_RVALUE_REFS
-    inline QPixmap &operator=(QPixmap &&other) Q_DECL_NOEXCEPT
-    { qSwap(data, other.data); return *this; }
-#endif
-    inline void swap(QPixmap &other) Q_DECL_NOEXCEPT
+
+    inline void swap(QPixmap &other) 
     { qSwap(data, other.data); }
 
     operator QVariant() const;
@@ -131,12 +88,6 @@ public:
     QImage toImage() const;
     static QPixmap fromImage(const QImage &image, Qt::ImageConversionFlags flags = Qt::AutoColor);
     static QPixmap fromImageReader(QImageReader *imageReader, Qt::ImageConversionFlags flags = Qt::AutoColor);
-#ifdef Q_COMPILER_RVALUE_REFS
-    static QPixmap fromImage(QImage &&image, Qt::ImageConversionFlags flags = Qt::AutoColor)
-    {
-        return fromImageInPlace(image, flags);
-    }
-#endif
 
     bool load(const QString& fileName, const char *format = Q_NULLPTR, Qt::ImageConversionFlags flags = Qt::AutoColor);
     bool loadFromData(const uchar *buf, uint len, const char* format = Q_NULLPTR, Qt::ImageConversionFlags flags = Qt::AutoColor);
@@ -152,9 +103,6 @@ public:
     inline void scroll(int dx, int dy, int x, int y, int width, int height, QRegion *exposed = Q_NULLPTR);
     void scroll(int dx, int dy, const QRect &rect, QRegion *exposed = Q_NULLPTR);
 
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED inline int serialNumber() const { return cacheKey() >> 32; }
-#endif
     qint64 cacheKey() const;
 
     bool isDetached() const;
@@ -166,23 +114,17 @@ public:
 
     inline bool operator!() const { return isNull(); }
 
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED inline QPixmap alphaChannel() const;
-    QT_DEPRECATED inline void setAlphaChannel(const QPixmap &);
-#endif
-
 protected:
     int metric(PaintDeviceMetric) const Q_DECL_OVERRIDE;
     static QPixmap fromImageInPlace(QImage &image, Qt::ImageConversionFlags flags = Qt::AutoColor);
 
 private:
-    QExplicitlySharedDataPointer<QPlatformPixmap> data;
 
     bool doImageIO(QImageWriter *io, int quality) const;
 
     QPixmap(const QSize &s, int type);
     void doInit(int, int, int);
-    Q_DUMMY_COMPARISON_OPERATOR(QPixmap)
+    //Q_DUMMY_COMPARISON_OPERATOR(QPixmap)
     friend class QPlatformPixmap;
     friend class QBitmap;
     friend class QPaintDevice;
@@ -190,9 +132,6 @@ private:
     friend class QOpenGLWidget;
     friend class QWidgetPrivate;
     friend class QRasterBuffer;
-#if !defined(QT_NO_DATASTREAM)
-    friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QPixmap &);
-#endif
 
 public:
     QPlatformPixmap* handle() const;
@@ -202,7 +141,7 @@ public:
     inline DataPtr &data_ptr() { return data; }
 };
 
-Q_DECLARE_SHARED(QPixmap)
+//Q_DECLARE_SHARED(QPixmap)
 
 inline QPixmap QPixmap::copy(int ax, int ay, int awidth, int aheight) const
 {
@@ -220,34 +159,5 @@ inline bool QPixmap::loadFromData(const QByteArray &buf, const char *format,
     return loadFromData(reinterpret_cast<const uchar *>(buf.constData()), buf.size(), format, flags);
 }
 
-#if QT_DEPRECATED_SINCE(5, 0)
-inline QPixmap QPixmap::alphaChannel() const
-{
-    return QPixmap::fromImage(toImage().alphaChannel());
-}
-
-inline void QPixmap::setAlphaChannel(const QPixmap &p)
-{
-    QImage image = toImage();
-    image.setAlphaChannel(p.toImage());
-    *this = QPixmap::fromImage(image);
-
-}
-#endif
-
-/*****************************************************************************
- QPixmap stream functions
-*****************************************************************************/
-
-#if !defined(QT_NO_DATASTREAM)
-Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QPixmap &);
-Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QPixmap &);
-#endif
-
-#ifndef QT_NO_DEBUG_STREAM
-Q_GUI_EXPORT QDebug operator<<(QDebug, const QPixmap &);
-#endif
-
-QT_END_NAMESPACE
 
 #endif // QPIXMAP_H

@@ -466,20 +466,7 @@ public:
 
         WA_DontShowOnScreen = 103,
 
-        // window types from http://standards.freedesktop.org/wm-spec/
-        WA_X11NetWmWindowTypeDesktop = 104,
-        WA_X11NetWmWindowTypeDock = 105,
-        WA_X11NetWmWindowTypeToolBar = 106,
-        WA_X11NetWmWindowTypeMenu = 107,
-        WA_X11NetWmWindowTypeUtility = 108,
-        WA_X11NetWmWindowTypeSplash = 109,
-        WA_X11NetWmWindowTypeDialog = 110,
-        WA_X11NetWmWindowTypeDropDownMenu = 111,
-        WA_X11NetWmWindowTypePopupMenu = 112,
-        WA_X11NetWmWindowTypeToolTip = 113,
-        WA_X11NetWmWindowTypeNotification = 114,
-        WA_X11NetWmWindowTypeCombo = 115,
-        WA_X11NetWmWindowTypeDND = 116,
+
 
         WA_MacFrameworkScaled  = 117,
 

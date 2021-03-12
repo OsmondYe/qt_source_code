@@ -88,7 +88,7 @@ public:
 
     // these objects are all used to indicate that a QObject was deleted
     // plus QPointer, which keeps a separate list
-    QAtomicPointer<QtSharedPointer::ExternalRefCountData> sharedRefcount;
+    QAtomicPointer<QtSharedPointer::ExternalRefCountData> sharedRefcount;  // 智能指针会用到, 判断是否被共享
 	
 public:
     struct ExtraData

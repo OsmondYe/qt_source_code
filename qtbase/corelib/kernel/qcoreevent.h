@@ -272,7 +272,7 @@ public:
 
     inline void setAccepted(bool accepted) { m_accept = accepted; }
     inline bool isAccepted() const { return m_accept; }
-
+	//发给当前node的消息,其如果不接受,那么可能会想父亲传播
     inline void accept() { m_accept = true; }
     inline void ignore() { m_accept = false; }
 

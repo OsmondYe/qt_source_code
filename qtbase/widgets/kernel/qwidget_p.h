@@ -249,8 +249,8 @@ public:
     };
 
     enum CloseMode {
-        CloseNoEvent,
-        CloseWithEvent,
+        CloseNoEvent,					// 在widget的析构中发这个
+        CloseWithEvent,					// 正常的发这个
         CloseWithSpontaneousEvent
     };
 
@@ -293,7 +293,7 @@ public:
     void deleteSysExtra();
     void createTLSysExtra();
     void deleteTLSysExtra();
-    void updateSystemBackground();
+    void updateSystemBackground(){}
     void propagatePaletteChange();
 
     void setPalette_helper(const QPalette &);
@@ -598,7 +598,6 @@ public:
 
     static void setWidgetParentHelper(QObject *widgetAsObject, QObject *newParent);
 
-    void setNetWmWindowTypes(bool skipIfMissing = false);
 
     bool stealKeyboardGrab(bool grab);
     bool stealMouseGrab(bool grab);

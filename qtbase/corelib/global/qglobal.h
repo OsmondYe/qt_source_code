@@ -401,71 +401,26 @@ Q_CORE_EXPORT bool qSharedBuild() Q_DECL_NOTHROW;
 
 
 class QString;
-Q_CORE_EXPORT QString qt_error_string(int errorCode = -1);
+QString qt_error_string(int errorCode = -1);
 
-#ifndef Q_CC_MSVC
-Q_NORETURN
-#endif
-Q_CORE_EXPORT void qt_assert(const char *assertion, const char *file, int line) Q_DECL_NOTHROW;
-
-#if !defined(Q_ASSERT)
-#  if defined(QT_NO_DEBUG) && !defined(QT_FORCE_ASSERTS)
-#    define Q_ASSERT(cond) do { } while ((false) && (cond))
-#  else
-#    define Q_ASSERT(cond) ((!(cond)) ? qt_assert(#cond,__FILE__,__LINE__) : qt_noop())
-#  endif
-#endif
-
-#if defined(QT_NO_DEBUG) && !defined(QT_PAINT_DEBUG)
-#define QT_NO_PAINT_DEBUG
-#endif
-
-#ifndef Q_CC_MSVC
-Q_NORETURN
-#endif
-Q_CORE_EXPORT void qt_assert_x(const char *where, const char *what, const char *file, int line) Q_DECL_NOTHROW;
-
-#if !defined(Q_ASSERT_X)
-#  if defined(QT_NO_DEBUG) && !defined(QT_FORCE_ASSERTS)
-#    define Q_ASSERT_X(cond, where, what) do { } while ((false) && (cond))
-#  else
-#    define Q_ASSERT_X(cond, where, what) ((!(cond)) ? qt_assert_x(where, what,__FILE__,__LINE__) : qt_noop())
-#  endif
-#endif
+void qt_assert(const char *assertion, const char *file, int line);
+#define Q_ASSERT(cond) ((!(cond)) ? qt_assert(#cond,__FILE__,__LINE__) : qt_noop())
 
 
-#ifdef Q_COMPILER_STATIC_ASSERT
-#define Q_STATIC_ASSERT(Condition) static_assert(bool(Condition), #Condition)
-#define Q_STATIC_ASSERT_X(Condition, Message) static_assert(bool(Condition), Message)
-#else
-// Intentionally undefined
-template <bool Test> class QStaticAssertFailure;
-template <> class QStaticAssertFailure<true> {};
+void qt_assert_x(const char *where, const char *what, const char *file, int line) ;
+#define Q_ASSERT_X(cond, where, what) ((!(cond)) ? qt_assert_x(where, what,__FILE__,__LINE__) : qt_noop())
 
-#define Q_STATIC_ASSERT_PRIVATE_JOIN(A, B) Q_STATIC_ASSERT_PRIVATE_JOIN_IMPL(A, B)
-#define Q_STATIC_ASSERT_PRIVATE_JOIN_IMPL(A, B) A ## B
-#ifdef __COUNTER__
-#define Q_STATIC_ASSERT(Condition) \
-    enum {Q_STATIC_ASSERT_PRIVATE_JOIN(q_static_assert_result, __COUNTER__) = sizeof(QStaticAssertFailure<!!(Condition)>)}
-#else
-#define Q_STATIC_ASSERT(Condition) \
-    enum {Q_STATIC_ASSERT_PRIVATE_JOIN(q_static_assert_result, __LINE__) = sizeof(QStaticAssertFailure<!!(Condition)>)}
-#endif /* __COUNTER__ */
-#define Q_STATIC_ASSERT_X(Condition, Message) Q_STATIC_ASSERT(Condition)
-#endif
 
-Q_NORETURN Q_CORE_EXPORT void qt_check_pointer(const char *, int) Q_DECL_NOTHROW;
-Q_CORE_EXPORT void qBadAlloc();
+// oye using c++ 11
+#define Q_STATIC_ASSERT(Condition) 				static_assert(bool(Condition), #Condition)
+#define Q_STATIC_ASSERT_X(Condition, Message) 	static_assert(bool(Condition), Message)
 
-#ifdef QT_NO_EXCEPTIONS
-#  if defined(QT_NO_DEBUG) && !defined(QT_FORCE_ASSERTS)
-#    define Q_CHECK_PTR(p) qt_noop()
-#  else
-#    define Q_CHECK_PTR(p) do {if (!(p)) qt_check_pointer(__FILE__,__LINE__);} while (false)
-#  endif
-#else
-#  define Q_CHECK_PTR(p) do { if (!(p)) qBadAlloc(); } while (false)
-#endif
+void qt_check_pointer(const char *, int) ;
+void qBadAlloc();
+
+
+#define Q_CHECK_PTR(p) do {if (!(p)) qt_check_pointer(__FILE__,__LINE__);} while (false)
+
 
 template <typename T>
 inline T *q_check_ptr(T *p) { Q_CHECK_PTR(p); return p; }

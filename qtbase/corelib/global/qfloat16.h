@@ -244,7 +244,7 @@ QT_WARNING_POP
 /*!
   \internal
 */
-Q_REQUIRED_RESULT inline bool qFuzzyIsNull(qfloat16 f) Q_DECL_NOTHROW
+ inline bool qFuzzyIsNull(qfloat16 f) 
 {
     return qAbs(static_cast<float>(f)) <= 0.001f;
 }

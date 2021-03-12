@@ -53,7 +53,7 @@ Q_CORE_EXPORT bool qIsInf(double d) { return qt_is_inf(d); }
     Returns \c true if the double \a {d} is not a number (NaN).
     \relates <QtGlobal>
 */
-Q_CORE_EXPORT bool qIsNaN(double d) { return qt_is_nan(d); }
+ bool qIsNaN(double d) { return qt_is_nan(d); }
 
 /*!
     Returns \c true if the double \a {d} is a finite number.

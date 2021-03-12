@@ -48,7 +48,8 @@ public:
 
     uint isWidget : 1;					// Widget's PrivateClass will set it to 1
     uint blockSig : 1;					// 是否暂时阻止此Obj发送signal
-    uint wasDeleted : 1;
+    
+    uint wasDeleted : 1;				// 智能指针节会用到,其内构造引用时,要求wasDeleted是false, ~QObject中设为true
     uint isDeletingChildren : 1;
     uint sendChildEvents : 1;			// oye, 关注下 SendEvent
     uint receiveChildEvents : 1;

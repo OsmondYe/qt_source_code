@@ -907,23 +907,6 @@ void QPixmap::fill(const QPaintDevice *device, const QPoint &p)
 }
 
 
-/*!
-    \fn void QPixmap::fill(const QPaintDevice *device, int x, int y)
-    \obsolete
-
-    Use QPainter or the fill(QColor) overload instead.
-*/
-
-
-/*!
-    Fills the pixmap with the given \a color.
-
-    The effect of this function is undefined when the pixmap is
-    being painted on.
-
-    \sa {QPixmap#Pixmap Transformations}{Pixmap Transformations}
-*/
-
 void QPixmap::fill(const QColor &color)
 {
     if (isNull())

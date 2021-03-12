@@ -67,7 +67,7 @@ static inline bool qt_is_inf(qfloat16 d) Q_DECL_NOTHROW
     return is_inf;
 }
 
-static inline bool qt_is_nan(qfloat16 d) Q_DECL_NOTHROW
+static inline bool qt_is_nan(qfloat16 d)
 {
     bool is_nan;
     uchar *ch = (uchar *)&d;

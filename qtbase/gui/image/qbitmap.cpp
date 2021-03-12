@@ -1,42 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtGui module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #include "qbitmap.h"
 #include <qpa/qplatformpixmap.h>
 #include <qpa/qplatformintegration.h>
@@ -96,73 +57,24 @@ QT_BEGIN_NAMESPACE
   \internal
  */
 
-/*!
-    Constructs a null bitmap.
 
-    \sa QPixmap::isNull()
-*/
-QBitmap::QBitmap()
-    : QPixmap(QSize(0, 0), QPlatformPixmap::BitmapType)
+QBitmap::QBitmap()    : QPixmap(QSize(0, 0), QPlatformPixmap::BitmapType)
 {
 }
 
-/*!
-    \fn QBitmap::QBitmap(int width, int height)
 
-    Constructs a bitmap with the given \a width and \a height. The pixels
-    inside are uninitialized.
-
-    \sa clear()
-*/
-
-QBitmap::QBitmap(int w, int h)
-    : QPixmap(QSize(w, h), QPlatformPixmap::BitmapType)
+QBitmap::QBitmap(int w, int h)    : QPixmap(QSize(w, h), QPlatformPixmap::BitmapType)
 {
 }
 
-/*!
-    Constructs a bitmap with the given \a size.  The pixels in the
-    bitmap are uninitialized.
-
-    \sa clear()
-*/
-
-QBitmap::QBitmap(const QSize &size)
-    : QPixmap(size, QPlatformPixmap::BitmapType)
+QBitmap::QBitmap(const QSize &size)    : QPixmap(size, QPlatformPixmap::BitmapType)
 {
 }
-
-/*!
-    \fn QBitmap::clear()
-
-    Clears the bitmap, setting all its bits to Qt::color0.
-*/
-
-/*!
-    Constructs a bitmap that is a copy of the given \a pixmap.
-
-    If the pixmap has a depth greater than 1, the resulting bitmap
-    will be dithered automatically.
-
-    \sa QPixmap::depth(), fromImage(), fromData()
-*/
 
 QBitmap::QBitmap(const QPixmap &pixmap)
 {
     QBitmap::operator=(pixmap);
 }
-
-/*!
-    Constructs a bitmap from the file specified by the given \a
-    fileName. If the file does not exist, or has an unknown format,
-    the bitmap becomes a null bitmap.
-
-    The \a fileName and \a format parameters are passed on to the
-    QPixmap::load() function. If the file format uses more than 1 bit
-    per pixel, the resulting bitmap will be dithered automatically.
-
-    \sa QPixmap::isNull(), QImageReader::imageFormat()
-*/
 
 QBitmap::QBitmap(const QString& fileName, const char *format)
     : QPixmap(QSize(0, 0), QPlatformPixmap::BitmapType)
@@ -170,17 +82,6 @@ QBitmap::QBitmap(const QString& fileName, const char *format)
     load(fileName, format, Qt::MonoOnly);
 }
 
-/*!
-    \overload
-
-    Assigns the given \a pixmap to this bitmap and returns a reference
-    to this bitmap.
-
-    If the pixmap has a depth greater than 1, the resulting bitmap
-    will be dithered automatically.
-
-    \sa QPixmap::depth()
- */
 
 QBitmap &QBitmap::operator=(const QPixmap &pixmap)
 {
@@ -196,39 +97,12 @@ QBitmap &QBitmap::operator=(const QPixmap &pixmap)
     return *this;
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 
-/*!
-  Destroys the bitmap.
-*/
-QBitmap::~QBitmap()
-{
-}
-
-#endif
-
-/*!
-    \fn void QBitmap::swap(QBitmap &other)
-    \since 4.8
-
-    Swaps bitmap \a other with this bitmap. This operation is very
-    fast and never fails.
-*/
-
-/*!
-   Returns the bitmap as a QVariant.
-*/
 QBitmap::operator QVariant() const
 {
     return QVariant(QVariant::Bitmap, this);
 }
 
-/*!
-    Returns a copy of the given \a image converted to a bitmap using
-    the specified image conversion \a flags.
-
-    \sa fromData()
-*/
 QBitmap QBitmap::fromImage(const QImage &image, Qt::ImageConversionFlags flags)
 {
     if (image.isNull())

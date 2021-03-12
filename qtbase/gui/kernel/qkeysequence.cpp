@@ -4,22 +4,14 @@
 #include <qpa/qplatformtheme.h>
 #include "private/qguiapplication_p.h"
 
-#ifndef QT_NO_SHORTCUT
 
 #include "qdebug.h"
 #include <QtCore/qhashfunctions.h>
-#ifndef QT_NO_REGEXP
 # include "qregexp.h"
-#endif
-#ifndef QT_NO_DATASTREAM
-# include "qdatastream.h"
-#endif
+
+
 #include "qvariant.h"
 
-#if defined(Q_OS_MACX)
-#include <QtCore/private/qcore_mac_p.h>
-#include <Carbon/Carbon.h>
-#endif
 
 #include <algorithm>
 
@@ -1481,11 +1473,5 @@ QString QKeySequence::listToString(const QList<QKeySequence> &list, SequenceForm
 
     return result;
 }
-
-
-
-#endif // QT_NO_SHORTCUT
-
-
 
 QT_END_NAMESPACE

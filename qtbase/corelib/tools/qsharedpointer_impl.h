@@ -1,73 +1,8 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtCore module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
-#ifndef Q_QDOC
-
-#ifndef QSHAREDPOINTER_H
-#error Do not include qsharedpointer_impl.h directly
-#endif
-
-#if 0
-#pragma qt_sync_skip_header_check
-#pragma qt_sync_stop_processing
-#endif
-
-#if 0
-// These macros are duplicated here to make syncqt not complain a about
-// this header, as we have a "qt_sync_stop_processing" below, which in turn
-// is here because this file contains a template mess and duplicates the
-// classes found in qsharedpointer.h
-QT_BEGIN_NAMESPACE
-QT_END_NAMESPACE
-#pragma qt_sync_stop_processing
-#endif
-
 #include <new>
 #include <QtCore/qatomic.h>
 #include <QtCore/qobject.h>    // for qobject_cast
-#if QT_DEPRECATED_SINCE(5, 6)
 #include <QtCore/qhash.h>
-#endif
 #include <QtCore/qhashfunctions.h>
-
-QT_BEGIN_NAMESPACE
 
 
 // Macro QSHAREDPOINTER_VERIFY_AUTO_CAST
@@ -100,10 +35,9 @@ QSharedPointer<X> qSharedPointerDynamicCast(const QSharedPointer<T> &ptr);
 template <class X, class T>
 QSharedPointer<X> qSharedPointerConstCast(const QSharedPointer<T> &ptr);
 
-#ifndef QT_NO_QOBJECT
 template <class X, class T>
 QSharedPointer<X> qSharedPointerObjectCast(const QSharedPointer<T> &ptr);
-#endif
+
 
 namespace QtSharedPointer {
     template <class T> class ExternalRefCount;
@@ -111,8 +45,8 @@ namespace QtSharedPointer {
     template <class X, class Y> QSharedPointer<X> copyAndSetPointer(X * ptr, const QSharedPointer<Y> &src);
 
     // used in debug mode to verify the reuse of pointers
-    Q_CORE_EXPORT void internalSafetyCheckAdd(const void *, const volatile void *);
-    Q_CORE_EXPORT void internalSafetyCheckRemove(const void *);
+    void internalSafetyCheckAdd(const void *, const volatile void *);
+    void internalSafetyCheckRemove(const void *);
 
     template <class T, typename Klass, typename RetVal>
     inline void executeDeleter(T *t, RetVal (Klass:: *memberDeleter)())
@@ -140,27 +74,27 @@ namespace QtSharedPointer {
     // ExternalRefCountWithContiguousData
     struct ExternalRefCountData
     {
-        typedef void (*DestroyerFn)(ExternalRefCountData *);
-        QBasicAtomicInt weakref;
-        QBasicAtomicInt strongref;
+        QBasicAtomicInt weakref;		// oye 外部对指针的引用,  不影响指针被卸载
+        QBasicAtomicInt strongref; 		// oye 指针自己生命周期
         DestroyerFn destroyer;
 
-        inline ExternalRefCountData(DestroyerFn d)
-            : destroyer(d)
+		//直接用这个强行从QObject中抽取对象引用计数
+		static ExternalRefCountData *getAndRef(const QObject *);
+        typedef void (*DestroyerFn)(ExternalRefCountData *);
+
+        inline ExternalRefCountData(DestroyerFn d)       : destroyer(d)
         {
             strongref.store(1);
             weakref.store(1);
         }
-        inline ExternalRefCountData(Qt::Initialization) { }
         ~ExternalRefCountData() { Q_ASSERT(!weakref.load()); Q_ASSERT(strongref.load() <= 0); }
 
         void destroy() { destroyer(this); }
 
-#ifndef QT_NO_QOBJECT
-        Q_CORE_EXPORT static ExternalRefCountData *getAndRef(const QObject *);
-        Q_CORE_EXPORT void setQObjectShared(const QObject *, bool enable);
-        Q_CORE_EXPORT void checkQObjectShared(const QObject *);
-#endif
+
+        void setQObjectShared(const QObject *, bool enable);
+        void checkQObjectShared(const QObject *);
+
         inline void checkQObjectShared(...) { }
         inline void setQObjectShared(...) { }
 
@@ -233,8 +167,8 @@ namespace QtSharedPointer {
         }
     private:
         // prevent construction
-        ExternalRefCountWithCustomDeleter() Q_DECL_EQ_DELETE;
-        ~ExternalRefCountWithCustomDeleter() Q_DECL_EQ_DELETE;
+        ExternalRefCountWithCustomDeleter() = delete;
+        ~ExternalRefCountWithCustomDeleter() = delete;
         Q_DISABLE_COPY(ExternalRefCountWithCustomDeleter)
     };
 
@@ -277,15 +211,15 @@ namespace QtSharedPointer {
 
     private:
         // prevent construction
-        ExternalRefCountWithContiguousData() Q_DECL_EQ_DELETE;
-        ~ExternalRefCountWithContiguousData() Q_DECL_EQ_DELETE;
-        Q_DISABLE_COPY(ExternalRefCountWithContiguousData)
+        ExternalRefCountWithContiguousData() = delete;
+        ~ExternalRefCountWithContiguousData() = delete;
+        //Q_DISABLE_COPY(ExternalRefCountWithContiguousData)
     };
 
-#ifndef QT_NO_QOBJECT
-    Q_CORE_EXPORT QWeakPointer<QObject> weakPointerFromVariant_internal(const QVariant &variant);
-    Q_CORE_EXPORT QSharedPointer<QObject> sharedPointerFromVariant_internal(const QVariant &variant);
-#endif
+
+     QWeakPointer<QObject> weakPointerFromVariant_internal(const QVariant &variant);
+     QSharedPointer<QObject> sharedPointerFromVariant_internal(const QVariant &variant);
+
 } // namespace QtSharedPointer
 
 template <class T> class QSharedPointer
@@ -302,17 +236,17 @@ public:
     typedef const value_type &const_reference;
     typedef qptrdiff difference_type;
 
-    T *data() const Q_DECL_NOTHROW { return value; }
-    bool isNull() const Q_DECL_NOTHROW { return !data(); }
-    operator RestrictedBool() const Q_DECL_NOTHROW { return isNull() ? Q_NULLPTR : &QSharedPointer::value; }
-    bool operator !() const Q_DECL_NOTHROW { return isNull(); }
+    T *data() const  { return value; }
+    bool isNull() const  { return !data(); }
+    operator RestrictedBool() const  { return isNull() ? Q_NULLPTR : &QSharedPointer::value; }
+    bool operator !() const  { return isNull(); }
     T &operator*() const { return *data(); }
-    T *operator->() const Q_DECL_NOTHROW { return data(); }
+    T *operator->() const  { return data(); }
 
-    Q_DECL_CONSTEXPR QSharedPointer() Q_DECL_NOTHROW : value(nullptr), d(nullptr) { }
+    Q_DECL_CONSTEXPR QSharedPointer()  : value(nullptr), d(nullptr) { }
     ~QSharedPointer() { deref(); }
 
-    Q_DECL_CONSTEXPR QSharedPointer(std::nullptr_t) Q_DECL_NOTHROW : value(nullptr), d(nullptr) { }
+    Q_DECL_CONSTEXPR QSharedPointer(std::nullptr_t)  : value(nullptr), d(nullptr) { }
 
     template <class X>
     inline explicit QSharedPointer(X *ptr) : value(ptr) // noexcept
@@ -325,22 +259,22 @@ public:
     template <typename Deleter>
     QSharedPointer(std::nullptr_t, Deleter) : value(nullptr), d(nullptr) { }
 
-    QSharedPointer(const QSharedPointer &other) Q_DECL_NOTHROW : value(other.value), d(other.d)
+    QSharedPointer(const QSharedPointer &other)  : value(other.value), d(other.d)
     { if (d) ref(); }
-    QSharedPointer &operator=(const QSharedPointer &other) Q_DECL_NOTHROW
+    QSharedPointer &operator=(const QSharedPointer &other) 
     {
         QSharedPointer copy(other);
         swap(copy);
         return *this;
     }
 #ifdef Q_COMPILER_RVALUE_REFS
-    QSharedPointer(QSharedPointer &&other) Q_DECL_NOTHROW
+    QSharedPointer(QSharedPointer &&other) 
         : value(other.value), d(other.d)
     {
         other.d = Q_NULLPTR;
         other.value = Q_NULLPTR;
     }
-    QSharedPointer &operator=(QSharedPointer &&other) Q_DECL_NOTHROW
+    QSharedPointer &operator=(QSharedPointer &&other) 
     {
         QSharedPointer moved(std::move(other));
         swap(moved);
@@ -348,7 +282,7 @@ public:
     }
 
     template <class X>
-    QSharedPointer(QSharedPointer<X> &&other) Q_DECL_NOTHROW
+    QSharedPointer(QSharedPointer<X> &&other) 
         : value(other.value), d(other.d)
     {
         other.d = Q_NULLPTR;
@@ -356,7 +290,7 @@ public:
     }
 
     template <class X>
-    QSharedPointer &operator=(QSharedPointer<X> &&other) Q_DECL_NOTHROW
+    QSharedPointer &operator=(QSharedPointer<X> &&other) 
     {
         QSharedPointer moved(std::move(other));
         swap(moved);
@@ -366,7 +300,7 @@ public:
 #endif
 
     template <class X>
-    QSharedPointer(const QSharedPointer<X> &other) Q_DECL_NOTHROW : value(other.value), d(other.d)
+    QSharedPointer(const QSharedPointer<X> &other)  : value(other.value), d(other.d)
     { if (d) ref(); }
 
     template <class X>
@@ -452,9 +386,9 @@ public:
 private:
     explicit QSharedPointer(Qt::Initialization) {}
 
-    void deref() Q_DECL_NOTHROW
+    void deref() 
     { deref(d); }
-    static void deref(Data *dd) Q_DECL_NOTHROW
+    static void deref(Data *dd) 
     {
         if (!dd) return;
         if (!dd->strongref.deref()) {
@@ -495,7 +429,7 @@ private:
         enableSharedFromThis(ptr);
     }
 
-    void internalSwap(QSharedPointer &other) Q_DECL_NOTHROW
+    void internalSwap(QSharedPointer &other) 
     {
         qSwap(d, other.d);
         qSwap(this->value, other.value);
@@ -508,7 +442,7 @@ public:
     template <class X> friend class QWeakPointer;
     template <class X, class Y> friend QSharedPointer<X> QtSharedPointer::copyAndSetPointer(X * ptr, const QSharedPointer<Y> &src);
 #endif
-    void ref() const Q_DECL_NOTHROW { d->weakref.ref(); d->strongref.ref(); }
+    void ref() const  { d->weakref.ref(); d->strongref.ref(); }
 
     inline void internalSet(Data *o, T *actual)
     {
@@ -544,13 +478,26 @@ public:
     Data *d;
 };
 
+
+// oye T 必须是QObject一族的
 template <class T>
 class QWeakPointer
 {
+    Data *d;    
+    T *value;  // value是否有效, 需要d来确保
+
+	// 允许QPointer直接使用
+    template <class X> friend class QPointer;			// QPointer可以直接用这个对象
+
+	//私有构造, prt通过Data::getAndRef, 和QSharedPtr以及QObject就产生关联
+    template <class X>		 // 
+    inline QWeakPointer(X *ptr, bool) : d(ptr ? Data::getAndRef(ptr) : Q_NULLPTR), value(ptr)
+    { }
+
     typedef T *QWeakPointer:: *RestrictedBool;
     typedef QtSharedPointer::ExternalRefCountData Data;
 
-public:
+public:// c++ 要求
     typedef T element_type;
     typedef T value_type;
     typedef value_type *pointer;
@@ -558,50 +505,30 @@ public:
     typedef value_type &reference;
     typedef const value_type &const_reference;
     typedef qptrdiff difference_type;
+	
+public:
+    bool isNull() const  { return d == Q_NULLPTR || d->strongref.load() == 0 || value == Q_NULLPTR; }
+    operator RestrictedBool() const  { return isNull() ? Q_NULLPTR : &QWeakPointer::value; }
+    bool operator !() const  { return isNull(); }
 
-    bool isNull() const Q_DECL_NOTHROW { return d == Q_NULLPTR || d->strongref.load() == 0 || value == Q_NULLPTR; }
-    operator RestrictedBool() const Q_DECL_NOTHROW { return isNull() ? Q_NULLPTR : &QWeakPointer::value; }
-    bool operator !() const Q_DECL_NOTHROW { return isNull(); }
-    T *data() const Q_DECL_NOTHROW { return d == Q_NULLPTR || d->strongref.load() == 0 ? Q_NULLPTR : value; }
+	// value的强引用无效了, 那就直接给空
+    T *data() const  { return d == Q_NULLPTR || d->strongref.load() == 0 ? Q_NULLPTR : value; }
 
-    inline QWeakPointer() Q_DECL_NOTHROW : d(Q_NULLPTR), value(Q_NULLPTR) { }
+    inline QWeakPointer()  : d(Q_NULLPTR), value(Q_NULLPTR) { }
     inline ~QWeakPointer() { if (d && !d->weakref.deref()) delete d; }
 
-#ifndef QT_NO_QOBJECT
-    // special constructor that is enabled only if X derives from QObject
-#if QT_DEPRECATED_SINCE(5, 0)
-    template <class X>
-    QT_DEPRECATED inline QWeakPointer(X *ptr) : d(ptr ? Data::getAndRef(ptr) : Q_NULLPTR), value(ptr)
-    { }
-#endif
-#endif
 
-#if QT_DEPRECATED_SINCE(5, 0)
-    template <class X>
-    QT_DEPRECATED inline QWeakPointer &operator=(X *ptr)
-    { return *this = QWeakPointer(ptr); }
-#endif
-
-    QWeakPointer(const QWeakPointer &other) Q_DECL_NOTHROW : d(other.d), value(other.value)
+    QWeakPointer(const QWeakPointer &other)  : d(other.d), value(other.value)
     { if (d) d->weakref.ref(); }
-#ifdef Q_COMPILER_RVALUE_REFS
-    QWeakPointer(QWeakPointer &&other) Q_DECL_NOTHROW
-        : d(other.d), value(other.value)
-    {
-        other.d = Q_NULLPTR;
-        other.value = Q_NULLPTR;
-    }
-    QWeakPointer &operator=(QWeakPointer &&other) Q_DECL_NOTHROW
-    { QWeakPointer moved(std::move(other)); swap(moved); return *this; }
-#endif
-    QWeakPointer &operator=(const QWeakPointer &other) Q_DECL_NOTHROW
+
+    QWeakPointer &operator=(const QWeakPointer &other) 
     {
         QWeakPointer copy(other);
         swap(copy);
         return *this;
     }
 
-    void swap(QWeakPointer &other) Q_DECL_NOTHROW
+    void swap(QWeakPointer &other) 
     {
         qSwap(this->d, other.d);
         qSwap(this->value, other.value);
@@ -629,11 +556,11 @@ public:
     }
 
     template <class X>
-    bool operator==(const QWeakPointer<X> &o) const Q_DECL_NOTHROW
+    bool operator==(const QWeakPointer<X> &o) const 
     { return d == o.d && value == static_cast<const T *>(o.value); }
 
     template <class X>
-    bool operator!=(const QWeakPointer<X> &o) const Q_DECL_NOTHROW
+    bool operator!=(const QWeakPointer<X> &o) const 
     { return !(*this == o); }
 
     template <class X>
@@ -649,11 +576,11 @@ public:
     }
 
     template <class X>
-    bool operator==(const QSharedPointer<X> &o) const Q_DECL_NOTHROW
+    bool operator==(const QSharedPointer<X> &o) const 
     { return d == o.d; }
 
     template <class X>
-    bool operator!=(const QSharedPointer<X> &o) const Q_DECL_NOTHROW
+    bool operator!=(const QSharedPointer<X> &o) const 
     { return !(*this == o); }
 
     inline void clear() { *this = QWeakPointer(); }
@@ -662,28 +589,15 @@ public:
     // std::weak_ptr compatibility:
     inline QSharedPointer<T> lock() const { return toStrongRef(); }
 
-#if defined(QWEAKPOINTER_ENABLE_ARROW)
     inline T *operator->() const { return data(); }
-#endif
 
 private:
-
-#if defined(Q_NO_TEMPLATE_FRIENDS)
-public:
-#else
     template <class X> friend class QSharedPointer;
-    template <class X> friend class QPointer;
-#endif
+
 
     template <class X>
-    inline QWeakPointer &assign(X *ptr)
-    { return *this = QWeakPointer<X>(ptr, true); }
+    inline QWeakPointer &assign(X *ptr)   { return *this = QWeakPointer<X>(ptr, true); }
 
-#ifndef QT_NO_QOBJECT
-    template <class X>
-    inline QWeakPointer(X *ptr, bool) : d(ptr ? Data::getAndRef(ptr) : Q_NULLPTR), value(ptr)
-    { }
-#endif
 
     inline void internalSet(Data *o, T *actual)
     {
@@ -696,8 +610,7 @@ public:
         value = actual;
     }
 
-    Data *d;
-    T *value;
+
 };
 
 template <class T>
@@ -735,92 +648,92 @@ public:
 // operator== and operator!=
 //
 template <class T, class X>
-bool operator==(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2) Q_DECL_NOTHROW
+bool operator==(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2) 
 {
     return ptr1.data() == ptr2.data();
 }
 template <class T, class X>
-bool operator!=(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2) Q_DECL_NOTHROW
+bool operator!=(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2) 
 {
     return ptr1.data() != ptr2.data();
 }
 
 template <class T, class X>
-bool operator==(const QSharedPointer<T> &ptr1, const X *ptr2) Q_DECL_NOTHROW
+bool operator==(const QSharedPointer<T> &ptr1, const X *ptr2) 
 {
     return ptr1.data() == ptr2;
 }
 template <class T, class X>
-bool operator==(const T *ptr1, const QSharedPointer<X> &ptr2) Q_DECL_NOTHROW
+bool operator==(const T *ptr1, const QSharedPointer<X> &ptr2) 
 {
     return ptr1 == ptr2.data();
 }
 template <class T, class X>
-bool operator!=(const QSharedPointer<T> &ptr1, const X *ptr2) Q_DECL_NOTHROW
+bool operator!=(const QSharedPointer<T> &ptr1, const X *ptr2) 
 {
     return !(ptr1 == ptr2);
 }
 template <class T, class X>
-bool operator!=(const T *ptr1, const QSharedPointer<X> &ptr2) Q_DECL_NOTHROW
+bool operator!=(const T *ptr1, const QSharedPointer<X> &ptr2) 
 {
     return !(ptr2 == ptr1);
 }
 
 template <class T, class X>
-bool operator==(const QSharedPointer<T> &ptr1, const QWeakPointer<X> &ptr2) Q_DECL_NOTHROW
+bool operator==(const QSharedPointer<T> &ptr1, const QWeakPointer<X> &ptr2) 
 {
     return ptr2 == ptr1;
 }
 template <class T, class X>
-bool operator!=(const QSharedPointer<T> &ptr1, const QWeakPointer<X> &ptr2) Q_DECL_NOTHROW
+bool operator!=(const QSharedPointer<T> &ptr1, const QWeakPointer<X> &ptr2) 
 {
     return ptr2 != ptr1;
 }
 
 template<class T>
-inline bool operator==(const QSharedPointer<T> &lhs, std::nullptr_t) Q_DECL_NOTHROW
+inline bool operator==(const QSharedPointer<T> &lhs, std::nullptr_t) 
 {
     return lhs.isNull();
 }
 
 template<class T>
-inline bool operator!=(const QSharedPointer<T> &lhs, std::nullptr_t) Q_DECL_NOTHROW
+inline bool operator!=(const QSharedPointer<T> &lhs, std::nullptr_t) 
 {
     return !lhs.isNull();
 }
 
 template<class T>
-inline bool operator==(std::nullptr_t, const QSharedPointer<T> &rhs) Q_DECL_NOTHROW
+inline bool operator==(std::nullptr_t, const QSharedPointer<T> &rhs) 
 {
     return rhs.isNull();
 }
 
 template<class T>
-inline bool operator!=(std::nullptr_t, const QSharedPointer<T> &rhs) Q_DECL_NOTHROW
+inline bool operator!=(std::nullptr_t, const QSharedPointer<T> &rhs) 
 {
     return !rhs.isNull();
 }
 
 template<class T>
-inline bool operator==(const QWeakPointer<T> &lhs, std::nullptr_t) Q_DECL_NOTHROW
+inline bool operator==(const QWeakPointer<T> &lhs, std::nullptr_t) 
 {
     return lhs.isNull();
 }
 
 template<class T>
-inline bool operator!=(const QWeakPointer<T> &lhs, std::nullptr_t) Q_DECL_NOTHROW
+inline bool operator!=(const QWeakPointer<T> &lhs, std::nullptr_t) 
 {
     return !lhs.isNull();
 }
 
 template<class T>
-inline bool operator==(std::nullptr_t, const QWeakPointer<T> &rhs) Q_DECL_NOTHROW
+inline bool operator==(std::nullptr_t, const QWeakPointer<T> &rhs) 
 {
     return rhs.isNull();
 }
 
 template<class T>
-inline bool operator!=(std::nullptr_t, const QWeakPointer<T> &rhs) Q_DECL_NOTHROW
+inline bool operator!=(std::nullptr_t, const QWeakPointer<T> &rhs) 
 {
     return !rhs.isNull();
 }
@@ -998,6 +911,3 @@ template<typename T> Q_DECLARE_TYPEINFO_BODY(QWeakPointer<T>, Q_MOVABLE_TYPE);
 template<typename T> Q_DECLARE_TYPEINFO_BODY(QSharedPointer<T>, Q_MOVABLE_TYPE);
 
 
-QT_END_NAMESPACE
-
-#endif

@@ -1,42 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtGui module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #include "qplatformtheme.h"
 
 #include "qplatformtheme_p.h"
@@ -56,115 +17,6 @@
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \class QPlatformTheme
-    \since 5.0
-    \internal
-    \preliminary
-    \ingroup qpa
-    \brief The QPlatformTheme class allows customizing the UI based on themes.
-
-*/
-
-/*!
-    \enum QPlatformTheme::ThemeHint
-
-    This enum describes the available theme hints.
-
-    \value CursorFlashTime (int) Cursor flash time in ms, overriding
-                                 QPlatformIntegration::styleHint.
-
-    \value KeyboardInputInterval (int) Keyboard input interval in ms, overriding
-                                 QPlatformIntegration::styleHint.
-
-    \value MouseDoubleClickInterval (int) Mouse double click interval in ms,
-                                    overriding QPlatformIntegration::styleHint.
-
-    \value MouseDoubleClickDistance (int) The maximum distance in logical pixels which the mouse can travel
-                        between clicks in order for the click sequence to be handled as a double click.
-                        The default value is 5 logical pixels.
-
-    \value MousePressAndHoldInterval (int) Mouse press and hold interval in ms,
-                                    overriding QPlatformIntegration::styleHint.
-
-    \value StartDragDistance (int) Start drag distance,
-                             overriding QPlatformIntegration::styleHint.
-
-    \value StartDragTime (int) Start drag time in ms,
-                               overriding QPlatformIntegration::styleHint.
-
-    \value WheelScrollLines (int) The number of lines to scroll a widget, when the mouse wheel is rotated.
-                        The default value is 3.  \sa QApplication::wheelScrollLines()
-
-    \value KeyboardAutoRepeatRate (int) Keyboard auto repeat rate,
-                                  overriding QPlatformIntegration::styleHint.
-
-    \value PasswordMaskDelay (int) Pass word mask delay in ms,
-                                   overriding QPlatformIntegration::styleHint.
-
-    \value StartDragVelocity (int) Velocity of a drag,
-                                   overriding QPlatformIntegration::styleHint.
-
-    \value TextCursorWidth  (int) Determines the width of the text cursor.
-
-    \value DropShadow       (bool) Determines whether the drop shadow effect for
-                            tooltips or whatsthis is enabled.
-
-    \value MaximumScrollBarDragDistance (int) Determines the value returned by
-                            QStyle::pixelMetric(PM_MaximumDragDistance)
-
-    \value ToolButtonStyle (int) A value representing a Qt::ToolButtonStyle.
-
-    \value ToolBarIconSize Icon size for tool bars.
-
-    \value SystemIconThemeName (QString) Name of the icon theme.
-
-    \value SystemIconFallbackThemeName (QString) Name of the fallback icon theme.
-
-    \value IconThemeSearchPaths (QStringList) Search paths for icons.
-
-    \value ItemViewActivateItemOnSingleClick (bool) Activate items by single click.
-
-    \value StyleNames (QStringList) A list of preferred style names.
-
-    \value WindowAutoPlacement (bool) A boolean value indicating whether Windows
-                               (particularly dialogs) are placed by the system
-                               (see _NET_WM_FULL_PLACEMENT in X11).
-
-    \value DialogButtonBoxLayout (int) An integer representing a
-                                 QDialogButtonBox::ButtonLayout value.
-
-    \value DialogButtonBoxButtonsHaveIcons (bool) A boolean value indicating whether
-                                            the buttons of a QDialogButtonBox should have icons.
-
-    \value UseFullScreenForPopupMenu (bool) Pop menus can cover the full screen including task bar.
-
-    \value KeyboardScheme (int) An integer value (enum KeyboardSchemes) specifying the
-                           keyboard scheme.
-
-    \value UiEffects (int) A flag value consisting of UiEffect values specifying the enabled UI animations.
-
-    \value SpellCheckUnderlineStyle (int) A QTextCharFormat::UnderlineStyle specifying
-                                    the underline style used misspelled words when spell checking.
-
-    \value TabFocusBehavior (int) A Qt::TabFocusBehavior specifying
-                         the behavior of focus change when tab key was pressed.
-                         This enum value was added in Qt 5.5.
-
-    \value DialogSnapToDefaultButton (bool) Whether the mouse should snap to the default button when a dialog
-                                     becomes visible.
-
-    \value ContextMenuOnMouseRelease (bool) Whether the context menu should be shown on mouse release.
-
-    \value TouchDoubleTapDistance (int) The maximum distance in logical pixels which a touchpoint can travel
-                        between taps in order for the tap sequence to be handled as a double tap.
-                        The default value is double the MouseDoubleClickDistance, or 10 logical pixels
-                        if that is not specified.
-
-    \sa themeHint(), QStyle::pixelMetric()
-*/
-
-
 #ifndef QT_NO_SHORTCUT
 // Table of key bindings. It must be sorted on key sequence:
 // The integer value of VK_KEY | Modifier Keys (e.g., VK_META, and etc.)
@@ -180,6 +32,7 @@ enum KeyPlatform {
     KB_All = 0xffff
 };
 
+// oye 一个列表搞定不同平台常用的快捷键, 高,实在是高
 const QKeyBinding QPlatformThemePrivate::keyBindings[] = {
     //   StandardKey                            Priority    Key Sequence                            Platforms
     {QKeySequence::HelpContents,            1,          Qt::CTRL | Qt::Key_Question,            KB_Mac},
@@ -650,12 +503,8 @@ QList<QKeySequence> QPlatformTheme::keyBindings(QKeySequence::StandardKey key) c
         if (!(it->platform & platform))
             continue;
 
-        uint shortcut =
-#if defined(Q_OS_MACX)
-            maybeSwapShortcut(it->shortcut);
-#else
-            it->shortcut;
-#endif
+        uint shortcut =  it->shortcut;
+
         if (it->priority > 0)
             list.prepend(QKeySequence(shortcut));
         else

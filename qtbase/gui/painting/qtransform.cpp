@@ -424,13 +424,6 @@ QTransform &QTransform::translate(qreal dx, qreal dy)
 {
     if (dx == 0 && dy == 0)
         return *this;
-#ifndef QT_NO_DEBUG
-    if (qIsNaN(dx) | qIsNaN(dy)) {
-        nanWarning("translate");
-        return *this;
-    }
-#endif
-
     switch(inline_type()) {
     case TxNone:
         affine._dx = dx;

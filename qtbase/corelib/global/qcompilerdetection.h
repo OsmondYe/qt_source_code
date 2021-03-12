@@ -2,6 +2,18 @@
 
 #define QCOMPILERDETECTION_H
 
+#define Q_NULLPTR         nullptr
+#define Q_DECL_EQ_DEFAULT
+#define Q_DECL_EQ_DELETE = delete
+#define Q_DECL_CONSTEXPR constexpr
+#define Q_DECL_RELAXED_CONSTEXPR constexpr
+#define Q_CONSTEXPR constexpr
+#define Q_RELAXED_CONSTEXPR constexpr
+	
+#define Q_DECL_OVERRIDE override
+#define Q_DECL_FINAL final
+
+
 
 #define Q_CC_CLANG ((__clang_major__ * 100) + __clang_minor__)
 #define Q_CC_MSVC (_MSC_VER)
@@ -25,26 +37,11 @@
 #define Q_DECL_NOTHROW  throw()
 
 
-
-#define Q_NULLPTR         nullptr
-#define Q_DECL_EQ_DEFAULT
-#define Q_DECL_EQ_DELETE = delete
-
-
-
 #define Q_COMPILER_DEFAULT_DELETE_MEMBERS
 
 
 
-#define Q_DECL_CONSTEXPR constexpr
-#define Q_DECL_RELAXED_CONSTEXPR constexpr
-#define Q_CONSTEXPR constexpr
-#define Q_RELAXED_CONSTEXPR constexpr
 
-
-
-#define Q_DECL_OVERRIDE override
-#define Q_DECL_FINAL final
 
 
 
