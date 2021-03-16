@@ -14,10 +14,7 @@
 #define Q_DECL_FINAL final
 
 
-
-#define Q_CC_CLANG ((__clang_major__ * 100) + __clang_minor__)
 #define Q_CC_MSVC (_MSC_VER)
-#define Q_CC_MSVC_NET
 #define Q_OUTOFLINE_TEMPLATE inline
 #define Q_COMPILER_MANGLES_RETURN_TYPE
 #define Q_FUNC_INFO __FUNCSIG__

@@ -159,6 +159,11 @@ public:
         Vertical = 0x2
     };
 
+	enum Orientations {
+        Horizontal = 0x1,
+        Vertical = 0x2
+    };
+
 
     enum FocusPolicy {
         NoFocus = 0,
@@ -1266,7 +1271,6 @@ public:
         BottomEdge = 0x00008
     };
 
-    //Q_DECLARE_FLAGS(Edges, Edge)
 
     enum ConnectionType {
         AutoConnection,

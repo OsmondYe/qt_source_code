@@ -8502,7 +8502,7 @@ void QWidgetPrivate::setLayoutItemMargins(int left, int top, int right, int bott
     q->updateGeometry();
 }
 
-void QWidgetPrivate::setLayoutItemMargins(QStyle::SubElement element, const QStyleOption *opt)
+void QWidgetPrivate::setLayoutItemMargins(QStyle::SubElement element, const QStyleOption *opt /*=0*/)
 {
     QWidget* const q = q_func();
     QStyleOption myOpt;

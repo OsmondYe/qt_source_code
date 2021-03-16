@@ -94,35 +94,6 @@ void QLabelPrivate::init()
 }
 
 
-/*!
-    \property QLabel::text
-    \brief the label's text
-
-    If no text has been set this will return an empty string. Setting
-    the text clears any previous content.
-
-    The text will be interpreted either as plain text or as rich
-    text, depending on the text format setting; see setTextFormat().
-    The default setting is Qt::AutoText; i.e. QLabel will try to
-    auto-detect the format of the text set.
-    See \l {Supported HTML Subset} for the definition of rich text.
-
-    If a buddy has been set, the buddy mnemonic key is updated
-    from the new text.
-
-    Note that QLabel is well-suited to display small rich text
-    documents, such as small documents that get their document
-    specific settings (font, text color, link color) from the label's
-    palette and font properties. For large documents, use QTextEdit
-    in read-only mode instead. QTextEdit can also provide a scroll bar
-    when necessary.
-
-    \note This function enables mouse tracking if \a text contains rich
-    text.
-
-    \sa setTextFormat(), setBuddy(), alignment
-*/
-
 void QLabel::setText(const QString &text)
 {
     QLabelPrivate * const d = d_func();
@@ -795,12 +766,10 @@ bool QLabel::event(QEvent *e)
                 return QFrame::event(e);
             if (w->focusPolicy() != Qt::NoFocus)
                 w->setFocus(Qt::ShortcutFocusReason);
-#if QT_CONFIG(abstractbutton)
             QAbstractButton *button = qobject_cast<QAbstractButton *>(w);
             if (button && !se->isAmbiguous())
                 button->animateClick();
             else
-#endif
                 window()->setAttribute(Qt::WA_KeyboardFocusChange);
             return true;
         }
@@ -809,11 +778,9 @@ bool QLabel::event(QEvent *e)
     if (type == QEvent::Resize) {
         if (d->control)
             d->textLayoutDirty = true;
-    } else if (e->type() == QEvent::StyleChange
-#ifdef Q_OS_MAC
-               || e->type() == QEvent::MacSizeChange
-#endif
-               ) {
+    } 
+		else if (e->type() == QEvent::StyleChange) 
+    {
         d->setLayoutItemMargins(QStyle::SE_LabelLayoutItem);
         d->updateLabel();
     }

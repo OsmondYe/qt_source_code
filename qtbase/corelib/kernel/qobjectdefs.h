@@ -86,7 +86,13 @@ typedef QArrayData QByteArrayData;
         { return staticMetaObject.tr(s, c, n); }
 
 
-// oye 修改了一些不重要的额外修饰符
+/*oye 修改了一些不重要的额外修饰符
+	-元信息, [类名,父类名,信号,槽]
+	-动态转换时元给的帮助
+	-槽的分派
+	-i18l转换
+	-私有信号????
+*/
 #define Q_OBJECT \
 public: \
     static const QMetaObject staticMetaObject; \
@@ -95,21 +101,24 @@ public: \
     virtual int qt_metacall(QMetaObject::Call, int, void **); \
     QT_TR_FUNCTIONS \
 private: \
-    Q_DECL_HIDDEN_STATIC_METACALL static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **); \
+    static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **); \
     struct QPrivateSignal {}; \
     QT_ANNOTATE_CLASS(qt_qobject, "")
 
 
 #define Q_OBJECT_FAKE Q_OBJECT QT_ANNOTATE_CLASS(qt_fake, "")
 
-
+/*
+oye	-有静态元对象
+	-
+*/
 #define Q_GADGET \
 public: \
     static const QMetaObject staticMetaObject; \
     void qt_check_for_QGADGET_macro(); \
     typedef void QtGadgetHelper; \
 private: \
-    Q_DECL_HIDDEN_STATIC_METACALL static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **); \
+    static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **); \
     QT_ANNOTATE_CLASS(qt_qgadget, "") \
     /*end*/
 

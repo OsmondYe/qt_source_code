@@ -1,55 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtGui module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #ifndef QTEXTENGINE_P_H
 #define QTEXTENGINE_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of other Qt classes.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
 
 #include <QtGui/private/qtguiglobal_p.h>
 #include "QtCore/qstring.h"
@@ -75,8 +25,6 @@
 
 #include <stdlib.h>
 
-QT_BEGIN_NAMESPACE
-
 class QFontPrivate;
 class QFontEngine;
 
@@ -92,7 +40,7 @@ typedef quint32 glyph_t;
 // * negative yoff means the following stuff is drawn higher up.
 // the characters bounding rect is given by QRect(x,y,width,height), its advance by
 // xoo and yoff
-struct Q_GUI_EXPORT glyph_metrics_t
+struct  glyph_metrics_t
 {
     inline glyph_metrics_t()
         : x(100000),  y(100000) {}
@@ -130,9 +78,9 @@ struct Q_GUI_EXPORT glyph_metrics_t
         return xoff - x - width;
     }
 };
-Q_DECLARE_TYPEINFO(glyph_metrics_t, Q_PRIMITIVE_TYPE);
+////Q_DECLARE_TYPEINFO(glyph_metrics_t, Q_PRIMITIVE_TYPE);
 
-struct Q_AUTOTEST_EXPORT QScriptAnalysis
+struct  QScriptAnalysis
 {
     enum Flags {
         None = 0,
@@ -153,7 +101,7 @@ struct Q_AUTOTEST_EXPORT QScriptAnalysis
         return script == other.script && bidiLevel == other.bidiLevel && flags == other.flags;
     }
 };
-Q_DECLARE_TYPEINFO(QScriptAnalysis, Q_PRIMITIVE_TYPE);
+//Q_DECLARE_TYPEINFO(QScriptAnalysis, Q_PRIMITIVE_TYPE);
 
 struct QGlyphJustification
 {
@@ -171,7 +119,7 @@ struct QGlyphJustification
     uint nKashidas : 6; // more do not make sense...
     uint space_18d6 : 24;
 };
-Q_DECLARE_TYPEINFO(QGlyphJustification, Q_PRIMITIVE_TYPE);
+//Q_DECLARE_TYPEINFO(QGlyphJustification, Q_PRIMITIVE_TYPE);
 
 struct QGlyphAttributes {
     uchar clusterStart  : 1;
@@ -180,7 +128,7 @@ struct QGlyphAttributes {
     uchar reserved      : 2;
 };
 Q_STATIC_ASSERT(sizeof(QGlyphAttributes) == 1);
-Q_DECLARE_TYPEINFO(QGlyphAttributes, Q_PRIMITIVE_TYPE);
+//Q_DECLARE_TYPEINFO(QGlyphAttributes, Q_PRIMITIVE_TYPE);
 
 struct QGlyphLayout
 {
@@ -323,7 +271,7 @@ public:
     QFontEngine *fontEngine;
 };
 
-struct Q_AUTOTEST_EXPORT QScriptItem
+struct  QScriptItem
 {
     inline QScriptItem()
         : position(0),
@@ -346,11 +294,11 @@ struct Q_AUTOTEST_EXPORT QScriptItem
 };
 
 
-Q_DECLARE_TYPEINFO(QScriptItem, Q_MOVABLE_TYPE);
+//Q_DECLARE_TYPEINFO(QScriptItem, Q_MOVABLE_TYPE);
 
 typedef QVector<QScriptItem> QScriptItemArray;
 
-struct Q_AUTOTEST_EXPORT QScriptLine
+struct  QScriptLine
 {
     // created and filled in QTextLine::layout_helper
     QScriptLine()
@@ -378,7 +326,7 @@ struct Q_AUTOTEST_EXPORT QScriptLine
     void setDefaultHeight(QTextEngine *eng);
     void operator+=(const QScriptLine &other);
 };
-Q_DECLARE_TYPEINFO(QScriptLine, Q_PRIMITIVE_TYPE);
+//Q_DECLARE_TYPEINFO(QScriptLine, Q_PRIMITIVE_TYPE);
 
 
 inline void QScriptLine::operator+=(const QScriptLine &other)
@@ -395,14 +343,14 @@ typedef QVector<QScriptLine> QScriptLineArray;
 class QFontPrivate;
 class QTextFormatCollection;
 
-class Q_GUI_EXPORT QTextEngine {
+class  QTextEngine {
 public:
     enum LayoutState {
         LayoutEmpty,
         InLayout,
         LayoutFailed
     };
-    struct Q_GUI_EXPORT LayoutData {
+    struct  LayoutData {
         LayoutData(const QString &str, void **stack_memory, int mem_size);
         LayoutData();
         ~LayoutData();
@@ -665,14 +613,15 @@ private:
     int getClusterLength(unsigned short *logClusters, const QCharAttributes *attributes, int from, int to, int glyph_pos, int *start);
 };
 
-class Q_GUI_EXPORT QStackTextEngine : public QTextEngine {
+// ¥”QFontMetrics::elidedText¿¥
+class QStackTextEngine : public QTextEngine {
 public:
     enum { MemSize = 256*40/sizeof(void *) };
     QStackTextEngine(const QString &string, const QFont &f);
     LayoutData _layoutData;
     void *_memory[MemSize];
 };
-Q_DECLARE_TYPEINFO(QTextEngine::ItemDecoration, Q_MOVABLE_TYPE);
+//Q_DECLARE_TYPEINFO(QTextEngine::ItemDecoration, Q_MOVABLE_TYPE);
 
 struct QTextLineItemIterator
 {
@@ -715,7 +664,5 @@ struct QTextLineItemIterator
 
     const QTextLayout::FormatRange *selection;
 };
-
-QT_END_NAMESPACE
 
 #endif // QTEXTENGINE_P_H

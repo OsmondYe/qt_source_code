@@ -16,69 +16,10 @@ class  QPalette
 {
     //Q_GADGET
 public:
-    QPalette();
-    QPalette(const QColor &button);
-    QPalette(Qt::GlobalColor button);
-    QPalette(const QColor &button, const QColor &window);
-    QPalette(const QBrush &windowText, const QBrush &button, const QBrush &light,
-             const QBrush &dark, const QBrush &mid, const QBrush &text,
-             const QBrush &bright_text, const QBrush &base, const QBrush &window);
-    QPalette(const QColor &windowText, const QColor &window, const QColor &light,
-             const QColor &dark, const QColor &mid, const QColor &text, const QColor &base);
-    QPalette(const QPalette &palette);
-    ~QPalette();
-	
-    QPalette &operator=(const QPalette &palette);
-    QPalette(QPalette &&other) Q_DECL_NOTHROW
-        : d(other.d), data(other.data)
-    { other.d = Q_NULLPTR; }
-    inline QPalette &operator=(QPalette &&other) Q_DECL_NOEXCEPT
-    {
-        for_faster_swapping_dont_use = other.for_faster_swapping_dont_use;
-        qSwap(d, other.d); return *this;
-    }
-
-    void swap(QPalette &other) Q_DECL_NOEXCEPT
-    {
-        qSwap(d, other.d);
-        qSwap(for_faster_swapping_dont_use, other.for_faster_swapping_dont_use);
-    }
-
-    operator QVariant() const;
-
-    // Do not change the order, the serialization format depends on it
-    enum ColorGroup { Active, Disabled, Inactive, NColorGroups, Current, All, Normal = Active };
-	
-    enum ColorRole { WindowText, Button, Light, Midlight, Dark, Mid,
-                     Text, BrightText, ButtonText, Base, Window, Shadow,
-                     Highlight, HighlightedText,
-                     Link, LinkVisited,
-                     AlternateBase,
-                     NoRole,
-                     ToolTipBase, ToolTipText,
-                     NColorRoles = ToolTipText + 1,
-                     Foreground = WindowText, Background = Window
-                   };
-
-
-    inline ColorGroup currentColorGroup() const { return static_cast<ColorGroup>(data.current_group); }
-    inline void setCurrentColorGroup(ColorGroup cg) { data.current_group = cg; }
-
+	// 作为重要的颜色系统, 调色板提供了常见的场景下元素的颜色
+	inline ColorGroup currentColorGroup() const { return static_cast<ColorGroup>(data.current_group); }
     inline const QColor &color(ColorGroup cg, ColorRole cr) const    { return brush(cg, cr).color(); }
-	
-    const QBrush &brush(ColorGroup cg, ColorRole cr) const;
-    inline void setColor(ColorGroup cg, ColorRole cr, const QColor &color);
-    inline void setColor(ColorRole cr, const QColor &color);
-    inline void setBrush(ColorRole cr, const QBrush &brush);
-    bool isBrushSet(ColorGroup cg, ColorRole cr) const;
-    void setBrush(ColorGroup cg, ColorRole cr, const QBrush &brush);
-    void setColorGroup(ColorGroup cr, const QBrush &windowText, const QBrush &button,
-                       const QBrush &light, const QBrush &dark, const QBrush &mid,
-                       const QBrush &text, const QBrush &bright_text, const QBrush &base,
-                       const QBrush &window);
-    bool isEqual(ColorGroup cr1, ColorGroup cr2) const;
-
-    inline const QColor &color(ColorRole cr) const { return color(Current, cr); }
+	inline const QColor &color(ColorRole cr) const { return color(Current, cr); }
     inline const QBrush &brush(ColorRole cr) const { return brush(Current, cr); }
     inline const QBrush &foreground() const { return brush(WindowText); }
     inline const QBrush &windowText() const { return brush(WindowText); }
@@ -102,13 +43,57 @@ public:
     inline const QBrush &link() const { return brush(Link); }
     inline const QBrush &linkVisited() const { return brush(LinkVisited); }
 
+public:
+    QPalette();
+    QPalette(const QColor &button);
+    QPalette(Qt::GlobalColor button);
+    QPalette(const QColor &button, const QColor &window);
+    QPalette(const QBrush &windowText, const QBrush &button, const QBrush &light,
+             const QBrush &dark, const QBrush &mid, const QBrush &text,
+             const QBrush &bright_text, const QBrush &base, const QBrush &window);
+    QPalette(const QColor &windowText, const QColor &window, const QColor &light,
+             const QColor &dark, const QColor &mid, const QColor &text, const QColor &base);
+    QPalette(const QPalette &palette);
+    ~QPalette();
+	
+    operator QVariant() const;
+
+    // Do not change the order, the serialization format depends on it
+    enum ColorGroup { Active, Disabled, Inactive, NColorGroups, Current, All, Normal = Active };
+	
+    enum ColorRole { WindowText, Button, Light, Midlight, Dark, Mid,
+                     Text, BrightText, ButtonText, Base, Window, Shadow,
+                     Highlight, HighlightedText,
+                     Link, LinkVisited,
+                     AlternateBase,
+                     NoRole,
+                     ToolTipBase, ToolTipText,
+                     NColorRoles = ToolTipText + 1,
+                     Foreground = WindowText, Background = Window
+                   };
+
+
+    
+    inline void setCurrentColorGroup(ColorGroup cg) { data.current_group = cg; }
+
+
+	
+    const QBrush &brush(ColorGroup cg, ColorRole cr) const;
+    inline void setColor(ColorGroup cg, ColorRole cr, const QColor &color);
+    inline void setColor(ColorRole cr, const QColor &color);
+    inline void setBrush(ColorRole cr, const QBrush &brush);
+    bool isBrushSet(ColorGroup cg, ColorRole cr) const;
+    void setBrush(ColorGroup cg, ColorRole cr, const QBrush &brush);
+    void setColorGroup(ColorGroup cr, const QBrush &windowText, const QBrush &button,
+                       const QBrush &light, const QBrush &dark, const QBrush &mid,
+                       const QBrush &text, const QBrush &bright_text, const QBrush &base,
+                       const QBrush &window);
+    bool isEqual(ColorGroup cr1, ColorGroup cr2) const;
+
     bool operator==(const QPalette &p) const;
     inline bool operator!=(const QPalette &p) const { return !(operator==(p)); }
     bool isCopyOf(const QPalette &p) const;
 
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED inline int serialNumber() const { return cacheKey() >> 32; }
-#endif
     qint64 cacheKey() const;
 
     QPalette resolve(const QPalette &) const;

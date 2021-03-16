@@ -81,7 +81,7 @@ public:
 public:  // GUI style setting    
     QStyle *style() const;
     void setStyle(QStyle *);
-	
+	//oye 使用场景, QLineEdit绘制字体时,颜色
     const QPalette &palette() const;
     void setPalette(const QPalette &);
 
@@ -358,7 +358,7 @@ public:
     QGraphicsProxyWidget *graphicsProxyWidget() const;
 
 public Q_SLOTS:
-    void update();
+    void update();  // post RePaint Event
     void repaint();
 
 public:

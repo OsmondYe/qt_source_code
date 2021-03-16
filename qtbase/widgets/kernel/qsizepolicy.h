@@ -20,13 +20,15 @@ public:
         setControlType(type);
     }
 
-     Policy horizontalPolicy() const  { return static_cast<Policy>(bits.horPolicy); }
-     Policy verticalPolicy() const  { return static_cast<Policy>(bits.verPolicy); }
-    ControlType controlType() const ;
+    Policy horizontalPolicy() const  { return static_cast<Policy>(bits.horPolicy); }
+    Policy verticalPolicy() const  { return static_cast<Policy>(bits.verPolicy); }
+    ControlType controlType() const {
+    	return QSizePolicy::ControlType(1 << bits.ctype);
+	}
 
-     void setHorizontalPolicy(Policy d)  { bits.horPolicy = d; }
-     void setVerticalPolicy(Policy d)  { bits.verPolicy = d; }
-    void setControlType(ControlType type) ;
+    void setHorizontalPolicy(Policy d)  { bits.horPolicy = d; }
+    void setVerticalPolicy(Policy d)  { bits.verPolicy = d; }
+    void setControlType(ControlType type){ 	bits.ctype = toControlTypeFieldValue(type);	}
 
      Qt::Orientations expandingDirections() const  {
         return ( (verticalPolicy()   & ExpandFlag) ? Qt::Vertical   : Qt::Orientations() )
@@ -43,7 +45,7 @@ public:
 
     friend  uint qHash(QSizePolicy key, uint seed)  { return qHash(key.data, seed); }
 
-    operator QVariant() const;
+    operator QVariant() const{return QVariant(QVariant::SizePolicy, this);}
 
      int horizontalStretch() const  { return static_cast<int>(bits.horStretch); }
      int verticalStretch() const  { return static_cast<int>(bits.verStretch); }
@@ -147,24 +149,8 @@ public:
 	    TabWidget        = 0x00002000,
 	    ToolButton       = 0x00004000
 	};
+		
 };
-
-QSizePolicy::ControlType QSizePolicy::controlType() const 
-{
-    return QSizePolicy::ControlType(1 << bits.ctype);
-}
-
-
-void QSizePolicy::setControlType(ControlType type) 
-{
-    bits.ctype = toControlTypeFieldValue(type);
-}
-
-QSizePolicy::operator QVariant() const
-{
-    return QVariant(QVariant::SizePolicy, this);
-}
-
 
 
 #endif // QSIZEPOLICY_H

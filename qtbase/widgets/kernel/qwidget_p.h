@@ -185,7 +185,7 @@ public:	// Variables.
 	// Other variables.
 	uint inheritedFontResolveMask;
 	uint inheritedPaletteResolveMask;
-	//
+	// 直接在widget基类定义, 最基本的margin, 可以看LineEdit它还有自己的ltrb margin
 	short leftmargin;
 	short topmargin;
 	short rightmargin;

@@ -1,46 +1,6 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWidgets module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #include "qaction.h"
 #include "qactiongroup.h"
 
-#ifndef QT_NO_ACTION
 #include "qaction_p.h"
 #include "qapplication.h"
 #include "qevent.h"
@@ -58,7 +18,6 @@
         return; \
     }
 
-QT_BEGIN_NAMESPACE
 
 /*
   internal: guesses a descriptive text from a text suited for a menu entry
@@ -93,16 +52,12 @@ QActionPrivate::~QActionPrivate()
 
 bool QActionPrivate::showStatusText(QWidget *widget, const QString &str)
 {
-#if !QT_CONFIG(statustip)
-    Q_UNUSED(widget);
-    Q_UNUSED(str);
-#else
+
     if(QObject *object = widget ? widget : parent) {
         QStatusTipEvent tip(str);
         QApplication::sendEvent(object, &tip);
         return true;
     }
-#endif
     return false;
 }
 
@@ -184,123 +139,12 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
 #endif // QT_NO_SHORTCUT
 
 
-/*!
-    \class QAction
-    \brief The QAction class provides an abstract user interface
-    action that can be inserted into widgets.
-
-    \ingroup mainwindow-classes
-    \inmodule QtWidgets
-
-    \omit
-        * parent and widget are different
-        * parent does not define context
-    \endomit
-
-    In applications many common commands can be invoked via menus,
-    toolbar buttons, and keyboard shortcuts. Since the user expects
-    each command to be performed in the same way, regardless of the
-    user interface used, it is useful to represent each command as
-    an \e action.
-
-    Actions can be added to menus and toolbars, and will
-    automatically keep them in sync. For example, in a word processor,
-    if the user presses a Bold toolbar button, the Bold menu item
-    will automatically be checked.
-
-    Actions can be created as independent objects, but they may
-    also be created during the construction of menus; the QMenu class
-    contains convenience functions for creating actions suitable for
-    use as menu items.
-
-    A QAction may contain an icon, menu text, a shortcut, status text,
-    "What's This?" text, and a tooltip. Most of these can be set in
-    the constructor. They can also be set independently with
-    setIcon(), setText(), setIconText(), setShortcut(),
-    setStatusTip(), setWhatsThis(), and setToolTip(). For menu items,
-    it is possible to set an individual font with setFont().
-
-    Actions are added to widgets using QWidget::addAction() or
-    QGraphicsWidget::addAction(). Note that an action must be added to a
-    widget before it can be used; this is also true when the shortcut should
-    be global (i.e., Qt::ApplicationShortcut as Qt::ShortcutContext).
-
-    Once a QAction has been created it should be added to the relevant
-    menu and toolbar, then connected to the slot which will perform
-    the action. For example:
-
-    \snippet mainwindows/application/mainwindow.cpp 19
-    \codeline
-    \code
-    fileMenu->addAction(openAct);
-    \endcode
-
-    We recommend that actions are created as children of the window
-    they are used in. In most cases actions will be children of
-    the application's main window.
-
-    \sa QMenu, QToolBar, {Application Example}
-*/
-
-/*!
-    \fn void QAction::trigger()
-
-    This is a convenience slot that calls activate(Trigger).
-*/
-
-/*!
-    \fn void QAction::hover()
-
-    This is a convenience slot that calls activate(Hover).
-*/
-
-/*!
-    \enum QAction::MenuRole
-
-    This enum describes how an action should be moved into the application menu on \macos.
-
-    \value NoRole This action should not be put into the application menu
-    \value TextHeuristicRole This action should be put in the application menu based on the action's text
-           as described in the QMenuBar documentation.
-    \value ApplicationSpecificRole This action should be put in the application menu with an application specific role
-    \value AboutQtRole This action handles the "About Qt" menu item.
-    \value AboutRole This action should be placed where the "About" menu item is in the application menu. The text of
-           the menu item will be set to "About <application name>". The application name is fetched from the
-           \c{Info.plist} file in the application's bundle (See \l{Qt for macOS - Deployment}).
-    \value PreferencesRole This action should be placed where the  "Preferences..." menu item is in the application menu.
-    \value QuitRole This action should be placed where the Quit menu item is in the application menu.
-
-    Setting this value only has effect on items that are in the immediate menus
-    of the menubar, not the submenus of those menus. For example, if you have
-    File menu in your menubar and the File menu has a submenu, setting the
-    MenuRole for the actions in that submenu have no effect. They will never be moved.
-*/
-
-/*!
-    Constructs an action with \a parent. If \a parent is an action
-    group the action will be automatically inserted into the group.
-
-    \note The \a parent argument is optional since Qt 5.7.
-*/
 QAction::QAction(QObject* parent)
     : QAction(*new QActionPrivate, parent)
 {
 }
 
 
-/*!
-    Constructs an action with some \a text and \a parent. If \a
-    parent is an action group the action will be automatically
-    inserted into the group.
-
-    The action uses a stripped version of \a text (e.g. "\&Menu
-    Option..." becomes "Menu Option") as descriptive text for
-    tool buttons. You can override this by setting a specific
-    description with setText(). The same text will be used for
-    tooltips unless you specify a different text using
-    setToolTip().
-
-*/
 QAction::QAction(const QString &text, QObject* parent)
     : QAction(parent)
 {
@@ -308,18 +152,7 @@ QAction::QAction(const QString &text, QObject* parent)
     d->text = text;
 }
 
-/*!
-    Constructs an action with an \a icon and some \a text and \a
-    parent. If \a parent is an action group the action will be
-    automatically inserted into the group.
 
-    The action uses a stripped version of \a text (e.g. "\&Menu
-    Option..." becomes "Menu Option") as descriptive text for
-    tool buttons. You can override this by setting a specific
-    description with setText(). The same text will be used for
-    tooltips unless you specify a different text using
-    setToolTip().
-*/
 QAction::QAction(const QIcon &icon, const QString &text, QObject* parent)
     : QAction(text, parent)
 {
@@ -327,9 +160,7 @@ QAction::QAction(const QIcon &icon, const QString &text, QObject* parent)
     d->icon = icon;
 }
 
-/*!
-    \internal
-*/
+
 QAction::QAction(QActionPrivate &dd, QObject *parent)
     : QObject(dd, parent)
 {
@@ -339,9 +170,6 @@ QAction::QAction(QActionPrivate &dd, QObject *parent)
         d->group->addAction(this);
 }
 
-/*!
-    Returns the parent widget.
-*/
 QWidget *QAction::parentWidget() const
 {
     QObject *ret = parent();
@@ -350,12 +178,7 @@ QWidget *QAction::parentWidget() const
     return (QWidget*)ret;
 }
 
-/*!
-  \since 4.2
-  Returns a list of widgets this action has been added to.
 
-  \sa QWidget::addAction(), associatedGraphicsWidgets()
-*/
 QList<QWidget *> QAction::associatedWidgets() const
 {
     Q_D(const QAction);
@@ -397,14 +220,7 @@ void QAction::setShortcut(const QKeySequence &shortcut)
     d->sendDataChanged();
 }
 
-/*!
-    \since 4.2
 
-    Sets \a shortcuts as the list of shortcuts that trigger the
-    action. The first element of the list is the primary shortcut.
-
-    \sa shortcut
-*/
 void QAction::setShortcuts(const QList<QKeySequence> &shortcuts)
 {
     Q_D(QAction);
@@ -427,41 +243,20 @@ void QAction::setShortcuts(const QList<QKeySequence> &shortcuts)
     d->sendDataChanged();
 }
 
-/*!
-    \since 4.2
 
-    Sets a platform dependent list of shortcuts based on the \a key.
-    The result of calling this function will depend on the currently running platform.
-    Note that more than one shortcut can assigned by this action.
-    If only the primary shortcut is required, use setShortcut instead.
-
-    \sa QKeySequence::keyBindings()
-*/
 void QAction::setShortcuts(QKeySequence::StandardKey key)
 {
     QList <QKeySequence> list = QKeySequence::keyBindings(key);
     setShortcuts(list);
 }
 
-/*!
-    Returns the primary shortcut.
 
-    \sa setShortcuts()
-*/
 QKeySequence QAction::shortcut() const
 {
     Q_D(const QAction);
     return d->shortcut;
 }
 
-/*!
-    \since 4.2
-
-    Returns the list of shortcuts, with the primary shortcut as
-    the first element of the list.
-
-    \sa setShortcuts()
-*/
 QList<QKeySequence> QAction::shortcuts() const
 {
     Q_D(const QAction);
@@ -473,13 +268,7 @@ QList<QKeySequence> QAction::shortcuts() const
     return shortcuts;
 }
 
-/*!
-    \property QAction::shortcutContext
-    \brief the context for the action's shortcut
 
-    Valid values for this property can be found in \l Qt::ShortcutContext.
-    The default value is Qt::WindowShortcut.
-*/
 void QAction::setShortcutContext(Qt::ShortcutContext context)
 {
     Q_D(QAction);
@@ -498,16 +287,7 @@ Qt::ShortcutContext QAction::shortcutContext() const
     return d->shortcutContext;
 }
 
-/*!
-    \property QAction::autoRepeat
-    \brief whether the action can auto repeat
-    \since 4.2
 
-    If true, the action will auto repeat when the keyboard shortcut
-    combination is held down, provided that keyboard auto repeat is
-    enabled on the system.
-    The default value is true.
-*/
 void QAction::setAutoRepeat(bool on)
 {
     Q_D(QAction);
@@ -527,18 +307,7 @@ bool QAction::autoRepeat() const
 }
 #endif // QT_NO_SHORTCUT
 
-/*!
-    \property QAction::font
-    \brief the action's font
 
-    The font property is used to render the text set on the
-    QAction. The font will can be considered a hint as it will not be
-    consulted in all cases based upon application and style.
-
-    By default, this property contains the application's default font.
-
-    \sa QAction::setText(), QStyle
-*/
 void QAction::setFont(const QFont &font)
 {
     Q_D(QAction);
@@ -586,14 +355,7 @@ QAction::~QAction()
 #endif
 }
 
-/*!
-  Sets this action group to \a group. The action will be automatically
-  added to the group's list of actions.
 
-  Actions within the group will be mutually exclusive.
-
-  \sa QActionGroup, QAction::actionGroup()
-*/
 void QAction::setActionGroup(QActionGroup *group)
 {
     Q_D(QAction);
@@ -608,12 +370,7 @@ void QAction::setActionGroup(QActionGroup *group)
     d->sendDataChanged();
 }
 
-/*!
-  Returns the action group for this action. If no action group manages
-  this action then 0 will be returned.
 
-  \sa QActionGroup, QAction::setActionGroup()
-*/
 QActionGroup *QAction::actionGroup() const
 {
     Q_D(const QAction);
@@ -621,17 +378,6 @@ QActionGroup *QAction::actionGroup() const
 }
 
 
-/*!
-    \property QAction::icon
-    \brief the action's icon
-
-    In toolbars, the icon is used as the tool button icon; in menus,
-    it is displayed to the left of the menu text. There is no default
-    icon.
-
-    If a null icon (QIcon::isNull()) is passed into this function,
-    the icon of the action is cleared.
-*/
 void QAction::setIcon(const QIcon &icon)
 {
     Q_D(QAction);
@@ -1168,78 +914,7 @@ void QAction::activate(ActionEvent event)
     }
 }
 
-/*!
-    \fn void QAction::triggered(bool checked)
 
-    This signal is emitted when an action is activated by the user;
-    for example, when the user clicks a menu option, toolbar button,
-    or presses an action's shortcut key combination, or when trigger()
-    was called. Notably, it is \e not emitted when setChecked() or
-    toggle() is called.
-
-    If the action is checkable, \a checked is true if the action is
-    checked, or false if the action is unchecked.
-
-    \sa QAction::activate(), QAction::toggled(), checked
-*/
-
-/*!
-    \fn void QAction::toggled(bool checked)
-
-    This signal is emitted whenever a checkable action changes its
-    isChecked() status. This can be the result of a user interaction,
-    or because setChecked() was called.
-
-    \a checked is true if the action is checked, or false if the
-    action is unchecked.
-
-    \sa QAction::activate(), QAction::triggered(), checked
-*/
-
-/*!
-    \fn void QAction::hovered()
-
-    This signal is emitted when an action is highlighted by the user;
-    for example, when the user pauses with the cursor over a menu option,
-    toolbar button, or presses an action's shortcut key combination.
-
-    \sa QAction::activate()
-*/
-
-/*!
-    \fn void QAction::changed()
-
-    This signal is emitted when an action has changed. If you
-    are only interested in actions in a given widget, you can
-    watch for QWidget::actionEvent() sent with an
-    QEvent::ActionChanged.
-
-    \sa QWidget::actionEvent()
-*/
-
-/*!
-    \enum QAction::ActionEvent
-
-    This enum type is used when calling QAction::activate()
-
-    \value Trigger this will cause the QAction::triggered() signal to be emitted.
-
-    \value Hover this will cause the QAction::hovered() signal to be emitted.
-*/
-
-/*!
-    \property QAction::menuRole
-    \brief the action's menu role
-    \since 4.2
-
-    This indicates what role the action serves in the application menu on
-    \macos. By default all actions have the TextHeuristicRole, which means that
-    the action is added based on its text (see QMenuBar for more information).
-
-    The menu role can only be changed before the actions are put into the menu
-    bar in \macos (usually just before the first application window is
-    shown).
-*/
 void QAction::setMenuRole(MenuRole menuRole)
 {
     Q_D(QAction);
@@ -1256,24 +931,6 @@ QAction::MenuRole QAction::menuRole() const
     return d->menuRole;
 }
 
-/*!
-    \property QAction::iconVisibleInMenu
-    \brief Whether or not an action should show an icon in a menu
-    \since 4.4
-
-    In some applications, it may make sense to have actions with icons in the
-    toolbar, but not in menus. If true, the icon (if valid) is shown in the menu, when it
-    is false, it is not shown.
-
-    The default is to follow whether the Qt::AA_DontShowIconsInMenus attribute
-    is set for the application. Explicitly settings this property overrides
-    the presence (or abscence) of the attribute.
-
-    For example:
-    \snippet code/src_gui_kernel_qaction.cpp 0
-
-    \sa QAction::icon, QCoreApplication::setAttribute()
-*/
 void QAction::setIconVisibleInMenu(bool visible)
 {
     Q_D(QAction);
@@ -1298,35 +955,5 @@ bool QAction::isIconVisibleInMenu() const
     return d->iconVisibleInMenu;
 }
 
-#ifndef QT_NO_DEBUG_STREAM
-Q_WIDGETS_EXPORT QDebug operator<<(QDebug d, const QAction *action)
-{
-    QDebugStateSaver saver(d);
-    d.nospace();
-    d << "QAction(" << static_cast<const void *>(action);
-    if (action) {
-        d << " text=" << action->text();
-        if (!action->toolTip().isEmpty())
-            d << " toolTip=" << action->toolTip();
-        if (action->isCheckable())
-            d << " checked=" << action->isChecked();
-#ifndef QT_NO_SHORTCUT
-        if (!action->shortcut().isEmpty())
-            d << " shortcut=" << action->shortcut();
-#endif
-        d << " menuRole=";
-        QtDebugUtils::formatQEnum(d, action->menuRole());
-        d << " visible=" << action->isVisible();
-    } else {
-        d << '0';
-    }
-    d << ')';
-    return d;
-}
-#endif // QT_NO_DEBUG_STREAM
-
-QT_END_NAMESPACE
-
 #include "moc_qaction.cpp"
 
-#endif // QT_NO_ACTION

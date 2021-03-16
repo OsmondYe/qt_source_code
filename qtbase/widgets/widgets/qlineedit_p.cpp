@@ -1,42 +1,4 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWidgets module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
+// oye remove sanity check
 #include "qlineedit.h"
 #include "qlineedit_p.h"
 
@@ -93,7 +55,7 @@ QRect QLineEditPrivate::cursorRect() const
 
 void QLineEditPrivate::_q_completionHighlighted(const QString &newText)
 {
-    Q_Q(QLineEdit);
+    QLineEdit * const q = q_func()
     if (control->completer()->completionMode() != QCompleter::InlineCompletion) {
         q->setText(newText);
     } else {
@@ -114,14 +76,14 @@ void QLineEditPrivate::_q_completionHighlighted(const QString &newText)
 
 void QLineEditPrivate::_q_handleWindowActivate()
 {
-    Q_Q(QLineEdit);
+    QLineEdit * const q = q_func()
     if (!q->hasFocus() && control->hasSelectedText())
         control->deselect();
 }
 
 void QLineEditPrivate::_q_textEdited(const QString &text)
 {
-    Q_Q(QLineEdit);
+    QLineEdit * const q = q_func()
     emit q->textEdited(text);
 #if QT_CONFIG(completer)
     if (control->completer()
@@ -132,7 +94,7 @@ void QLineEditPrivate::_q_textEdited(const QString &text)
 
 void QLineEditPrivate::_q_cursorPositionChanged(int from, int to)
 {
-    Q_Q(QLineEdit);
+    QLineEdit * const q = q_func()
     q->update();
     emit q->cursorPositionChanged(from, to);
 }
@@ -140,14 +102,14 @@ void QLineEditPrivate::_q_cursorPositionChanged(int from, int to)
 #ifdef QT_KEYPAD_NAVIGATION
 void QLineEditPrivate::_q_editFocusChange(bool e)
 {
-    Q_Q(QLineEdit);
+    QLineEdit * const q = q_func()
     q->setEditFocus(e);
 }
 #endif
 
 void QLineEditPrivate::_q_selectionChanged()
 {
-    Q_Q(QLineEdit);
+    QLineEdit * const q = q_func()
     if (control->preeditAreaText().isEmpty()) {
         QStyleOptionFrame opt;
         q->initStyleOption(&opt);
@@ -172,47 +134,27 @@ void QLineEditPrivate::_q_updateNeeded(const QRect &rect)
 
 void QLineEditPrivate::init(const QString& txt)
 {
-    Q_Q(QLineEdit);
+    QLineEdit * const q = q_func()
     control = new QWidgetLineControl(txt);
     control->setParent(q);
     control->setFont(q->font());
-    QObject::connect(control, SIGNAL(textChanged(QString)),
-            q, SIGNAL(textChanged(QString)));
-    QObject::connect(control, SIGNAL(textEdited(QString)),
-            q, SLOT(_q_textEdited(QString)));
-    QObject::connect(control, SIGNAL(cursorPositionChanged(int,int)),
-            q, SLOT(_q_cursorPositionChanged(int,int)));
-    QObject::connect(control, SIGNAL(selectionChanged()),
-            q, SLOT(_q_selectionChanged()));
-    QObject::connect(control, SIGNAL(accepted()),
-            q, SIGNAL(returnPressed()));
-    QObject::connect(control, SIGNAL(editingFinished()),
-            q, SIGNAL(editingFinished()));
+    QObject::connect(control, SIGNAL(textChanged(QString)),  q, SIGNAL(textChanged(QString)));
+    QObject::connect(control, SIGNAL(textEdited(QString)),  q, SLOT(_q_textEdited(QString)));
+    QObject::connect(control, SIGNAL(cursorPositionChanged(int,int)),  q, SLOT(_q_cursorPositionChanged(int,int)));
+    QObject::connect(control, SIGNAL(selectionChanged()),  q, SLOT(_q_selectionChanged()));
+    QObject::connect(control, SIGNAL(accepted()),  q, SIGNAL(returnPressed()));
+    QObject::connect(control, SIGNAL(editingFinished()), q, SIGNAL(editingFinished()));
 #ifdef QT_KEYPAD_NAVIGATION
-    QObject::connect(control, SIGNAL(editFocusChange(bool)),
-            q, SLOT(_q_editFocusChange(bool)));
+    QObject::connect(control, SIGNAL(editFocusChange(bool)),  q, SLOT(_q_editFocusChange(bool)));
 #endif
-    QObject::connect(control, SIGNAL(cursorPositionChanged(int,int)),
-            q, SLOT(updateMicroFocus()));
-
-    QObject::connect(control, SIGNAL(textChanged(QString)),
-            q, SLOT(updateMicroFocus()));
-
-    QObject::connect(control, SIGNAL(updateMicroFocus()),
-            q, SLOT(updateMicroFocus()));
-
+    QObject::connect(control, SIGNAL(cursorPositionChanged(int,int)),  q, SLOT(updateMicroFocus()));
+    QObject::connect(control, SIGNAL(textChanged(QString)),  q, SLOT(updateMicroFocus()));
+    QObject::connect(control, SIGNAL(updateMicroFocus()),   q, SLOT(updateMicroFocus()));
     // for now, going completely overboard with updates.
-    QObject::connect(control, SIGNAL(selectionChanged()),
-            q, SLOT(update()));
-
-    QObject::connect(control, SIGNAL(selectionChanged()),
-            q, SLOT(updateMicroFocus()));
-
-    QObject::connect(control, SIGNAL(displayTextChanged(QString)),
-            q, SLOT(update()));
-
-    QObject::connect(control, SIGNAL(updateNeeded(QRect)),
-            q, SLOT(_q_updateNeeded(QRect)));
+    QObject::connect(control, SIGNAL(selectionChanged()),  q, SLOT(update()));
+    QObject::connect(control, SIGNAL(selectionChanged()),  q, SLOT(updateMicroFocus()));
+    QObject::connect(control, SIGNAL(displayTextChanged(QString)),  q, SLOT(update()));
+    QObject::connect(control, SIGNAL(updateNeeded(QRect)), q, SLOT(_q_updateNeeded(QRect)));
 
     QStyleOptionFrame opt;
     q->initStyleOption(&opt);
@@ -249,7 +191,7 @@ QRect QLineEditPrivate::adjustedContentsRect() const
 
 void QLineEditPrivate::setCursorVisible(bool visible)
 {
-    Q_Q(QLineEdit);
+    QLineEdit * const q = q_func()
     if ((bool)cursorVisible == visible)
         return;
     cursorVisible = visible;
@@ -261,14 +203,14 @@ void QLineEditPrivate::setCursorVisible(bool visible)
 
 void QLineEditPrivate::updatePasswordEchoEditing(bool editing)
 {
-    Q_Q(QLineEdit);
+    QLineEdit * const q = q_func()
     control->updatePasswordEchoEditing(editing);
     q->setAttribute(Qt::WA_InputMethodEnabled, shouldEnableInputMethod());
 }
 
 void QLineEditPrivate::resetInputMethod()
 {
-    Q_Q(QLineEdit);
+    QLineEdit * const q = q_func()
     if (q->hasFocus() && qApp) {
         QGuiApplication::inputMethod()->reset();
     }
@@ -305,7 +247,7 @@ bool QLineEditPrivate::sendMouseEventToInputContext( QMouseEvent *e )
 #ifndef QT_NO_DRAGANDDROP
 void QLineEditPrivate::drag()
 {
-    Q_Q(QLineEdit);
+    QLineEdit * const q = q_func()
     dndTimer.stop();
     QMimeData *data = new QMimeData;
     data->setText(control->selectedText());
@@ -422,7 +364,7 @@ void QLineEditPrivate::_q_textChanged(const QString &text)
 
 void QLineEditPrivate::_q_clearButtonClicked()
 {
-    Q_Q(QLineEdit);
+    QLineEdit * const q = q_func()
     if (!q->text().isEmpty()) {
         q->clear();
         emit q->textEdited(QString());
@@ -462,7 +404,7 @@ void QLineEditPrivate::setClearButtonEnabled(bool enabled)
 
 void QLineEditPrivate::positionSideWidgets()
 {
-    Q_Q(QLineEdit);
+    QLineEdit * const q = q_func()
     if (hasSideWidgets()) {
         const QRect contentRect = q->rect();
         const SideWidgetParameters p = sideWidgetParameters();
@@ -504,11 +446,11 @@ QLineEditPrivate::SideWidgetLocation QLineEditPrivate::findSideWidget(const QAct
     return {QLineEdit::LeadingPosition, -1};
 }
 
-QWidget *QLineEditPrivate::addAction(QAction *newAction, QAction *before, QLineEdit::ActionPosition position, int flags)
+QWidget *QLineEditPrivate::addAction(QAction *newAction, QAction *before, 
+						QLineEdit::ActionPosition position, int flags)
 {
-    Q_Q(QLineEdit);
-    if (!newAction)
-        return 0;
+    QLineEdit * const q = q_func()
+
     if (!hasSideWidgets()) { // initial setup.
         QObject::connect(q, SIGNAL(textChanged(QString)), q, SLOT(_q_textChanged(QString)));
         lastTextSize = q->text().size();
@@ -572,7 +514,7 @@ QWidget *QLineEditPrivate::addAction(QAction *newAction, QAction *before, QLineE
 void QLineEditPrivate::removeAction(QAction *action)
 {
 #if QT_CONFIG(action)
-    Q_Q(QLineEdit);
+    QLineEdit * const q = q_func()
     const auto location = findSideWidget(action);
     if (!location.isValid())
         return;

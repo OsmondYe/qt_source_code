@@ -1,42 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWidgets module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #include "qprogressbar.h"
 
 #include <qlocale.h>
@@ -49,8 +10,6 @@
 #include <qaccessible.h>
 #endif
 #include <limits.h>
-
-QT_BEGIN_NAMESPACE
 
 class QProgressBarPrivate : public QWidgetPrivate
 {
@@ -169,69 +128,6 @@ bool QProgressBarPrivate::repaintRequired() const
     int grooveBlock = (q->orientation() == Qt::Horizontal) ? groove.width() : groove.height();
     return valueDifference * grooveBlock > cw * totalSteps;
 }
-
-/*!
-    \class QProgressBar
-    \brief The QProgressBar widget provides a horizontal or vertical progress bar.
-
-    \ingroup basicwidgets
-    \inmodule QtWidgets
-
-    \image windows-progressbar.png
-
-    A progress bar is used to give the user an indication of the
-    progress of an operation and to reassure them that the application
-    is still running.
-
-    The progress bar uses the concept of \e steps. You set it up by
-    specifying the minimum and maximum possible step values, and it
-    will display the percentage of steps that have been completed
-    when you later give it the current step value. The percentage is
-    calculated by dividing the progress (value() - minimum()) divided
-    by maximum() - minimum().
-
-    You can specify the minimum and maximum number of steps with
-    setMinimum() and setMaximum. The current number of steps is set
-    with setValue(). The progress bar can be rewound to the
-    beginning with reset().
-
-    If minimum and maximum both are set to 0, the bar shows a busy
-    indicator instead of a percentage of steps. This is useful, for
-    example, when using QNetworkAccessManager to download items when
-    they are unable to determine the size of the item being downloaded.
-
-    \sa QProgressDialog, {fowler}{GUI Design Handbook: Progress Indicator}
-*/
-
-/*!
-    \since 4.1
-    \enum QProgressBar::Direction
-    \brief Specifies the reading direction of the \l text for vertical progress bars.
-
-    \value TopToBottom The text is rotated 90 degrees clockwise.
-    \value BottomToTop The text is rotated 90 degrees counter-clockwise.
-
-    Note that whether or not the text is drawn is dependent on the style.
-    Currently CleanLooks and Plastique draw the text. Mac, Windows
-    and WindowsXP style do not.
-
-    \sa textDirection
-*/
-
-/*!
-    \fn void QProgressBar::valueChanged(int value)
-
-    This signal is emitted when the value shown in the progress bar changes.
-    \a value is the new value shown by the progress bar.
-*/
-
-/*!
-    Constructs a progress bar with the given \a parent.
-
-    By default, the minimum step value is set to 0, and the maximum to 100.
-
-    \sa setRange()
-*/
 
 QProgressBar::QProgressBar(QWidget *parent)
     : QWidget(*(new QProgressBarPrivate), parent, 0)
@@ -483,16 +379,6 @@ QString QProgressBar::text() const
     return result;
 }
 
-/*!
-    \since 4.1
-    \property QProgressBar::orientation
-    \brief the orientation of the progress bar
-
-    The orientation must be \l Qt::Horizontal (the default) or \l
-    Qt::Vertical.
-
-    \sa invertedAppearance, textDirection
-*/
 
 void QProgressBar::setOrientation(Qt::Orientation orientation)
 {
@@ -515,18 +401,6 @@ Qt::Orientation QProgressBar::orientation() const
     return d->orientation;
 }
 
-/*!
-    \since 4.1
-    \property QProgressBar::invertedAppearance
-    \brief whether or not a progress bar shows its progress inverted
-
-    If this property is \c true, the progress bar grows in the other
-    direction (e.g. from right to left). By default, the progress bar
-    is not inverted.
-
-    \sa orientation, layoutDirection
-*/
-
 void QProgressBar::setInvertedAppearance(bool invert)
 {
     Q_D(QProgressBar);
@@ -540,16 +414,6 @@ bool QProgressBar::invertedAppearance() const
     return d->invertedAppearance;
 }
 
-/*!
-    \since 4.1
-    \property QProgressBar::textDirection
-    \brief the reading direction of the \l text for vertical progress bars
-
-    This property has no impact on horizontal progress bars.
-    By default, the reading direction is QProgressBar::TopToBottom.
-
-    \sa orientation, textVisible
-*/
 void QProgressBar::setTextDirection(QProgressBar::Direction textDirection)
 {
     Q_D(QProgressBar);
@@ -569,9 +433,6 @@ bool QProgressBar::event(QEvent *e)
     Q_D(QProgressBar);
     switch (e->type()) {
     case QEvent::StyleChange:
-#ifdef Q_OS_MAC
-    case QEvent::MacSizeChange:
-#endif
         d->resetLayoutItemMargins();
         break;
     case QEvent::LocaleChange:
@@ -583,19 +444,6 @@ bool QProgressBar::event(QEvent *e)
     return QWidget::event(e);
 }
 
-/*!
-    \since 4.2
-    \property QProgressBar::format
-    \brief the string used to generate the current text
-
-    %p - is replaced by the percentage completed.
-    %v - is replaced by the current value.
-    %m - is replaced by the total number of steps.
-
-    The default value is "%p%".
-
-    \sa text()
-*/
 void QProgressBar::setFormat(const QString &format)
 {
     Q_D(QProgressBar);
@@ -619,7 +467,5 @@ QString QProgressBar::format() const
     Q_D(const QProgressBar);
     return d->format;
 }
-
-QT_END_NAMESPACE
 
 #include "moc_qprogressbar.cpp"

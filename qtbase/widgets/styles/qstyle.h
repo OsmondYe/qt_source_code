@@ -43,14 +43,14 @@ public:
                                 int alignment, const QPixmap &pixmap) const;
 
     virtual QPalette standardPalette() const;
-
+	//oye 先画粗糙的雏形出来
     virtual void drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p,
                                const QWidget *w = Q_NULLPTR) const = 0;
     
 
     virtual void drawControl(ControlElement element, const QStyleOption *opt, QPainter *p,
                              const QWidget *w = Q_NULLPTR) const = 0;
-
+	//oye 返回屏幕坐标一个rect, 来指明此子元素, option里面必然有基准坐标
     virtual QRect subElementRect(SubElement subElement, const QStyleOption *option,
                                  const QWidget *widget = Q_NULLPTR) const = 0;
 
@@ -69,7 +69,9 @@ public:
 	*/
     virtual int pixelMetric(PixelMetric metric, const QStyleOption *option = Q_NULLPTR,
                             const QWidget *widget = Q_NULLPTR) const = 0;
-    
+    /*
+    	oye 返回由type和option所描述的元素,同时基于已有的contentSize 而给出的尺寸
+	*/
     virtual QSize sizeFromContents(ContentsType ct, const QStyleOption *opt,
                                    const QSize &contentsSize, const QWidget *w = Q_NULLPTR) const = 0;   
 	

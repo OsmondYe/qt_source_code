@@ -18,6 +18,14 @@ class QRect;
 
 class  QFontMetrics
 {
+public;	
+	// 根据已有的宽度,转换text为后截断的text
+	QString elidedText(const QString &text, Qt::TextElideMode mode, int width, int flags = 0) const;
+	//oye 根据text计算宽度
+	int width(const QString &, int len = -1) const;
+	int width(const QString &, int len, int flags) const;
+	int width(QChar) const;
+
 public:
     explicit QFontMetrics(const QFont &);
     QFontMetrics(const QFont &, QPaintDevice *pd);
@@ -42,10 +50,7 @@ public:
 
     int leftBearing(QChar) const;
     int rightBearing(QChar) const;
-    int width(const QString &, int len = -1) const;
-    int width(const QString &, int len, int flags) const;
 
-    int width(QChar) const;
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     QT_DEPRECATED int charWidth(const QString &str, int pos) const;
 #endif
@@ -64,18 +69,15 @@ public:
 
     QRect tightBoundingRect(const QString &text) const;
 
-    QString elidedText(const QString &text, Qt::TextElideMode mode, int width, int flags = 0) const;
 
     int underlinePos() const;
     int overlinePos() const;
     int strikeOutPos() const;
     int lineWidth() const;
-
-
+	
 private:
     friend class QFontMetricsF;
     friend class QStackTextEngine;
-
     QExplicitlySharedDataPointer<QFontPrivate> d;
 };
 

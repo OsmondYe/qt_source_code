@@ -1,42 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtGui module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #ifndef QBRUSH_H
 #define QBRUSH_H
 
@@ -51,16 +12,11 @@
 #include <QtGui/qimage.h>
 #include <QtGui/qpixmap.h>
 
-QT_BEGIN_NAMESPACE
-
 
 struct QBrushData;
-class QPixmap;
-class QGradient;
-class QVariant;
 struct QBrushDataPointerDeleter;
 
-class Q_GUI_EXPORT QBrush
+class  QBrush
 {
 public:
     QBrush();
@@ -134,20 +90,8 @@ public:
 inline void QBrush::setColor(Qt::GlobalColor acolor)
 { setColor(QColor(acolor)); }
 
-Q_DECLARE_SHARED(QBrush)
+//Q_DECLARE_SHARED(QBrush)
 
-/*****************************************************************************
-  QBrush stream functions
- *****************************************************************************/
-
-#ifndef QT_NO_DATASTREAM
-Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QBrush &);
-Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QBrush &);
-#endif
-
-#ifndef QT_NO_DEBUG_STREAM
-Q_GUI_EXPORT QDebug operator<<(QDebug, const QBrush &);
-#endif
 
 struct QBrushData
 {
@@ -172,9 +116,9 @@ class QGradientPrivate;
 typedef QPair<qreal, QColor> QGradientStop;
 typedef QVector<QGradientStop> QGradientStops;
 
-class Q_GUI_EXPORT QGradient
+class  QGradient
 {
-    Q_GADGET
+    //Q_GADGET
 public:
     enum Type {
         LinearGradient,
@@ -251,7 +195,7 @@ private:
 inline void QGradient::setSpread(Spread aspread)
 { m_spread = aspread; }
 
-class Q_GUI_EXPORT QLinearGradient : public QGradient
+class  QLinearGradient : public QGradient
 {
 public:
     QLinearGradient();
@@ -268,7 +212,7 @@ public:
 };
 
 
-class Q_GUI_EXPORT QRadialGradient : public QGradient
+class  QRadialGradient : public QGradient
 {
 public:
     QRadialGradient();
@@ -300,7 +244,7 @@ public:
 };
 
 
-class Q_GUI_EXPORT QConicalGradient : public QGradient
+class  QConicalGradient : public QGradient
 {
 public:
     QConicalGradient();
@@ -314,7 +258,5 @@ public:
     qreal angle() const;
     void setAngle(qreal angle);
 };
-
-QT_END_NAMESPACE
 
 #endif // QBRUSH_H

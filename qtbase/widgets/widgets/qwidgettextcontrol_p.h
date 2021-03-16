@@ -19,7 +19,6 @@
 #include <QtCore/qmimedata.h>
 #include <QtGui/private/qinputcontrol_p.h>
 
-QT_REQUIRE_CONFIG(widgettextcontrol);
 
 class QStyleSheet;
 class QTextDocument;

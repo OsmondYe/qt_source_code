@@ -51,9 +51,6 @@
 #include <QtGui/qglyphrun.h>
 #include <QtGui/qtextcursor.h>
 
-QT_BEGIN_NAMESPACE
-
-
 class QTextEngine;
 class QFont;
 #ifndef QT_NO_RAWFONT
@@ -270,7 +267,5 @@ private:
     int index;
     QTextEngine *eng;
 };
-
-QT_END_NAMESPACE
 
 #endif // QTEXTLAYOUT_H
