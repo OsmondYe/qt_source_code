@@ -1,10 +1,9 @@
-QT_BEGIN_NAMESPACE
 
 QWindow::QWindow(QScreen *targetScreen)
     : QObject(*new QWindowPrivate(), 0)
     , QSurface(QSurface::Window)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     d->init(targetScreen);
 }
 
@@ -29,7 +28,7 @@ QWindow::QWindow(QWindowPrivate &dd, QWindow *parent)
     : QObject(dd, nonDesktopParent(parent))
     , QSurface(QSurface::Window)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     d->init();
 }
 
@@ -38,7 +37,7 @@ QWindow::QWindow(QWindowPrivate &dd, QWindow *parent)
 */
 QWindow::~QWindow()
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     d->destroy();
     QGuiApplicationPrivate::window_list.removeAll(this);
     if (!QGuiApplicationPrivate::is_app_closing)
@@ -264,7 +263,7 @@ QRectF QWindowPrivate::closestAcceptableGeometry(const QRectF &rect) const
 
 void QWindow::setSurfaceType(SurfaceType surfaceType)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     d->surfaceType = surfaceType;
 }
 
@@ -278,7 +277,7 @@ QWindow::SurfaceType QWindow::surfaceType() const
 
 void QWindow::setVisible(bool visible)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
 
     if (d->visible != visible) {
         d->visible = visible;
@@ -361,7 +360,7 @@ bool QWindow::isVisible() const
 
 void QWindow::create()
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     d->create(false);
 }
 
@@ -395,7 +394,7 @@ void QWindow::setParent(QWindow *parent)
 {
     parent = nonDesktopParent(parent);
 
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     if (d->parentWindow == parent)
         return;
 
@@ -452,7 +451,7 @@ Qt::WindowModality QWindow::modality() const
 
 void QWindow::setModality(Qt::WindowModality modality)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     if (d->modality == modality)
         return;
     d->modality = modality;
@@ -461,7 +460,7 @@ void QWindow::setModality(Qt::WindowModality modality)
 
 void QWindow::setFormat(const QSurfaceFormat &format)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     d->requestedFormat = format;
 }
 
@@ -484,7 +483,7 @@ QSurfaceFormat QWindow::format() const
 
 void QWindow::setFlags(Qt::WindowFlags flags)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     if (d->windowFlags == flags)
         return;
 
@@ -507,7 +506,7 @@ Qt::WindowFlags QWindow::flags() const
 
 void QWindow::setFlag(Qt::WindowType flag, bool on)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     if (on)
         setFlags(d->windowFlags | flag);
     else
@@ -524,7 +523,7 @@ Qt::WindowType QWindow::type() const
 
 void QWindow::setTitle(const QString &title)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     bool changed = false;
     if (d->windowTitle != title) {
         d->windowTitle = title;
@@ -545,7 +544,7 @@ QString QWindow::title() const
 
 void QWindow::setFilePath(const QString &filePath)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     d->windowFilePath = filePath;
     if (d->platformWindow)
         d->platformWindow->setWindowFilePath(filePath);
@@ -561,7 +560,7 @@ QString QWindow::filePath() const
 
 void QWindow::setIcon(const QIcon &icon)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     d->windowIcon = icon;
     if (d->platformWindow)
         d->platformWindow->setWindowIcon(icon);
@@ -581,7 +580,7 @@ QIcon QWindow::icon() const
 
 void QWindow::raise()
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
 
     d->updateSiblingPosition(QWindowPrivate::PositionTop);
 
@@ -592,7 +591,7 @@ void QWindow::raise()
 
 void QWindow::lower()
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
 
     d->updateSiblingPosition(QWindowPrivate::PositionBottom);
 
@@ -603,7 +602,7 @@ void QWindow::lower()
 
 void QWindow::setOpacity(qreal level)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     if (level == d->opacity)
         return;
     d->opacity = level;
@@ -622,7 +621,7 @@ qreal QWindow::opacity() const
 
 void QWindow::setMask(const QRegion &region)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     if (!d->platformWindow)
         return;
     d->platformWindow->setMask(QHighDpi::toNativeLocalRegion(region, this));
@@ -639,7 +638,7 @@ QRegion QWindow::mask() const
 
 void QWindow::requestActivate()
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     if (flags() & Qt::WindowDoesNotAcceptFocus) {
         qWarning() << "requestActivate() called for " << this << " which has Qt::WindowDoesNotAcceptFocus set.";
         return;
@@ -680,7 +679,7 @@ bool QWindow::isActive() const
 
 void QWindow::reportContentOrientationChange(Qt::ScreenOrientation orientation)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     if (d->contentOrientation == orientation)
         return;
     if (d->platformWindow)
@@ -717,7 +716,7 @@ void QWindow::setWindowState(Qt::WindowState state)
         return;
     }
 
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     if (d->platformWindow)
         d->platformWindow->setWindowState(state);
     d->windowState = state;
@@ -735,7 +734,7 @@ Qt::WindowState QWindow::windowState() const
 
 void QWindow::setTransientParent(QWindow *parent)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     if (parent && !parent->isTopLevel()) {
         qWarning() << parent << "must be a top level window.";
         return;
@@ -805,7 +804,7 @@ QSize QWindow::sizeIncrement() const
 
 void QWindow::setMinimumSize(const QSize &size)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     QSize adjustedSize = QSize(qBound(0, size.width(), QWINDOWSIZE_MAX), qBound(0, size.height(), QWINDOWSIZE_MAX));
     if (d->minimumSize == adjustedSize)
         return;
@@ -822,7 +821,7 @@ void QWindow::setMinimumSize(const QSize &size)
 
 void QWindow::setX(int arg)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     if (x() != arg)
         setGeometry(QRect(arg, y(), width(), height()));
     else
@@ -832,7 +831,7 @@ void QWindow::setX(int arg)
 
 void QWindow::setY(int arg)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     if (y() != arg)
         setGeometry(QRect(x(), arg, width(), height()));
     else
@@ -868,7 +867,7 @@ void QWindow::setMinimumHeight(int h)
 
 void QWindow::setMaximumSize(const QSize &size)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     QSize adjustedSize = QSize(qBound(0, size.width(), QWINDOWSIZE_MAX), qBound(0, size.height(), QWINDOWSIZE_MAX));
     if (d->maximumSize == adjustedSize)
         return;
@@ -896,7 +895,7 @@ void QWindow::setMaximumHeight(int h)
 
 void QWindow::setBaseSize(const QSize &size)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     if (d->baseSize == size)
         return;
     d->baseSize = size;
@@ -907,7 +906,7 @@ void QWindow::setBaseSize(const QSize &size)
 
 void QWindow::setSizeIncrement(const QSize &size)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     if (d->sizeIncrement == size)
         return;
     d->sizeIncrement = size;
@@ -924,7 +923,7 @@ void QWindow::setGeometry(int posx, int posy, int w, int h)
 
 void QWindow::setGeometry(const QRect &rect)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     d->positionAutomatic = false;
     const QRect oldRect = geometry();
     if (rect == oldRect)
@@ -1016,7 +1015,7 @@ QPoint QWindow::framePosition() const
 
 void QWindow::setFramePosition(const QPoint &point)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     d->positionPolicy = QWindowPrivate::WindowFrameInclusive;
     d->positionAutomatic = false;
     if (d->platformWindow) {
@@ -1047,7 +1046,7 @@ void QWindow::resize(int w, int h)
 
 void QWindow::resize(const QSize &newSize)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     d->positionPolicy = QWindowPrivate::WindowFrameExclusive;
     if (d->platformWindow) {
         d->platformWindow->setGeometry(QHighDpi::toNativePixels(QRect(position(), newSize), this));
@@ -1064,7 +1063,7 @@ void QWindow::resize(const QSize &newSize)
 
 void QWindow::destroy()
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     if (!d->platformWindow)
         return;
 
@@ -1144,7 +1143,7 @@ QPlatformSurface *QWindow::surfaceHandle() const
 
 bool QWindow::setKeyboardGrabEnabled(bool grab)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     if (d->platformWindow)
         return d->platformWindow->setKeyboardGrabEnabled(grab);
     return false;
@@ -1153,7 +1152,7 @@ bool QWindow::setKeyboardGrabEnabled(bool grab)
 
 bool QWindow::setMouseGrabEnabled(bool grab)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     if (d->platformWindow)
         return d->platformWindow->setMouseGrabEnabled(grab);
     return false;
@@ -1169,7 +1168,7 @@ QScreen *QWindow::screen() const
 
 void QWindow::setScreen(QScreen *newScreen)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     if (!newScreen)
         newScreen = QGuiApplication::primaryScreen();
     d->setTopLevelScreen(newScreen, newScreen != 0);
@@ -1237,7 +1236,7 @@ void QWindow::showNormal()
 
 bool QWindow::close()
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
 
     // Do not close non top level windows
     if (parent())
@@ -1367,7 +1366,7 @@ bool QWindow::event(QEvent *ev)
         break;
 
     case QEvent::WindowStateChange: {
-        Q_D(QWindow);
+        QWindowPrivate * const d = d_func();
         emit windowStateChanged(d->windowState);
         d->updateVisibility();
         break;
@@ -1382,7 +1381,7 @@ bool QWindow::event(QEvent *ev)
 #endif
 
     case QEvent::Timer: {
-        Q_D(QWindow);
+        QWindowPrivate * const d = d_func();
         if (static_cast<QTimerEvent *>(ev)->timerId() == d->updateTimer) {
             killTimer(d->updateTimer);
             d->updateTimer = 0;
@@ -1424,7 +1423,7 @@ void QWindow::requestUpdate()
     Q_ASSERT_X(QThread::currentThread() == QCoreApplication::instance()->thread(),
         "QWindow", "Updates can only be scheduled from the GUI (main) thread");
 
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     if (d->updateRequestPending || !d->platformWindow)
         return;
     d->updateRequestPending = true;
@@ -1665,7 +1664,7 @@ QWindow *QWindow::fromWinId(WId id)
 
 void QWindow::alert(int msec)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     if (!d->platformWindow || d->platformWindow->isAlertState() || isActive())
         return;
     d->platformWindow->setAlertState(true);
@@ -1681,13 +1680,13 @@ void QWindowPrivate::_q_clearAlert()
 
 void QWindow::setCursor(const QCursor &cursor)
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     d->setCursor(&cursor);
 }
 
 void QWindow::unsetCursor()
 {
-    Q_D(QWindow);
+    QWindowPrivate * const d = d_func();
     d->setCursor(0);
 }
 
@@ -1735,44 +1734,3 @@ bool QWindowPrivate::applyCursor()
     }
     return false;
 }
-
-QDebug operator<<(QDebug debug, const QWindow *window)
-{
-    QDebugStateSaver saver(debug);
-    debug.nospace();
-    if (window) {
-        debug << window->metaObject()->className() << '(' << (const void *)window;
-        if (!window->objectName().isEmpty())
-            debug << ", name=" << window->objectName();
-        if (debug.verbosity() > 2) {
-            const QRect geometry = window->geometry();
-            if (window->isVisible())
-                debug << ", visible";
-            if (window->isExposed())
-                debug << ", exposed";
-            debug << ", state=" << window->windowState()
-                << ", type=" << window->type() << ", flags=" << window->flags()
-                << ", surface type=" << window->surfaceType();
-            if (window->isTopLevel())
-                debug << ", toplevel";
-            debug << ", " << geometry.width() << 'x' << geometry.height()
-                << forcesign << geometry.x() << geometry.y() << noforcesign;
-            const QMargins margins = window->frameMargins();
-            if (!margins.isNull())
-                debug << ", margins=" << margins;
-            debug << ", devicePixelRatio=" << window->devicePixelRatio();
-            if (const QPlatformWindow *platformWindow = window->handle())
-                debug << ", winId=0x" << hex << platformWindow->winId() << dec;
-            if (const QScreen *screen = window->screen())
-                debug << ", on " << screen->name();
-        }
-        debug << ')';
-    } else {
-        debug << "QWindow(0x0)";
-    }
-    return debug;
-}
-
-QT_END_NAMESPACE
-
-#include "moc_qwindow.cpp"

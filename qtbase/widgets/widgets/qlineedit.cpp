@@ -1338,7 +1338,7 @@ void QLineEdit::paintEvent(QPaintEvent *)
     QPainter p(this);
     QPalette pal = palette();   // oye 获取本widget的调色板 
 
-    QStyleOptionFrame panel;
+    QStyleOptionFrame panel;  // LineEdit把自己当做一个panel来绘制
     initStyleOption(&panel);
 	// 先画雏形PE_PanelLineEdit
     style()->drawPrimitive(QStyle::PE_PanelLineEdit, &panel, &p, this);
@@ -1428,8 +1428,11 @@ void QLineEdit::paintEvent(QPaintEvent *)
     // the y offset is there to keep the baseline constant in case we have script changes in the text.
     QPoint topLeft = lineRect.topLeft() - QPoint(d->hscroll, d->control->ascent() - fm.ascent());
 
+
+	
     // draw text, selections and cursors
 #ifndef QT_NO_STYLE_STYLESHEET
+	// qss发威的地方, 判断是否可以强转,如果可以,更新调色盘, 通过调色盘完美隔离了系统新增了css功能
     if (QStyleSheetStyle* cssStyle = qobject_cast<QStyleSheetStyle*>(style())) {
         cssStyle->styleSheetPalette(this, &panel, &pal);
     }
@@ -1446,7 +1449,7 @@ void QLineEdit::paintEvent(QPaintEvent *)
         // Palette only used for selections/mask and may not be in sync
         if (d->control->palette() != pal
            || d->control->palette().currentColorGroup() != pal.currentColorGroup())
-            d->control->setPalette(pal);
+            d->control->setPalette(pal);  // qss 修改后的pal 传递给内从控件
     }
 
     // Asian users see an IM selection text as cursor on candidate

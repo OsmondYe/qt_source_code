@@ -1,22 +1,52 @@
-
-
-#ifndef QWINDOW_P_H
-#define QWINDOW_P_H
-
-
-QT_BEGIN_NAMESPACE
-
-
 class QWindowPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QWindow)
-
+    //Q_DECLARE_PUBLIC(QWindow)
 public:
-    enum PositionPolicy
-    {
-        WindowFrameInclusive,
-        WindowFrameExclusive
-    };
+    QWindow::SurfaceType surfaceType;
+    Qt::WindowFlags windowFlags;
+    QWindow *parentWindow;			// 弹出式对话框有父窗口
+    QPlatformWindow *platformWindow;
+    bool visible;
+    bool visibilityOnDestroy;
+    bool exposed;
+    QSurfaceFormat requestedFormat;
+    QString windowTitle;
+    QString windowFilePath;
+    QIcon windowIcon;
+    QRect geometry;
+    Qt::WindowState windowState;
+    QWindow::Visibility visibility;
+    bool resizeEventPending;
+    bool receivedExpose;
+    PositionPolicy positionPolicy;
+    bool positionAutomatic;
+    Qt::ScreenOrientation contentOrientation;
+    qreal opacity;
+    QRegion mask;
+
+    QSize minimumSize;
+    QSize maximumSize;
+    QSize baseSize;
+    QSize sizeIncrement;
+
+    Qt::WindowModality modality;
+    bool blockedByModalWindow;
+
+    bool updateRequestPending;
+    int updateTimer;
+
+    QPointer<QWindow> transientParent;
+    QPointer<QScreen> topLevelScreen;
+
+#ifndef QT_NO_CURSOR
+    QCursor cursor;
+    bool hasCursor;
+#endif
+
+    bool compositing;
+    QElapsedTimer lastComposeTime;
+
+public:   
 
     QWindowPrivate()
         : QObjectPrivate()
@@ -96,52 +126,12 @@ public:
 
     static QWindowPrivate *get(QWindow *window) { return window->d_func(); }
 
-    QWindow::SurfaceType surfaceType;
-    Qt::WindowFlags windowFlags;
-    QWindow *parentWindow;
-    QPlatformWindow *platformWindow;
-    bool visible;
-    bool visibilityOnDestroy;
-    bool exposed;
-    QSurfaceFormat requestedFormat;
-    QString windowTitle;
-    QString windowFilePath;
-    QIcon windowIcon;
-    QRect geometry;
-    Qt::WindowState windowState;
-    QWindow::Visibility visibility;
-    bool resizeEventPending;
-    bool receivedExpose;
-    PositionPolicy positionPolicy;
-    bool positionAutomatic;
-    Qt::ScreenOrientation contentOrientation;
-    qreal opacity;
-    QRegion mask;
 
-    QSize minimumSize;
-    QSize maximumSize;
-    QSize baseSize;
-    QSize sizeIncrement;
+	enum PositionPolicy
+		{
+			WindowFrameInclusive,
+			WindowFrameExclusive
+		};
 
-    Qt::WindowModality modality;
-    bool blockedByModalWindow;
-
-    bool updateRequestPending;
-    int updateTimer;
-
-    QPointer<QWindow> transientParent;
-    QPointer<QScreen> topLevelScreen;
-
-#ifndef QT_NO_CURSOR
-    QCursor cursor;
-    bool hasCursor;
-#endif
-
-    bool compositing;
-    QElapsedTimer lastComposeTime;
 };
 
-
-QT_END_NAMESPACE
-
-#endif // QWINDOW_P_H

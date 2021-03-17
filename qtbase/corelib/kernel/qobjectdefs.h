@@ -30,7 +30,7 @@ typedef QArrayData QByteArrayData;
 #define Q_SLOTS 						QT_ANNOTATE_ACCESS_SPECIFIER(qt_slot)
 #define Q_SIGNALS 						public QT_ANNOTATE_ACCESS_SPECIFIER(qt_signal)
 
-// Widget的源码里面很常见
+// Widget的源码里面很常见 -> 比如是被moc特殊处理的
 #define Q_PRIVATE_SLOT(d, signature) 	QT_ANNOTATE_CLASS2(qt_private_slot, d, signature)
 
 

@@ -1,47 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWidgets module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #include "qwindowsstyle_p.h"
 #include "qwindowsstyle_p_p.h"
-
-#if QT_CONFIG(style_windows) || defined(QT_PLUGIN)
-
 #include "qapplication.h"
 #include "qbitmap.h"
 #include "qdrawutil.h" // for now
@@ -90,26 +48,17 @@
 
 #include <algorithm>
 
-QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_WIN)
 
-QT_BEGIN_INCLUDE_NAMESPACE
-#include "qt_windows.h"
-QT_END_INCLUDE_NAMESPACE
-#  ifndef COLOR_GRADIENTACTIVECAPTION
-#    define COLOR_GRADIENTACTIVECAPTION     27
-#  endif
-#  ifndef COLOR_GRADIENTINACTIVECAPTION
-#    define COLOR_GRADIENTINACTIVECAPTION   28
-#  endif
+#define COLOR_GRADIENTACTIVECAPTION     27
 
-Q_GUI_EXPORT HICON qt_pixmapToWinHICON(const QPixmap &);
-#endif //Q_OS_WIN
+#define COLOR_GRADIENTINACTIVECAPTION   28
 
-QT_BEGIN_INCLUDE_NAMESPACE
-#include <limits.h>
-QT_END_INCLUDE_NAMESPACE
+
+
+HICON qt_pixmapToWinHICON(const QPixmap &);
+
+
 
 enum QSliderDirection { SlUp, SlDown, SlLeft, SlRight };
 
@@ -190,32 +139,11 @@ bool QWindowsStyle::eventFilter(QObject *o, QEvent *e)
     return QCommonStyle::eventFilter(o, e);
 }
 
-/*!
-    \class QWindowsStyle
-    \brief The QWindowsStyle class provides a Microsoft Windows-like look and feel.
 
-    \ingroup appearance
-    \inmodule QtWidgets
-    \internal
-
-    This style is Qt's default GUI style on Windows.
-
-    \image qwindowsstyle.png
-    \sa QWindowsVistaStyle, QMacStyle, QFusionStyle
-*/
-
-/*!
-    Constructs a QWindowsStyle object.
-*/
 QWindowsStyle::QWindowsStyle() : QCommonStyle(*new QWindowsStylePrivate)
 {
 }
 
-/*!
-    \internal
-
-    Constructs a QWindowsStyle object.
-*/
 QWindowsStyle::QWindowsStyle(QWindowsStylePrivate &dd) : QCommonStyle(dd)
 {
 }
@@ -226,12 +154,12 @@ QWindowsStyle::~QWindowsStyle()
 {
 }
 
-#ifdef Q_OS_WIN
+
 static inline QRgb colorref2qrgb(COLORREF col)
 {
     return qRgb(GetRValue(col), GetGValue(col), GetBValue(col));
 }
-#endif
+
 
 /*! \reimp */
 void QWindowsStyle::polish(QApplication *app)
@@ -248,7 +176,6 @@ void QWindowsStyle::polish(QApplication *app)
     d->inactiveGradientCaptionColor = app->palette().dark().color();
     d->inactiveCaptionText = app->palette().background().color();
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT) //fetch native title bar colors
     if(app->desktopSettingsAware()){
         DWORD activeCaption = GetSysColor(COLOR_ACTIVECAPTION);
         DWORD gradientActiveCaption = GetSysColor(COLOR_GRADIENTACTIVECAPTION);
@@ -261,7 +188,6 @@ void QWindowsStyle::polish(QApplication *app)
         d->inactiveGradientCaptionColor = colorref2qrgb(gradientInactiveCaption);
         d->inactiveCaptionText = colorref2qrgb(inactiveCaptionText);
     }
-#endif
 }
 
 /*! \reimp */
@@ -293,7 +219,6 @@ void QWindowsStyle::polish(QPalette &pal)
 
 int QWindowsStylePrivate::pixelMetricFromSystemDp(QStyle::PixelMetric pm, const QStyleOption *, const QWidget *widget)
 {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     switch (pm) {
     case QStyle::PM_DockWidgetFrameWidth:
         return GetSystemMetrics(SM_CXFRAME);
@@ -320,10 +245,7 @@ int QWindowsStylePrivate::pixelMetricFromSystemDp(QStyle::PixelMetric pm, const 
     default:
         break;
     }
-#else // Q_OS_WIN && !Q_OS_WINRT
-    Q_UNUSED(pm);
-    Q_UNUSED(widget);
-#endif
+
     return QWindowsStylePrivate::InvalidMetric;
 }
 
@@ -2426,8 +2348,6 @@ QIcon QWindowsStyle::standardIcon(StandardPixmap standardIcon, const QStyleOptio
 
 
 
-QT_END_NAMESPACE
-
 #include "moc_qwindowsstyle_p.cpp"
 
-#endif // style_windows
+

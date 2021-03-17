@@ -45,8 +45,6 @@ public:
         LeadingPosition,
         TrailingPosition
     };
-    //Q_ENUM(ActionPosition)
-
     explicit QLineEdit(QWidget *parent = Q_NULLPTR);
     explicit QLineEdit(const QString &, QWidget *parent = Q_NULLPTR);
     ~QLineEdit(){}

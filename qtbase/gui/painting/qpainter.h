@@ -44,7 +44,7 @@ private:
 public:
     QPainter();
     explicit QPainter(QPaintDevice *);
-    ~QPainter();
+    ~QPainter();		// Îö¹¹Ê± »ácall end
 
     QPaintDevice *device() const;
 

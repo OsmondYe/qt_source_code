@@ -8,6 +8,9 @@ public:
     static int numinstances;
 	int refcount;
 	mutable QCss::Parser parser;
+public: // oye 常见操作
+	// 这个是qss特有的函数, 当前widget是否有了新的调色盘, 
+	bool styleSheetPalette(const QWidget* w, const QStyleOption* opt, QPalette* pal);
 public:
 	// 需要一个基本baseStyle,
     QStyleSheetStyle(QStyle *baseStyle);
@@ -65,7 +68,7 @@ public:
     void saveWidgetFont(QWidget* w, const QFont& font) const;
     void clearWidgetFont(QWidget* w) const;
 
-    bool styleSheetPalette(const QWidget* w, const QStyleOption* opt, QPalette* pal);
+
 
 protected:
     bool event(QEvent *e) override;

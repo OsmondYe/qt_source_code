@@ -1,47 +1,30 @@
 
 typedef WId int;
 
-
-QT_BEGIN_NAMESPACE
-
-
 class QWindow :  public QObject,  public QSurface
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QWindow)
+    //Q_OBJECT
+    //Q_DECLARE_PRIVATE(QWindow)
 
-
-    Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY windowTitleChanged)
-    Q_PROPERTY(Qt::WindowModality modality READ modality WRITE setModality NOTIFY modalityChanged)
-    Q_PROPERTY(Qt::WindowFlags flags READ flags WRITE setFlags)
-    Q_PROPERTY(int x READ x WRITE setX NOTIFY xChanged)
-    Q_PROPERTY(int y READ y WRITE setY NOTIFY yChanged)
-    Q_PROPERTY(int width READ width WRITE setWidth NOTIFY widthChanged)
-    Q_PROPERTY(int height READ height WRITE setHeight NOTIFY heightChanged)
-    Q_PROPERTY(int minimumWidth READ minimumWidth WRITE setMinimumWidth NOTIFY minimumWidthChanged)
-    Q_PROPERTY(int minimumHeight READ minimumHeight WRITE setMinimumHeight NOTIFY minimumHeightChanged)
-    Q_PROPERTY(int maximumWidth READ maximumWidth WRITE setMaximumWidth NOTIFY maximumWidthChanged)
-    Q_PROPERTY(int maximumHeight READ maximumHeight WRITE setMaximumHeight NOTIFY maximumHeightChanged)
-    Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibleChanged)
-    Q_PROPERTY(bool active READ isActive NOTIFY activeChanged REVISION 1)
-    Q_PROPERTY(Visibility visibility READ visibility WRITE setVisibility NOTIFY visibilityChanged REVISION 1)
-    Q_PROPERTY(Qt::ScreenOrientation contentOrientation READ contentOrientation WRITE reportContentOrientationChange NOTIFY contentOrientationChanged)
-    Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged REVISION 1)
+//    Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY windowTitleChanged)
+//    Q_PROPERTY(Qt::WindowModality modality READ modality WRITE setModality NOTIFY modalityChanged)
+//    Q_PROPERTY(Qt::WindowFlags flags READ flags WRITE setFlags)
+//    Q_PROPERTY(int x READ x WRITE setX NOTIFY xChanged)
+//    Q_PROPERTY(int y READ y WRITE setY NOTIFY yChanged)
+//    Q_PROPERTY(int width READ width WRITE setWidth NOTIFY widthChanged)
+//    Q_PROPERTY(int height READ height WRITE setHeight NOTIFY heightChanged)
+//    Q_PROPERTY(int minimumWidth READ minimumWidth WRITE setMinimumWidth NOTIFY minimumWidthChanged)
+//    Q_PROPERTY(int minimumHeight READ minimumHeight WRITE setMinimumHeight NOTIFY minimumHeightChanged)
+//    Q_PROPERTY(int maximumWidth READ maximumWidth WRITE setMaximumWidth NOTIFY maximumWidthChanged)
+//    Q_PROPERTY(int maximumHeight READ maximumHeight WRITE setMaximumHeight NOTIFY maximumHeightChanged)
+//    Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibleChanged)
+//    Q_PROPERTY(bool active READ isActive NOTIFY activeChanged REVISION 1)
+//    Q_PROPERTY(Visibility visibility READ visibility WRITE setVisibility NOTIFY visibilityChanged REVISION 1)
+//    Q_PROPERTY(Qt::ScreenOrientation contentOrientation READ contentOrientation WRITE reportContentOrientationChange NOTIFY contentOrientationChanged)
+//    Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged REVISION 1)
 
 public:
-    enum Visibility {
-        Hidden = 0,
-        AutomaticVisibility,
-        Windowed,
-        Minimized,
-        Maximized,
-        FullScreen
-    };
 
-    enum AncestorMode {
-        ExcludeTransients,
-        IncludeTransients
-    };
 
     explicit QWindow(QScreen *screen = Q_NULLPTR);
     explicit QWindow(QWindow *parent);
@@ -253,16 +236,30 @@ protected:
 
     QWindow(QWindowPrivate &dd, QWindow *parent);
 
+public:
+    enum Visibility {
+	    Hidden = 0,
+	    AutomaticVisibility,
+	    Windowed,
+	    Minimized,
+	    Maximized,
+	    FullScreen
+    };
+
+    enum AncestorMode {
+        ExcludeTransients,
+        IncludeTransients
+    };
 private:
-    Q_PRIVATE_SLOT(d_func(), void _q_clearAlert())
+    //Q_PRIVATE_SLOT(d_func(), void _q_clearAlert())
     QPlatformSurface *surfaceHandle() const Q_DECL_OVERRIDE;
 
-    Q_DISABLE_COPY(QWindow)
+    //Q_DISABLE_COPY(QWindow)
 
     friend class QGuiApplication;
     friend class QGuiApplicationPrivate;
     friend class QWindowContainer;
-    friend Q_GUI_EXPORT QWindowPrivate *qt_window_private(QWindow *window);
+    friend  QWindowPrivate *qt_window_private(QWindow *window);
 };
 
 template <> inline QWindow *qobject_cast<QWindow*>(QObject *o)
@@ -276,6 +273,5 @@ template <> inline const QWindow *qobject_cast<const QWindow*>(const QObject *o)
     return static_cast<const QWindow*>(o);
 }
 
-Q_GUI_EXPORT QDebug operator<<(QDebug, const QWindow *);
 
 

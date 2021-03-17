@@ -1,42 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtGui module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #include "qbitmap.h"
 #include "qpixmap.h"
 #include <qpa/qplatformpixmap.h>
@@ -46,7 +7,6 @@
 #include <QScopedArrayPointer>
 #include <qt_windows.h>
 
-QT_BEGIN_NAMESPACE
 
 static inline void initBitMapInfoHeader(int width, int height, bool topToBottom, BITMAPINFOHEADER *bih)
 {
@@ -117,7 +77,7 @@ enum HBitmapFormat
     HBitmapAlpha
 };
 
-Q_GUI_EXPORT HBITMAP qt_createIconMask(const QBitmap &bitmap)
+ HBITMAP qt_createIconMask(const QBitmap &bitmap)
 {
     QImage bm = bitmap.toImage().convertToFormat(QImage::Format_Mono);
     const int w = bm.width();
@@ -131,7 +91,7 @@ Q_GUI_EXPORT HBITMAP qt_createIconMask(const QBitmap &bitmap)
     return hbm;
 }
 
-Q_GUI_EXPORT HBITMAP qt_pixmapToWinHBITMAP(const QPixmap &p, int hbitmapFormat = 0)
+ HBITMAP qt_pixmapToWinHBITMAP(const QPixmap &p, int hbitmapFormat = 0)
 {
     if (p.isNull())
         return 0;
@@ -183,7 +143,7 @@ Q_GUI_EXPORT HBITMAP qt_pixmapToWinHBITMAP(const QPixmap &p, int hbitmapFormat =
 }
 
 
-Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0)
+ QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0)
 {
     // Verify size
     BITMAP bitmap_info;
@@ -221,7 +181,7 @@ Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat =
 }
 
 
-Q_GUI_EXPORT HICON qt_pixmapToWinHICON(const QPixmap &p)
+ HICON qt_pixmapToWinHICON(const QPixmap &p)
 {
     if (p.isNull())
         return 0;
@@ -247,7 +207,7 @@ Q_GUI_EXPORT HICON qt_pixmapToWinHICON(const QPixmap &p)
     return hIcon;
 }
 
-Q_GUI_EXPORT QImage qt_imageFromWinHBITMAP(HDC hdc, HBITMAP bitmap, int w, int h)
+ QImage qt_imageFromWinHBITMAP(HDC hdc, HBITMAP bitmap, int w, int h)
 {
     QImage image(w, h, QImage::Format_ARGB32_Premultiplied);
     if (image.isNull())
@@ -285,7 +245,7 @@ static inline bool hasAlpha(const QImage &image)
     return false;
 }
 
-Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon)
+ QPixmap qt_pixmapFromWinHICON(HICON icon)
 {
     HDC screenDevice = GetDC(0);
     HDC hdc = CreateCompatibleDC(screenDevice);
@@ -336,4 +296,3 @@ Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon)
     return QPixmap::fromImage(image);
 }
 
-QT_END_NAMESPACE
