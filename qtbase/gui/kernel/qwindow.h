@@ -115,7 +115,7 @@ public:
     inline int height() const { return geometry().height(); }
     inline int x() const { return geometry().x(); }
     inline int y() const { return geometry().y(); }
-
+	// oye position +size = geometry
     QSize size() const Q_DECL_OVERRIDE { return geometry().size(); }
     inline QPoint position() const { return geometry().topLeft(); }
 

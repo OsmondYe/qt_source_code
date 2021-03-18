@@ -1,5 +1,3 @@
-//#define QT_EXPERIMENTAL_CLIENT_DECORATIONS
-
 #include "qmainwindow.h"
 #include "qmainwindowlayout_p.h"
 
@@ -24,8 +22,6 @@
 #include <private/qwidget_p.h>
 #include "qtoolbar_p.h"
 #include "qwidgetanimator_p.h"
-
-QT_BEGIN_NAMESPACE
 
 class QMainWindowLayout;
 
@@ -64,11 +60,10 @@ QMainWindowLayout *qt_mainwindow_layout(const QMainWindow *mainWindow)
     return QMainWindowPrivate::mainWindowLayout(mainWindow);
 }
 
- void qt_setMainWindowTitleWidget(QMainWindow *mainWindow, Qt::DockWidgetArea area, QWidget *widget)
+ void qt_setMainWindowTitleWidget(QMainWindow *mainWindow, 
+ 						Qt::DockWidgetArea area, QWidget *widget)
 {
     QGridLayout *topLayout = qobject_cast<QGridLayout *>(mainWindow->layout());
-    Q_ASSERT(topLayout);
-
     int row = 0;
     int column = 0;
 
@@ -96,22 +91,24 @@ QMainWindowLayout *qt_mainwindow_layout(const QMainWindow *mainWindow)
 
     if (QLayoutItem *oldItem = topLayout->itemAtPosition(row, column))
         delete oldItem->widget();
+	//
     topLayout->addWidget(widget, row, column);
 }
-#endif
 
 void QMainWindowPrivate::init()
 {
-    Q_Q(QMainWindow);
+    QMainWindow * const q = q_func();
 
 #ifdef QT_EXPERIMENTAL_CLIENT_DECORATIONS
     QGridLayout *topLayout = new QGridLayout(q);
     topLayout->setContentsMargins(0, 0, 0, 0);
 
+	// 把一个GridLayout对象直接塞入QMainWindowLayout
     layout = new QMainWindowLayout(q, topLayout);
 
     topLayout->addItem(layout, 1, 1);
 #else
+
     layout = new QMainWindowLayout(q, 0);
 #endif
 
@@ -120,207 +117,8 @@ void QMainWindowPrivate::init()
     q->setAttribute(Qt::WA_Hover);
 }
 
-/*
-    The Main Window:
-
-    +----------------------------------------------------------+
-    | Menu Bar                                                 |
-    +----------------------------------------------------------+
-    | Tool Bar Area                                            |
-    |   +--------------------------------------------------+   |
-    |   | Dock Window Area                                 |   |
-    |   |   +------------------------------------------+   |   |
-    |   |   |                                          |   |   |
-    |   |   | Central Widget                           |   |   |
-    |   |   |                                          |   |   |
-    |   |   |                                          |   |   |
-    |   |   |                                          |   |   |
-    |   |   |                                          |   |   |
-    |   |   |                                          |   |   |
-    |   |   |                                          |   |   |
-    |   |   |                                          |   |   |
-    |   |   |                                          |   |   |
-    |   |   |                                          |   |   |
-    |   |   |                                          |   |   |
-    |   |   +------------------------------------------+   |   |
-    |   |                                                  |   |
-    |   +--------------------------------------------------+   |
-    |                                                          |
-    +----------------------------------------------------------+
-    | Status Bar                                               |
-    +----------------------------------------------------------+
-
-*/
-
-/*!
-    \class QMainWindow
-    \brief The QMainWindow class provides a main application
-           window.
-    \ingroup mainwindow-classes
-    \inmodule QtWidgets
-
-    \tableofcontents
-
-    \section1 Qt Main Window Framework
-
-    A main window provides a framework for building an
-    application's user interface. Qt has QMainWindow and its \l{Main
-    Window and Related Classes}{related classes} for main window
-    management. QMainWindow has its own layout to which you can add
-    \l{QToolBar}s, \l{QDockWidget}s, a
-    QMenuBar, and a QStatusBar. The layout has a center area that can
-    be occupied by any kind of widget. You can see an image of the
-    layout below.
-
-    \image mainwindowlayout.png
-
-    \note Creating a main window without a central widget is not supported.
-    You must have a central widget even if it is just a placeholder.
-
-    \section1 Creating Main Window Components
-
-    A central widget will typically be a standard Qt widget such
-    as a QTextEdit or a QGraphicsView. Custom widgets can also be
-    used for advanced applications. You set the central widget with \c
-    setCentralWidget().
-
-    Main windows have either a single (SDI) or multiple (MDI)
-    document interface. You create MDI applications in Qt by using a
-    QMdiArea as the central widget.
-
-    We will now examine each of the other widgets that can be
-    added to a main window. We give examples on how to create and add
-    them.
-
-    \section2 Creating Menus
-
-    Qt implements menus in QMenu and QMainWindow keeps them in a
-    QMenuBar. \l{QAction}{QAction}s are added to the menus, which
-    display them as menu items.
-
-    You can add new menus to the main window's menu bar by calling
-    \c menuBar(), which returns the QMenuBar for the window, and then
-    add a menu with QMenuBar::addMenu().
-
-    QMainWindow comes with a default menu bar, but you can also
-    set one yourself with \c setMenuBar(). If you wish to implement a
-    custom menu bar (i.e., not use the QMenuBar widget), you can set it
-    with \c setMenuWidget().
-
-    An example of how to create menus follows:
-
-    \code
-    void MainWindow::createMenus()
-    {
-        fileMenu = menuBar()->addMenu(tr("&File"));
-        fileMenu->addAction(newAct);
-        fileMenu->addAction(openAct);
-        fileMenu->addAction(saveAct);
-    \endcode
-
-    The \c createPopupMenu() function creates popup menus when the
-    main window receives context menu events.  The default
-    implementation generates a menu with the checkable actions from
-    the dock widgets and toolbars. You can reimplement \c
-    createPopupMenu() for a custom menu.
-
-    \section2 Creating Toolbars
-
-    Toolbars are implemented in the QToolBar class.  You add a
-    toolbar to a main window with \c addToolBar().
-
-    You control the initial position of toolbars by assigning them
-    to a specific Qt::ToolBarArea. You can split an area by inserting
-    a toolbar break - think of this as a line break in text editing -
-    with \c addToolBarBreak() or \c insertToolBarBreak(). You can also
-    restrict placement by the user with QToolBar::setAllowedAreas()
-    and QToolBar::setMovable().
-
-    The size of toolbar icons can be retrieved with \c iconSize().
-    The sizes are platform dependent; you can set a fixed size with \c
-    setIconSize(). You can alter the appearance of all tool buttons in
-    the toolbars with \c setToolButtonStyle().
-
-    An example of toolbar creation follows:
-
-    \code
-    void MainWindow::createToolBars()
-    {
-        fileToolBar = addToolBar(tr("File"));
-        fileToolBar->addAction(newAct);
-    \endcode
-
-    \section2 Creating Dock Widgets
-
-    Dock widgets are implemented in the QDockWidget class. A dock
-    widget is a window that can be docked into the main window.  You
-    add dock widgets to a main window with \c addDockWidget().
-
-    There are four dock widget areas as given by the
-    Qt::DockWidgetArea enum: left, right, top, and bottom. You can
-    specify which dock widget area that should occupy the corners
-    where the areas overlap with \c setCorner(). By default
-    each area can only contain one row (vertical or horizontal) of
-    dock widgets, but if you enable nesting with \c
-    setDockNestingEnabled(), dock widgets can be added in either
-    direction.
-
-    Two dock widgets may also be stacked on top of each other. A
-    QTabBar is then used to select which of the widgets should be
-    displayed.
-
-    We give an example of how to create and add dock widgets to a
-    main window:
-
-    \snippet mainwindowsnippet.cpp 0
-
-    \section2 The Status Bar
-
-    You can set a status bar with \c setStatusBar(), but one is
-    created the first time \c statusBar() (which returns the main
-    window's status bar) is called. See QStatusBar for information on
-    how to use it.
-
-    \section1 Storing State
-
-    QMainWindow can store the state of its layout with \c
-    saveState(); it can later be retrieved with \c restoreState(). It
-    is the position and size (relative to the size of the main window)
-    of the toolbars and dock widgets that are stored.
-
-    \sa QMenuBar, QToolBar, QStatusBar, QDockWidget, {Application
-    Example}, {Dock Widgets Example}, {MDI Example}, {SDI Example},
-    {Menus Example}
-*/
-
-/*!
-    \fn void QMainWindow::iconSizeChanged(const QSize &iconSize)
-
-    This signal is emitted when the size of the icons used in the
-    window is changed. The new icon size is passed in \a iconSize.
-
-    You can connect this signal to other components to help maintain
-    a consistent appearance for your application.
-
-    \sa setIconSize()
-*/
-
-/*!
-    \fn void QMainWindow::toolButtonStyleChanged(Qt::ToolButtonStyle toolButtonStyle)
-
-    This signal is emitted when the style used for tool buttons in the
-    window is changed. The new style is passed in \a toolButtonStyle.
-
-    You can connect this signal to other components to help maintain
-    a consistent appearance for your application.
-
-    \sa setToolButtonStyle()
-*/
-
-
-
 QMainWindow::QMainWindow(QWidget *parent, Qt::WindowFlags flags)
-    : QWidget(*(new QMainWindowPrivate()), parent, flags | Qt::Window)
+    : QWidget(*(new QMainWindowPrivate()), parent, flags | Qt::Window)// 强行给Qt::Window
 {
     d_func()->init();
 }
@@ -1295,7 +1093,7 @@ QCursor QMainWindowPrivate::separatorCursor(const QList<int> &path) const
 
 void QMainWindowPrivate::adjustCursor(const QPoint &pos)
 {
-    Q_Q(QMainWindow);
+    QMainWindow * const q = q_func();
 
     hoverPos = pos;
 
@@ -1481,83 +1279,6 @@ bool QMainWindow::event(QEvent *event)
     return QWidget::event(event);
 }
 
-#ifndef QT_NO_TOOLBAR
-
-/*!
-    \property QMainWindow::unifiedTitleAndToolBarOnMac
-    \brief whether the window uses the unified title and toolbar look on \macos
-
-    Note that the Qt 5 implementation has several limitations compared to Qt 4:
-    \list
-        \li Use in windows with OpenGL content is not supported. This includes QGLWidget and QOpenGLWidget.
-        \li Using dockable or movable toolbars may result in painting errors and is not recommended
-    \endlist
-
-    \since 5.2
-*/
-void QMainWindow::setUnifiedTitleAndToolBarOnMac(bool set)
-{
-#ifdef Q_OS_OSX
-    Q_D(QMainWindow);
-    if (isWindow()) {
-        d->useUnifiedToolBar = set;
-        createWinId();
-
-        QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
-        QPlatformNativeInterface::NativeResourceForIntegrationFunction function =
-            nativeInterface->nativeResourceFunctionForIntegration("setContentBorderEnabled");
-        if (!function)
-            return; // Not Cocoa platform plugin.
-
-        typedef void (*SetContentBorderEnabledFunction)(QWindow *window, bool enable);
-        (reinterpret_cast<SetContentBorderEnabledFunction>(function))(window()->windowHandle(), set);
-        update();
-    }
-#endif
-
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    Q_D(QMainWindow);
-    if (!isWindow() || d->useHIToolBar == set || QSysInfo::MacintoshVersion < QSysInfo::MV_10_3)
-        return;
-
-    d->useHIToolBar = set;
-    createWinId(); // We need the hiview for down below.
-
-    // Activate the unified toolbar with the raster engine.
-    if (windowSurface() && set) {
-        d->layout->unifiedSurface = new QUnifiedToolbarSurface(this);
-    }
-
-    d->layout->updateHIToolBarStatus();
-
-    // Deactivate the unified toolbar with the raster engine.
-    if (windowSurface() && !set) {
-        if (d->layout->unifiedSurface) {
-            delete d->layout->unifiedSurface;
-            d->layout->unifiedSurface = 0;
-        }
-    }
-
-    // Enabling the unified toolbar clears the opaque size grip setting, update it.
-    d->macUpdateOpaqueSizeGrip();
-#else
-    Q_UNUSED(set)
-#endif
-}
-
-bool QMainWindow::unifiedTitleAndToolBarOnMac() const
-{
-#ifdef Q_OS_OSX
-    return d_func()->useUnifiedToolBar;
-#endif
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    return d_func()->useHIToolBar && !testAttribute(Qt::WA_MacBrushedMetal) && !(windowFlags() & Qt::FramelessWindowHint);
-#endif
-    return false;
-}
-
-#endif // QT_NO_TOOLBAR
-
 /*!
     \internal
 */
@@ -1691,7 +1412,3 @@ QMenu *QMainWindow::createPopupMenu()
     return menu;
 }
 #endif // QT_CONFIG(menu)
-
-QT_END_NAMESPACE
-
-#include "moc_qmainwindow.cpp"

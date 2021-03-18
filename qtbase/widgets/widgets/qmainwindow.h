@@ -8,8 +8,6 @@
 #endif
 
 
-QT_BEGIN_NAMESPACE
-
 class QDockWidget;
 class QMainWindowPrivate;
 class QMenuBar;
@@ -17,40 +15,64 @@ class QStatusBar;
 class QToolBar;
 class QMenu;
 
+
+/*
+layout:
+	----------------------------
+	menu_bar
+	----------------------------
+	tool_bar
+	----------------------------
+	dock_bar
+		|------------------|
+		|				   |
+		|				   |
+		|   centralWidget  |
+		|				   |
+		|				   |
+		|------------------|
+	----------------------------
+	status_bar
+	----------------------------
+
+我们需要给提供一个centralWidget,  至于布局之类的, MainWindow自己内部定义了
+
+*/
 class  QMainWindow : public QWidget
 {
     //Q_OBJECT
 
-    Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize)
-    Q_PROPERTY(Qt::ToolButtonStyle toolButtonStyle READ toolButtonStyle WRITE setToolButtonStyle)
-    Q_PROPERTY(bool animated READ isAnimated WRITE setAnimated)
-    Q_PROPERTY(bool documentMode READ documentMode WRITE setDocumentMode)
-    Q_PROPERTY(QTabWidget::TabShape tabShape READ tabShape WRITE setTabShape)
-    Q_PROPERTY(bool dockNestingEnabled READ isDockNestingEnabled WRITE setDockNestingEnabled)
-    Q_PROPERTY(DockOptions dockOptions READ dockOptions WRITE setDockOptions)
-	Q_PROPERTY(bool unifiedTitleAndToolBarOnMac READ unifiedTitleAndToolBarOnMac WRITE setUnifiedTitleAndToolBarOnMac)
+//    Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize)
+//    Q_PROPERTY(Qt::ToolButtonStyle toolButtonStyle READ toolButtonStyle WRITE setToolButtonStyle)
+//    Q_PROPERTY(bool animated READ isAnimated WRITE setAnimated)
+//    Q_PROPERTY(bool documentMode READ documentMode WRITE setDocumentMode)
+//    Q_PROPERTY(QTabWidget::TabShape tabShape READ tabShape WRITE setTabShape)
+//    Q_PROPERTY(bool dockNestingEnabled READ isDockNestingEnabled WRITE setDockNestingEnabled)
+//    Q_PROPERTY(DockOptions dockOptions READ dockOptions WRITE setDockOptions)
+//	Q_PROPERTY(bool unifiedTitleAndToolBarOnMac READ unifiedTitleAndToolBarOnMac WRITE setUnifiedTitleAndToolBarOnMac)
+public:
+	QWidget *centralWidget() const;
+	void setCentralWidget(QWidget *widget);
+	QWidget *takeCentralWidget();
+
+protected:
+	bool event(QEvent *event) override;
+    void contextMenuEvent(QContextMenuEvent *event) override;
+public Q_SLOTS:
+#if QT_CONFIG(dockwidget)
+    void setAnimated(bool enabled);
+    void setDockNestingEnabled(bool enabled);
+#endif
+
+Q_SIGNALS:
+    void iconSizeChanged(const QSize &iconSize);
+    void toolButtonStyleChanged(Qt::ToolButtonStyle toolButtonStyle);
+#if QT_CONFIG(dockwidget)
+    void tabifiedDockWidgetActivated(QDockWidget *dockWidget);
+#endif
+
 
 public:
-    enum DockOption {
-        AnimatedDocks = 0x01,
-        AllowNestedDocks = 0x02,
-        AllowTabbedDocks = 0x04,
-        ForceTabbedDocks = 0x08,  // implies AllowTabbedDocks, !AllowNestedDocks
-        VerticalTabs = 0x10,      // implies AllowTabbedDocks
-        GroupedDragging = 0x20    // implies AllowTabbedDocks
-    };
-	enum DockOptions {
-        AnimatedDocks = 0x01,
-        AllowNestedDocks = 0x02,
-        AllowTabbedDocks = 0x04,
-        ForceTabbedDocks = 0x08,  // implies AllowTabbedDocks, !AllowNestedDocks
-        VerticalTabs = 0x10,      // implies AllowTabbedDocks
-        GroupedDragging = 0x20    // implies AllowTabbedDocks
-    };
-    //Q_ENUM(DockOption)
-    //Q_DECLARE_FLAGS(DockOptions, DockOption)
-    //Q_FLAG(DockOptions)
-
     explicit QMainWindow(QWidget *parent = Q_NULLPTR, Qt::WindowFlags flags = Qt::WindowFlags());
     ~QMainWindow();
 
@@ -95,10 +117,7 @@ public:
     void setStatusBar(QStatusBar *statusbar);
 #endif
 
-    QWidget *centralWidget() const;
-    void setCentralWidget(QWidget *widget);
 
-    QWidget *takeCentralWidget();
 
 #if QT_CONFIG(dockwidget)
     void setCorner(Qt::Corner corner, Qt::DockWidgetArea area);
@@ -115,8 +134,6 @@ public:
     void insertToolBar(QToolBar *before, QToolBar *toolbar);
     void removeToolBar(QToolBar *toolbar);
     void removeToolBarBreak(QToolBar *before);
-
-    bool unifiedTitleAndToolBarOnMac() const;
 
     Qt::ToolBarArea toolBarArea(QToolBar *toolbar) const;
     bool toolBarBreak(QToolBar *toolbar) const;
@@ -145,33 +162,31 @@ public:
     virtual QMenu *createPopupMenu();
 #endif
 
-public Q_SLOTS:
-#if QT_CONFIG(dockwidget)
-    void setAnimated(bool enabled);
-    void setDockNestingEnabled(bool enabled);
-#endif
-#ifndef QT_NO_TOOLBAR
-    void setUnifiedTitleAndToolBarOnMac(bool set);
-#endif
 
-Q_SIGNALS:
-    void iconSizeChanged(const QSize &iconSize);
-    void toolButtonStyleChanged(Qt::ToolButtonStyle toolButtonStyle);
-#if QT_CONFIG(dockwidget)
-    void tabifiedDockWidgetActivated(QDockWidget *dockWidget);
-#endif
-
-protected:
-    void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
-bool event(QEvent *event) Q_DECL_OVERRIDE;
 
 private:
     //Q_DECLARE_PRIVATE(QMainWindow)
     //Q_DISABLE_COPY(QMainWindow)
+public:
+	enum DockOption {
+		AnimatedDocks = 0x01,
+		AllowNestedDocks = 0x02,
+		AllowTabbedDocks = 0x04,
+		ForceTabbedDocks = 0x08,  // implies AllowTabbedDocks, !AllowNestedDocks
+		VerticalTabs = 0x10,	  // implies AllowTabbedDocks
+		GroupedDragging = 0x20	  // implies AllowTabbedDocks
+	};
+	enum DockOptions {
+		AnimatedDocks = 0x01,
+		AllowNestedDocks = 0x02,
+		AllowTabbedDocks = 0x04,
+		ForceTabbedDocks = 0x08,  // implies AllowTabbedDocks, !AllowNestedDocks
+		VerticalTabs = 0x10,	  // implies AllowTabbedDocks
+		GroupedDragging = 0x20	  // implies AllowTabbedDocks
+	};
+
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QMainWindow::DockOptions)
-
-QT_END_NAMESPACE
+//Q_DECLARE_OPERATORS_FOR_FLAGS(QMainWindow::DockOptions)
 
 #endif // QDYNAMICMAINWINDOW_H

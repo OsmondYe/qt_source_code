@@ -46,7 +46,7 @@ QWindow::~QWindow()
 
 void QWindowPrivate::init(QScreen *targetScreen)
 {
-    Q_Q(QWindow);
+    QWindow * q = q_func();
 
     parentWindow = static_cast<QWindow *>(q->QObject::parent());
 
@@ -66,7 +66,7 @@ void QWindowPrivate::init(QScreen *targetScreen)
 
 QWindow::Visibility QWindow::visibility() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     return d->visibility;
 }
 
@@ -99,7 +99,7 @@ void QWindow::setVisibility(Visibility v)
 
 void QWindowPrivate::updateVisibility()
 {
-    Q_Q(QWindow);
+    QWindow * q = q_func();
 
     QWindow::Visibility old = visibility;
 
@@ -131,7 +131,7 @@ void QWindowPrivate::updateVisibility()
 
 void QWindowPrivate::updateSiblingPosition(SiblingPosition position)
 {
-    Q_Q(QWindow);
+    QWindow * q = q_func();
 
     if (!q->parent())
         return;
@@ -155,7 +155,7 @@ void QWindowPrivate::updateSiblingPosition(SiblingPosition position)
 
 inline bool QWindowPrivate::windowRecreationRequired(QScreen *newScreen) const
 {
-    Q_Q(const QWindow);
+    QWindow * const q = q_func();
     const QScreen *oldScreen = q->screen();
     return oldScreen != newScreen && (platformWindow || !oldScreen)
         && !(oldScreen && oldScreen->virtualSiblings().contains(newScreen));
@@ -175,7 +175,7 @@ void QWindowPrivate::connectToScreen(QScreen *screen)
 
 void QWindowPrivate::emitScreenChangedRecursion(QScreen *newScreen)
 {
-    Q_Q(QWindow);
+    QWindow * q = q_func();
     emit q->screenChanged(newScreen);
     for (QObject *child : q->children()) {
         if (child->isWindowType())
@@ -185,7 +185,7 @@ void QWindowPrivate::emitScreenChangedRecursion(QScreen *newScreen)
 
 void QWindowPrivate::setTopLevelScreen(QScreen *newScreen, bool recreate)
 {
-    Q_Q(QWindow);
+    QWindow * q = q_func();
     if (parentWindow) {
         qWarning() << q << '(' << newScreen << "): Attempt to set a screen on a child window.";
         return;
@@ -206,7 +206,7 @@ void QWindowPrivate::setTopLevelScreen(QScreen *newScreen, bool recreate)
 
 void QWindowPrivate::create(bool recursive, WId nativeHandle)
 {
-    Q_Q(QWindow);
+    QWindow * q = q_func();
     if (platformWindow)
         return;
 
@@ -270,7 +270,7 @@ void QWindow::setSurfaceType(SurfaceType surfaceType)
 
 QWindow::SurfaceType QWindow::surfaceType() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     return d->surfaceType;
 }
 
@@ -352,7 +352,7 @@ void QWindow::setVisible(bool visible)
 
 bool QWindow::isVisible() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
 
     return d->visible;
 }
@@ -367,7 +367,7 @@ void QWindow::create()
 
 WId QWindow::winId() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
 
     if(!d->platformWindow)
         const_cast<QWindow *>(this)->create();
@@ -378,14 +378,14 @@ WId QWindow::winId() const
 
 QWindow *QWindow::parent(AncestorMode mode) const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     return d->parentWindow ? d->parentWindow : (mode == IncludeTransients ? transientParent() : nullptr);
 }
 
 
 QWindow *QWindow::parent() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     return d->parentWindow;
 }
 
@@ -431,21 +431,21 @@ void QWindow::setParent(QWindow *parent)
 
 bool QWindow::isTopLevel() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     return d->parentWindow == 0;
 }
 
 
 bool QWindow::isModal() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     return d->modality != Qt::NonModal;
 }
 
 
 Qt::WindowModality QWindow::modality() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     return d->modality;
 }
 
@@ -467,14 +467,14 @@ void QWindow::setFormat(const QSurfaceFormat &format)
 
 QSurfaceFormat QWindow::requestedFormat() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     return d->requestedFormat;
 }
 
 
 QSurfaceFormat QWindow::format() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     if (d->platformWindow)
         return d->platformWindow->format();
     return d->requestedFormat;
@@ -494,7 +494,7 @@ void QWindow::setFlags(Qt::WindowFlags flags)
 
 Qt::WindowFlags QWindow::flags() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     Qt::WindowFlags flags = d->windowFlags;
 
     if (d->platformWindow && d->platformWindow->isForeignWindow())
@@ -516,7 +516,7 @@ void QWindow::setFlag(Qt::WindowType flag, bool on)
 
 Qt::WindowType QWindow::type() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     return static_cast<Qt::WindowType>(int(d->windowFlags & Qt::WindowType_Mask));
 }
 
@@ -537,7 +537,7 @@ void QWindow::setTitle(const QString &title)
 
 QString QWindow::title() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     return d->windowTitle;
 }
 
@@ -553,7 +553,7 @@ void QWindow::setFilePath(const QString &filePath)
 
 QString QWindow::filePath() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     return d->windowFilePath;
 }
 
@@ -571,7 +571,7 @@ void QWindow::setIcon(const QIcon &icon)
 
 QIcon QWindow::icon() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     if (d->windowIcon.isNull())
         return QGuiApplication::windowIcon();
     return d->windowIcon;
@@ -614,7 +614,7 @@ void QWindow::setOpacity(qreal level)
 
 qreal QWindow::opacity() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     return d->opacity;
 }
 
@@ -631,7 +631,7 @@ void QWindow::setMask(const QRegion &region)
 
 QRegion QWindow::mask() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     return d->mask;
 }
 
@@ -650,14 +650,14 @@ void QWindow::requestActivate()
 
 bool QWindow::isExposed() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     return d->exposed;
 }
 
 
 bool QWindow::isActive() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     if (!d->platformWindow)
         return false;
 
@@ -690,14 +690,14 @@ void QWindow::reportContentOrientationChange(Qt::ScreenOrientation orientation)
 
 Qt::ScreenOrientation QWindow::contentOrientation() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     return d->contentOrientation;
 }
 
 
 qreal QWindow::devicePixelRatio() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
 
     // If there is no platform window use the associated screen's devicePixelRatio,
     // which typically is the primary screen and will be correct for single-display
@@ -727,7 +727,7 @@ void QWindow::setWindowState(Qt::WindowState state)
 
 Qt::WindowState QWindow::windowState() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     return d->windowState;
 }
 
@@ -752,7 +752,7 @@ void QWindow::setTransientParent(QWindow *parent)
 
 QWindow *QWindow::transientParent() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     return d->transientParent.data();
 }
 
@@ -776,28 +776,28 @@ bool QWindow::isAncestorOf(const QWindow *child, AncestorMode mode) const
 
 QSize QWindow::minimumSize() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     return d->minimumSize;
 }
 
 
 QSize QWindow::maximumSize() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     return d->maximumSize;
 }
 
 
 QSize QWindow::baseSize() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     return d->baseSize;
 }
 
 
 QSize QWindow::sizeIncrement() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     return d->sizeIncrement;
 }
 
@@ -955,7 +955,7 @@ void QWindow::setGeometry(const QRect &rect)
 
 QScreen *QWindowPrivate::screenForGeometry(const QRect &newGeometry)
 {
-    Q_Q(QWindow);
+    QWindow * q = q_func();
     QScreen *currentScreen = q->screen();
     QScreen *fallback = currentScreen;
     QPoint center = newGeometry.center();
@@ -975,7 +975,7 @@ QScreen *QWindowPrivate::screenForGeometry(const QRect &newGeometry)
 
 QRect QWindow::geometry() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     if (d->platformWindow)
         return QHighDpi::fromNativePixels(d->platformWindow->geometry(), this);
     return d->geometry;
@@ -984,7 +984,7 @@ QRect QWindow::geometry() const
 
 QMargins QWindow::frameMargins() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     if (d->platformWindow)
         return QHighDpi::fromNativePixels(d->platformWindow->frameMargins(), this);
     return QMargins();
@@ -993,7 +993,7 @@ QMargins QWindow::frameMargins() const
 
 QRect QWindow::frameGeometry() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     if (d->platformWindow) {
         QMargins m = frameMargins();
         return QHighDpi::fromNativePixels(d->platformWindow->geometry(), this).adjusted(-m.left(), -m.top(), m.right(), m.bottom());
@@ -1004,7 +1004,7 @@ QRect QWindow::frameGeometry() const
 
 QPoint QWindow::framePosition() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     if (d->platformWindow) {
         QMargins margins = frameMargins();
         return QHighDpi::fromNativePixels(d->platformWindow->geometry().topLeft(), this) - QPoint(margins.left(), margins.top());
@@ -1078,7 +1078,7 @@ void QWindowPrivate::destroy()
     if (!platformWindow)
         return;
 
-    Q_Q(QWindow);
+    QWindow * q = q_func();
     QObjectList childrenWindows = q->children();
     for (int i = 0; i < childrenWindows.size(); i++) {
         QObject *object = childrenWindows.at(i);
@@ -1129,14 +1129,14 @@ void QWindowPrivate::destroy()
 
 QPlatformWindow *QWindow::handle() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     return d->platformWindow;
 }
 
 
 QPlatformSurface *QWindow::surfaceHandle() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     return d->platformWindow;
 }
 
@@ -1161,7 +1161,7 @@ bool QWindow::setMouseGrabEnabled(bool grab)
 
 QScreen *QWindow::screen() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     return d->parentWindow ? d->parentWindow->screen() : d->topLevelScreen.data();
 }
 
@@ -1173,13 +1173,6 @@ void QWindow::setScreen(QScreen *newScreen)
         newScreen = QGuiApplication::primaryScreen();
     d->setTopLevelScreen(newScreen, newScreen != 0);
 }
-
-
-QAccessibleInterface *QWindow::accessibleRoot() const
-{
-    return 0;
-}
-
 
 QObject *QWindow::focusObject() const
 {
@@ -1411,7 +1404,7 @@ bool QWindow::event(QEvent *ev)
 
 void QWindowPrivate::deliverUpdateRequest()
 {
-    Q_Q(QWindow);
+    QWindow * q = q_func();
     updateRequestPending = false;
     QEvent request(QEvent::UpdateRequest);
     QCoreApplication::sendEvent(q, &request);
@@ -1430,113 +1423,68 @@ void QWindow::requestUpdate()
     d->platformWindow->requestUpdate();
 }
 
-/*!
-    Override this to handle key press events (\a ev).
 
-    \sa keyReleaseEvent()
-*/
 void QWindow::keyPressEvent(QKeyEvent *ev)
 {
     ev->ignore();
 }
 
-/*!
-    Override this to handle key release events (\a ev).
 
-    \sa keyPressEvent()
-*/
 void QWindow::keyReleaseEvent(QKeyEvent *ev)
 {
     ev->ignore();
 }
 
-/*!
-    Override this to handle focus in events (\a ev).
 
-    Focus in events are sent when the window receives keyboard focus.
-
-    \sa focusOutEvent()
-*/
 void QWindow::focusInEvent(QFocusEvent *ev)
 {
     ev->ignore();
 }
 
-/*!
-    Override this to handle focus out events (\a ev).
 
-    Focus out events are sent when the window loses keyboard focus.
-
-    \sa focusInEvent()
-*/
 void QWindow::focusOutEvent(QFocusEvent *ev)
 {
     ev->ignore();
 }
 
-/*!
-    Override this to handle mouse press events (\a ev).
 
-    \sa mouseReleaseEvent()
-*/
 void QWindow::mousePressEvent(QMouseEvent *ev)
 {
     ev->ignore();
 }
 
-/*!
-    Override this to handle mouse release events (\a ev).
 
-    \sa mousePressEvent()
-*/
 void QWindow::mouseReleaseEvent(QMouseEvent *ev)
 {
     ev->ignore();
 }
 
-/*!
-    Override this to handle mouse double click events (\a ev).
 
-    \sa mousePressEvent(), QStyleHints::mouseDoubleClickInterval()
-*/
 void QWindow::mouseDoubleClickEvent(QMouseEvent *ev)
 {
     ev->ignore();
 }
 
-/*!
-    Override this to handle mouse move events (\a ev).
-*/
+
 void QWindow::mouseMoveEvent(QMouseEvent *ev)
 {
     ev->ignore();
 }
 
 #if QT_CONFIG(wheelevent)
-/*!
-    Override this to handle mouse wheel or other wheel events (\a ev).
-*/
 void QWindow::wheelEvent(QWheelEvent *ev)
 {
     ev->ignore();
 }
 #endif // QT_CONFIG(wheelevent)
 
-/*!
-    Override this to handle touch events (\a ev).
-*/
+
 void QWindow::touchEvent(QTouchEvent *ev)
 {
     ev->ignore();
 }
 
 #if QT_CONFIG(tabletevent)
-/*!
-    Override this to handle tablet press, move, and release events (\a ev).
-
-    Proximity enter and leave events are not sent to windows, they are
-    delivered to the application instance.
-*/
 void QWindow::tabletEvent(QTabletEvent *ev)
 {
     ev->ignore();
@@ -1546,28 +1494,25 @@ void QWindow::tabletEvent(QTabletEvent *ev)
 
 bool QWindow::nativeEvent(const QByteArray &eventType, void *message, long *result)
 {
-    Q_UNUSED(eventType);
-    Q_UNUSED(message);
-    Q_UNUSED(result);
     return false;
 }
 
-
+// 窗口内 转 屏幕
 QPoint QWindow::mapToGlobal(const QPoint &pos) const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     // QTBUG-43252, prefer platform implementation for foreign windows.
-    if (d->platformWindow
-        && (d->platformWindow->isForeignWindow() || d->platformWindow->isEmbedded())) {
+    if (d->platformWindow  && (d->platformWindow->isForeignWindow() || d->platformWindow->isEmbedded())) 
+	{
         return QHighDpi::fromNativeLocalPosition(d->platformWindow->mapToGlobal(QHighDpi::toNativeLocalPosition(pos, this)), this);
     }
     return pos + d->globalPosition();
 }
 
-
+// 屏幕 转 窗口内
 QPoint QWindow::mapFromGlobal(const QPoint &pos) const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     // QTBUG-43252, prefer platform implementation for foreign windows.
     if (d->platformWindow
         && (d->platformWindow->isForeignWindow() || d->platformWindow->isEmbedded())) {
@@ -1578,8 +1523,9 @@ QPoint QWindow::mapFromGlobal(const QPoint &pos) const
 
 QPoint QWindowPrivate::globalPosition() const
 {
-    Q_Q(const QWindow);
+    QWindow * const q = q_func();
     QPoint offset = q->position();
+	// 从最底层的偏移,一直向上修正到
     for (const QWindow *p = q->parent(); p; p = p->parent()) {
         QPlatformWindow *pw = p->handle();
         if (pw && pw->isForeignWindow()) {
@@ -1603,7 +1549,7 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
     if (!QCoreApplication::instance())
         return;
 
-    Q_Q(QWindow);
+    QWindow * q = q_func();
     // Attempt to close the application only if this has WA_QuitOnClose set and a non-visible parent
     bool quitOnClose = QGuiApplication::quitOnLastWindowClosed() && !q->parent();
     QWindowList list = QGuiApplication::topLevelWindows();
@@ -1626,7 +1572,7 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
 
 QWindow *QWindowPrivate::topLevelWindow() const
 {
-    Q_Q(const QWindow);
+    QWindow * const q = q_func();
 
     QWindow *window = const_cast<QWindow *>(q);
 
@@ -1692,13 +1638,13 @@ void QWindow::unsetCursor()
 
 QCursor QWindow::cursor() const
 {
-    Q_D(const QWindow);
+    QWindowPrivate * const d = d_func();
     return d->cursor;
 }
 void QWindowPrivate::setCursor(const QCursor *newCursor)
 {
 
-    Q_Q(QWindow);
+    QWindow * q = q_func();
     if (newCursor) {
         const Qt::CursorShape newShape = newCursor->shape();
         if (newShape <= Qt::LastCursor && hasCursor && newShape == cursor.shape())
@@ -1720,7 +1666,7 @@ void QWindowPrivate::setCursor(const QCursor *newCursor)
 
 bool QWindowPrivate::applyCursor()
 {
-    Q_Q(QWindow);
+    QWindow * q = q_func();
     if (QScreen *screen = q->screen()) {
         if (QPlatformCursor *platformCursor = screen->handle()->cursor()) {
             if (!platformWindow)

@@ -12,40 +12,36 @@
 
 #include <QtCore/qnamespace.h>
 
-QT_BEGIN_NAMESPACE
-
-
-
 class  QScreen : public QObject
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QScreen)
-
-    Q_PROPERTY(QString name READ name CONSTANT)
-    Q_PROPERTY(QString manufacturer READ manufacturer CONSTANT)
-    Q_PROPERTY(QString model READ model CONSTANT)
-    Q_PROPERTY(QString serialNumber READ serialNumber CONSTANT)
-    Q_PROPERTY(int depth READ depth CONSTANT)
-    Q_PROPERTY(QSize size READ size NOTIFY geometryChanged)
-    Q_PROPERTY(QSize availableSize READ availableSize NOTIFY availableGeometryChanged)
-    Q_PROPERTY(QSize virtualSize READ virtualSize NOTIFY virtualGeometryChanged)
-    Q_PROPERTY(QSize availableVirtualSize READ availableVirtualSize NOTIFY virtualGeometryChanged)
-    Q_PROPERTY(QRect geometry READ geometry NOTIFY geometryChanged)
-    Q_PROPERTY(QRect availableGeometry READ availableGeometry NOTIFY availableGeometryChanged)
-    Q_PROPERTY(QRect virtualGeometry READ virtualGeometry NOTIFY virtualGeometryChanged)
-    Q_PROPERTY(QRect availableVirtualGeometry READ availableVirtualGeometry NOTIFY virtualGeometryChanged)
-    Q_PROPERTY(QSizeF physicalSize READ physicalSize NOTIFY physicalSizeChanged)
-    Q_PROPERTY(qreal physicalDotsPerInchX READ physicalDotsPerInchX NOTIFY physicalDotsPerInchChanged)
-    Q_PROPERTY(qreal physicalDotsPerInchY READ physicalDotsPerInchY NOTIFY physicalDotsPerInchChanged)
-    Q_PROPERTY(qreal physicalDotsPerInch READ physicalDotsPerInch NOTIFY physicalDotsPerInchChanged)
-    Q_PROPERTY(qreal logicalDotsPerInchX READ logicalDotsPerInchX NOTIFY logicalDotsPerInchChanged)
-    Q_PROPERTY(qreal logicalDotsPerInchY READ logicalDotsPerInchY NOTIFY logicalDotsPerInchChanged)
-    Q_PROPERTY(qreal logicalDotsPerInch READ logicalDotsPerInch NOTIFY logicalDotsPerInchChanged)
-    Q_PROPERTY(qreal devicePixelRatio READ devicePixelRatio NOTIFY physicalDotsPerInchChanged)
-    Q_PROPERTY(Qt::ScreenOrientation primaryOrientation READ primaryOrientation NOTIFY primaryOrientationChanged)
-    Q_PROPERTY(Qt::ScreenOrientation orientation READ orientation NOTIFY orientationChanged)
-    Q_PROPERTY(Qt::ScreenOrientation nativeOrientation READ nativeOrientation)
-    Q_PROPERTY(qreal refreshRate READ refreshRate NOTIFY refreshRateChanged)
+//    Q_OBJECT
+//    Q_DECLARE_PRIVATE(QScreen)
+//
+//    Q_PROPERTY(QString name READ name CONSTANT)
+//    Q_PROPERTY(QString manufacturer READ manufacturer CONSTANT)
+//    Q_PROPERTY(QString model READ model CONSTANT)
+//    Q_PROPERTY(QString serialNumber READ serialNumber CONSTANT)
+//    Q_PROPERTY(int depth READ depth CONSTANT)
+//    Q_PROPERTY(QSize size READ size NOTIFY geometryChanged)
+//    Q_PROPERTY(QSize availableSize READ availableSize NOTIFY availableGeometryChanged)
+//    Q_PROPERTY(QSize virtualSize READ virtualSize NOTIFY virtualGeometryChanged)
+//    Q_PROPERTY(QSize availableVirtualSize READ availableVirtualSize NOTIFY virtualGeometryChanged)
+//    Q_PROPERTY(QRect geometry READ geometry NOTIFY geometryChanged)
+//    Q_PROPERTY(QRect availableGeometry READ availableGeometry NOTIFY availableGeometryChanged)
+//    Q_PROPERTY(QRect virtualGeometry READ virtualGeometry NOTIFY virtualGeometryChanged)
+//    Q_PROPERTY(QRect availableVirtualGeometry READ availableVirtualGeometry NOTIFY virtualGeometryChanged)
+//    Q_PROPERTY(QSizeF physicalSize READ physicalSize NOTIFY physicalSizeChanged)
+//    Q_PROPERTY(qreal physicalDotsPerInchX READ physicalDotsPerInchX NOTIFY physicalDotsPerInchChanged)
+//    Q_PROPERTY(qreal physicalDotsPerInchY READ physicalDotsPerInchY NOTIFY physicalDotsPerInchChanged)
+//    Q_PROPERTY(qreal physicalDotsPerInch READ physicalDotsPerInch NOTIFY physicalDotsPerInchChanged)
+//    Q_PROPERTY(qreal logicalDotsPerInchX READ logicalDotsPerInchX NOTIFY logicalDotsPerInchChanged)
+//    Q_PROPERTY(qreal logicalDotsPerInchY READ logicalDotsPerInchY NOTIFY logicalDotsPerInchChanged)
+//    Q_PROPERTY(qreal logicalDotsPerInch READ logicalDotsPerInch NOTIFY logicalDotsPerInchChanged)
+//    Q_PROPERTY(qreal devicePixelRatio READ devicePixelRatio NOTIFY physicalDotsPerInchChanged)
+//    Q_PROPERTY(Qt::ScreenOrientation primaryOrientation READ primaryOrientation NOTIFY primaryOrientationChanged)
+//    Q_PROPERTY(Qt::ScreenOrientation orientation READ orientation NOTIFY orientationChanged)
+//    Q_PROPERTY(Qt::ScreenOrientation nativeOrientation READ nativeOrientation)
+//    Q_PROPERTY(qreal refreshRate READ refreshRate NOTIFY refreshRateChanged)
 
 public:
     ~QScreen();
@@ -117,16 +113,12 @@ Q_SIGNALS:
 private:
     explicit QScreen(QPlatformScreen *screen);
 
-    Q_DISABLE_COPY(QScreen)
+    //Q_DISABLE_COPY(QScreen)
     friend class QGuiApplicationPrivate;
     friend class QPlatformIntegration;
     friend class QPlatformScreen;
     friend class QHighDpiScaling;
 };
-
-Q_GUI_EXPORT QDebug operator<<(QDebug, const QScreen *);
-
-QT_END_NAMESPACE
 
 #endif // QSCREEN_H
 

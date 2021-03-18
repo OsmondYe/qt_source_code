@@ -373,10 +373,19 @@ void qGeomCalc(QVector<QLayoutStruct> &chain, int start, int count,
                             w->sizePolicy(), align);
 }
 
-// oye , BoxLayout will use it, as pm = QStyle::PM_LayoutHorizontalSpacing | QStyle::PM_LayoutVerticalSpacing
+/* oye , 
+	用layout的parent{
+		~ 是widget, 用widget自己的style里面定义的
+		~ 是layout,
+	}
+	BoxLayout will use it, 
+		as pm = QStyle::PM_LayoutHorizontalSpacing | QStyle::PM_LayoutVerticalSpacing
+	QGridLayout::horizontalSpacing will ues it,
+		as pm = QStyle::PM_LayoutHorizontalSpacing
+*/
  int qSmartSpacing(const QLayout *layout, QStyle::PixelMetric pm)
 {
-    QObject *parent = layout->parent();
+    QObject *parent = layout->parent();// 就2中情况, Parent为widget或者layout
     if (!parent) {
         return -1;
     } 

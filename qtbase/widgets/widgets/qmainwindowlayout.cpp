@@ -1,4 +1,4 @@
-#include "qmainwindowlayout_p.h"
+ #include "qmainwindowlayout_p.h"
 
 #if QT_CONFIG(dockwidget)
 #include "qdockarealayout_p.h"
@@ -29,117 +29,11 @@
 #include <qmap.h>
 #include <qtimer.h>
 
-#ifndef QT_NO_DEBUG_STREAM
-#  include <qdebug.h>
-#  include <qtextstream.h>
-#endif
-
 #include <private/qapplication_p.h>
 #include <private/qlayoutengine_p.h>
 #include <private/qwidgetresizehandler_p.h>
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-#   include <private/qcore_mac_p.h>
-#   include <private/qt_cocoa_helpers_mac_p.h>
-#endif
-
-QT_BEGIN_NAMESPACE
 
 extern QMainWindowLayout *qt_mainwindow_layout(const QMainWindow *window);
-
-/******************************************************************************
-** debug
-*/
-
-#if QT_CONFIG(dockwidget) && !defined(QT_NO_DEBUG_STREAM)
-
-static void dumpLayout(QTextStream &qout, const QDockAreaLayoutInfo &layout, QString indent);
-
-static void dumpLayout(QTextStream &qout, const QDockAreaLayoutItem &item, QString indent)
-{
-    qout << indent << "QDockAreaLayoutItem: "
-            << "pos: " << item.pos << " size:" << item.size
-            << " gap:" << (item.flags & QDockAreaLayoutItem::GapItem)
-            << " keepSize:" << (item.flags & QDockAreaLayoutItem::KeepSize) << '\n';
-    indent += QLatin1String("  ");
-    if (item.widgetItem != 0) {
-        qout << indent << "widget: "
-            << item.widgetItem->widget()->metaObject()->className()
-            << " \"" << item.widgetItem->widget()->windowTitle() << "\"\n";
-    } else if (item.subinfo != 0) {
-        qout << indent << "subinfo:\n";
-        dumpLayout(qout, *item.subinfo, indent + QLatin1String("  "));
-    } else if (item.placeHolderItem != 0) {
-        QRect r = item.placeHolderItem->topLevelRect;
-        qout << indent << "placeHolder: "
-            << "pos: " << item.pos << " size:" << item.size
-            << " gap:" << (item.flags & QDockAreaLayoutItem::GapItem)
-            << " keepSize:" << (item.flags & QDockAreaLayoutItem::KeepSize)
-            << " objectName:" << item.placeHolderItem->objectName
-            << " hidden:" << item.placeHolderItem->hidden
-            << " window:" << item.placeHolderItem->window
-            << " rect:" << r.x() << ',' << r.y() << ' '
-            << r.width() << 'x' << r.height() << '\n';
-    }
-}
-
-static void dumpLayout(QTextStream &qout, const QDockAreaLayoutInfo &layout, QString indent)
-{
-    const QSize minSize = layout.minimumSize();
-    qout << indent << "QDockAreaLayoutInfo: "
-            << layout.rect.left() << ','
-            << layout.rect.top() << ' '
-            << layout.rect.width() << 'x'
-            << layout.rect.height()
-            << " min size: " << minSize.width() << ',' << minSize.height()
-            << " orient:" << layout.o
-#if QT_CONFIG(tabbar)
-            << " tabbed:" << layout.tabbed
-            << " tbshape:" << layout.tabBarShape
-#endif
-            << '\n';
-
-    indent += QLatin1String("  ");
-
-    for (int i = 0; i < layout.item_list.count(); ++i) {
-        qout << indent << "Item: " << i << '\n';
-        dumpLayout(qout, layout.item_list.at(i), indent + QLatin1String("  "));
-    }
-}
-
-static void dumpLayout(QTextStream &qout, const QDockAreaLayout &layout)
-{
-    qout << "QDockAreaLayout: "
-            << layout.rect.left() << ','
-            << layout.rect.top() << ' '
-            << layout.rect.width() << 'x'
-            << layout.rect.height() << '\n';
-
-    qout << "TopDockArea:\n";
-    dumpLayout(qout, layout.docks[QInternal::TopDock], QLatin1String("  "));
-    qout << "LeftDockArea:\n";
-    dumpLayout(qout, layout.docks[QInternal::LeftDock], QLatin1String("  "));
-    qout << "RightDockArea:\n";
-    dumpLayout(qout, layout.docks[QInternal::RightDock], QLatin1String("  "));
-    qout << "BottomDockArea:\n";
-    dumpLayout(qout, layout.docks[QInternal::BottomDock], QLatin1String("  "));
-}
-
-QDebug operator<<(QDebug debug, const QDockAreaLayout &layout)
-{
-    QString s;
-    QTextStream str(&s);
-    dumpLayout(str, layout);
-    debug << s;
-    return debug;
-}
-
-QDebug operator<<(QDebug debug, const QMainWindowLayout *layout)
-{
-    debug << layout->layoutState.dockAreaLayout;
-    return debug;
-}
-
-#endif // QT_CONFIG(dockwidget) && !defined(QT_NO_DEBUG)
 
 /******************************************************************************
  ** QDockWidgetGroupWindow
@@ -2223,6 +2117,7 @@ void QMainWindowLayout::restore(bool keepSavedState)
 }
 
 QMainWindowLayout::QMainWindowLayout(QMainWindow *mainwindow, QLayout *parentLayout)
+	// 骚操作啊,
     : QLayout(parentLayout ? static_cast<QWidget *>(0) : mainwindow)
     , layoutState(mainwindow)
     , savedState(mainwindow)
@@ -2239,10 +2134,9 @@ QMainWindowLayout::QMainWindowLayout(QMainWindow *mainwindow, QLayout *parentLay
 #endif // QT_CONFIG(dockwidget)
     , widgetAnimator(this)
     , pluggingWidget(0)
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    , blockVisiblityCheck(false)
-#endif
+
 {
+	// 这里确保了QMainWindowLayout 只会在一个小局部起作用,整体作用的还是GridLayout(parentLayout)
     if (parentLayout)
         setParent(parentLayout);
 
@@ -2265,10 +2159,6 @@ QMainWindowLayout::~QMainWindowLayout()
 {
     layoutState.deleteAllLayoutItems();
     layoutState.deleteCentralWidgetItem();
-
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    cleanUpMacToolbarItems();
-#endif
 
     delete statusbar;
 }
@@ -2650,14 +2540,7 @@ bool QMainWindowLayout::restoreState(QDataStream &stream)
 // HIToolbar.
 bool QMainWindowLayout::usesHIToolBar(QToolBar *toolbar) const
 {
-#if 1 // Used to be excluded in Qt4 for Q_WS_MAC
-    Q_UNUSED(toolbar);
     return false;
-#else
-    return qtoolbarsInUnifiedToolbarList.contains(toolbar)
-           || ((toolBarArea(toolbar) == Qt::TopToolBarArea)
-                && layoutState.mainWindow->unifiedTitleAndToolBarOnMac());
-#endif
 }
 
 void QMainWindowLayout::timerEvent(QTimerEvent *e)
@@ -2683,6 +2566,3 @@ void QMainWindowLayout::timerEvent(QTimerEvent *e)
     QLayout::timerEvent(e);
 }
 
-QT_END_NAMESPACE
-
-#include "moc_qmainwindowlayout_p.cpp"
