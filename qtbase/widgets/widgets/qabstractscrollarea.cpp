@@ -21,10 +21,6 @@
 
 #include <qt_windows.h>
 
-QT_BEGIN_NAMESPACE
-
-
-
 QAbstractScrollAreaPrivate::QAbstractScrollAreaPrivate()
     :hbar(0), vbar(0), vbarpolicy(Qt::ScrollBarAsNeeded), hbarpolicy(Qt::ScrollBarAsNeeded),
      shownOnce(false), inResize(false), sizeAdjustPolicy(QAbstractScrollArea::AdjustIgnored),
@@ -40,9 +36,11 @@ QAbstractScrollAreaPrivate::~QAbstractScrollAreaPrivate()
 
 QAbstractScrollAreaScrollBarContainer::QAbstractScrollAreaScrollBarContainer(
 		Qt::Orientation orientation, QWidget *parent)
-    :QWidget(parent), scrollBar(new QScrollBar(orientation, this)),
-     layout(new QBoxLayout(orientation == Qt::Horizontal ? QBoxLayout::LeftToRight : QBoxLayout::TopToBottom)),
-     orientation(orientation)
+    :
+    QWidget(parent), 
+    scrollBar(new QScrollBar(orientation, this)),
+    layout(new QBoxLayout(orientation == Qt::Horizontal ? QBoxLayout::LeftToRight : QBoxLayout::TopToBottom)),
+    orientation(orientation)
 {
     setLayout(layout);
     layout->setMargin(0);
@@ -182,15 +180,6 @@ void QAbstractScrollAreaPrivate::init()
 #endif
 }
 
-#if 0 // Used to be included in Qt4 for Q_WS_WIN
-void QAbstractScrollAreaPrivate::setSingleFingerPanEnabled(bool on)
-{
-    singleFingerPanEnabled = on;
-    QWidgetPrivate *dd = static_cast<QWidgetPrivate *>(QObjectPrivate::get(viewport));
-    if (dd)
-        dd->winSetupGestures();
-}
-#endif
 
 void QAbstractScrollAreaPrivate::layoutChildren()
 {
@@ -330,7 +319,7 @@ void QAbstractScrollAreaPrivate::layoutChildren_helper(bool *needHorizontalScrol
 QAbstractScrollArea::QAbstractScrollArea(QAbstractScrollAreaPrivate &dd, QWidget *parent)
     :QFrame(dd, parent)
 {
-    Q_D(QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     QT_TRY {
         d->init();
     } QT_CATCH(...) {
@@ -343,7 +332,7 @@ QAbstractScrollArea::QAbstractScrollArea(QAbstractScrollAreaPrivate &dd, QWidget
 QAbstractScrollArea::QAbstractScrollArea(QWidget *parent)
     :QFrame(*new QAbstractScrollAreaPrivate, parent)
 {
-    Q_D(QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     QT_TRY {
         d->init();
     } QT_CATCH(...) {
@@ -355,14 +344,14 @@ QAbstractScrollArea::QAbstractScrollArea(QWidget *parent)
 
 QAbstractScrollArea::~QAbstractScrollArea()
 {
-    Q_D(QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     // reset it here, otherwise we'll have a dangling pointer in ~QWidget
     d->viewportFilter.reset();
 }
 
 void QAbstractScrollArea::setViewport(QWidget *widget)
 {
-    Q_D(QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     if (widget != d->viewport) {
         QWidget *oldViewport = d->viewport;
         if (!widget)
@@ -381,17 +370,10 @@ void QAbstractScrollArea::setViewport(QWidget *widget)
     }
 }
 
-/*!
-    Returns the viewport widget.
 
-    Use the QScrollArea::widget() function to retrieve the contents of
-    the viewport widget.
-
-    \sa QScrollArea::widget()
-*/
 QWidget *QAbstractScrollArea::viewport() const
 {
-    Q_D(const QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     return d->viewport;
 }
 
@@ -402,7 +384,7 @@ scrolling range.
 */
 QSize QAbstractScrollArea::maximumViewportSize() const
 {
-    Q_D(const QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     int hsbExt = d->hbar->sizeHint().height();
     int vsbExt = d->vbar->sizeHint().width();
 
@@ -426,13 +408,13 @@ QSize QAbstractScrollArea::maximumViewportSize() const
 
 Qt::ScrollBarPolicy QAbstractScrollArea::verticalScrollBarPolicy() const
 {
-    Q_D(const QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     return d->vbarpolicy;
 }
 
 void QAbstractScrollArea::setVerticalScrollBarPolicy(Qt::ScrollBarPolicy policy)
 {
-    Q_D(QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     const Qt::ScrollBarPolicy oldPolicy = d->vbarpolicy;
     d->vbarpolicy = policy;
     if (isVisible())
@@ -449,7 +431,7 @@ void QAbstractScrollArea::setVerticalScrollBarPolicy(Qt::ScrollBarPolicy policy)
  */
 QScrollBar *QAbstractScrollArea::verticalScrollBar() const
 {
-    Q_D(const QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     return d->vbar;
 }
 
@@ -467,7 +449,7 @@ QScrollBar *QAbstractScrollArea::verticalScrollBar() const
 */
 void QAbstractScrollArea::setVerticalScrollBar(QScrollBar *scrollBar)
 {
-    Q_D(QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     if (Q_UNLIKELY(!scrollBar)) {
         qWarning("QAbstractScrollArea::setVerticalScrollBar: Cannot set a null scroll bar");
         return;
@@ -487,13 +469,13 @@ void QAbstractScrollArea::setVerticalScrollBar(QScrollBar *scrollBar)
 
 Qt::ScrollBarPolicy QAbstractScrollArea::horizontalScrollBarPolicy() const
 {
-    Q_D(const QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     return d->hbarpolicy;
 }
 
 void QAbstractScrollArea::setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy policy)
 {
-    Q_D(QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     const Qt::ScrollBarPolicy oldPolicy = d->hbarpolicy;
     d->hbarpolicy = policy;
     if (isVisible())
@@ -509,7 +491,7 @@ void QAbstractScrollArea::setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy polic
  */
 QScrollBar *QAbstractScrollArea::horizontalScrollBar() const
 {
-    Q_D(const QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     return d->hbar;
 }
 
@@ -528,7 +510,7 @@ QScrollBar *QAbstractScrollArea::horizontalScrollBar() const
 */
 void QAbstractScrollArea::setHorizontalScrollBar(QScrollBar *scrollBar)
 {
-    Q_D(QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     if (Q_UNLIKELY(!scrollBar)) {
         qWarning("QAbstractScrollArea::setHorizontalScrollBar: Cannot set a null scroll bar");
         return;
@@ -546,7 +528,7 @@ void QAbstractScrollArea::setHorizontalScrollBar(QScrollBar *scrollBar)
 */
 QWidget *QAbstractScrollArea::cornerWidget() const
 {
-    Q_D(const QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     return d->cornerWidget;
 }
 
@@ -578,7 +560,7 @@ QWidget *QAbstractScrollArea::cornerWidget() const
 */
 void QAbstractScrollArea::setCornerWidget(QWidget *widget)
 {
-    Q_D(QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     QWidget* oldWidget = d->cornerWidget;
     if (oldWidget != widget) {
         if (oldWidget)
@@ -631,7 +613,7 @@ void QAbstractScrollArea::setCornerWidget(QWidget *widget)
 */
 void QAbstractScrollArea::addScrollBarWidget(QWidget *widget, Qt::Alignment alignment)
 {
-    Q_D(QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
 
     if (widget == 0)
         return;
@@ -656,7 +638,7 @@ void QAbstractScrollArea::addScrollBarWidget(QWidget *widget, Qt::Alignment alig
 */
 QWidgetList QAbstractScrollArea::scrollBarWidgets(Qt::Alignment alignment)
 {
-    Q_D(QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
 
     QWidgetList list;
 
@@ -688,7 +670,7 @@ QWidgetList QAbstractScrollArea::scrollBarWidgets(Qt::Alignment alignment)
 */
 void QAbstractScrollArea::setViewportMargins(int left, int top, int right, int bottom)
 {
-    Q_D(QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     d->left = left;
     d->top = top;
     d->right = right;
@@ -721,14 +703,14 @@ void QAbstractScrollArea::setViewportMargins(const QMargins &margins)
 */
 QMargins QAbstractScrollArea::viewportMargins() const
 {
-    Q_D(const QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     return QMargins(d->left, d->top, d->right, d->bottom);
 }
 
 /*! \internal */
 bool QAbstractScrollArea::eventFilter(QObject *o, QEvent *e)
 {
-    Q_D(QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     if ((o == d->hbar || o == d->vbar) && (e->type() == QEvent::HoverEnter || e->type() == QEvent::HoverLeave)) {
         if (d->hbarpolicy == Qt::ScrollBarAsNeeded && d->vbarpolicy == Qt::ScrollBarAsNeeded) {
             QScrollBar *sbar = static_cast<QScrollBar*>(o);
@@ -755,7 +737,7 @@ bool QAbstractScrollArea::eventFilter(QObject *o, QEvent *e)
 */
 bool QAbstractScrollArea::event(QEvent *e)
 {
-    Q_D(QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     switch (e->type()) {
     case QEvent::AcceptDropsChange:
         // There was a chance that with accessibility client we get an
@@ -869,34 +851,6 @@ bool QAbstractScrollArea::event(QEvent *e)
         QScrollBar *vBar = verticalScrollBar();
         hBar->setValue(se->contentPos().x());
         vBar->setValue(se->contentPos().y());
-
-#if 0 // Used to be included in Qt4 for Q_WS_WIN
-        typedef BOOL (*PtrBeginPanningFeedback)(HWND);
-        typedef BOOL (*PtrUpdatePanningFeedback)(HWND, LONG, LONG, BOOL);
-        typedef BOOL (*PtrEndPanningFeedback)(HWND, BOOL);
-
-        static PtrBeginPanningFeedback ptrBeginPanningFeedback = 0;
-        static PtrUpdatePanningFeedback ptrUpdatePanningFeedback = 0;
-        static PtrEndPanningFeedback ptrEndPanningFeedback = 0;
-
-        if (!ptrBeginPanningFeedback)
-            ptrBeginPanningFeedback = (PtrBeginPanningFeedback) QLibrary::resolve(QLatin1String("UxTheme"), "BeginPanningFeedback");
-        if (!ptrUpdatePanningFeedback)
-            ptrUpdatePanningFeedback = (PtrUpdatePanningFeedback) QLibrary::resolve(QLatin1String("UxTheme"), "UpdatePanningFeedback");
-        if (!ptrEndPanningFeedback)
-            ptrEndPanningFeedback = (PtrEndPanningFeedback) QLibrary::resolve(QLatin1String("UxTheme"), "EndPanningFeedback");
-
-        if (ptrBeginPanningFeedback && ptrUpdatePanningFeedback && ptrEndPanningFeedback) {
-            WId wid = window()->winId();
-
-            if (!se->overshootDistance().isNull() && d->overshoot.isNull())
-                ptrBeginPanningFeedback(wid);
-            if (!se->overshootDistance().isNull())
-                ptrUpdatePanningFeedback(wid, -se->overshootDistance().x(), -se->overshootDistance().y(), false);
-            if (se->overshootDistance().isNull() && !d->overshoot.isNull())
-                ptrEndPanningFeedback(wid, true);
-        } else
-#endif
         {
             QPoint delta = d->overshoot - se->overshootDistance().toPoint();
             if (!delta.isNull())
@@ -1071,7 +1025,7 @@ void QAbstractScrollArea::mouseMoveEvent(QMouseEvent *e)
 #if QT_CONFIG(wheelevent)
 void QAbstractScrollArea::wheelEvent(QWheelEvent *e)
 {
-    Q_D(QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     if (e->orientation() == Qt::Horizontal)
         QApplication::sendEvent(d->hbar, e);
     else
@@ -1100,7 +1054,7 @@ void QAbstractScrollArea::contextMenuEvent(QContextMenuEvent *e)
 */
 void QAbstractScrollArea::keyPressEvent(QKeyEvent * e)
 {
-    Q_D(QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     if (false){
 #ifndef QT_NO_SHORTCUT
     } else if (e == QKeySequence::MoveToPreviousPage) {
@@ -1324,7 +1278,7 @@ QPoint QAbstractScrollAreaPrivate::contentsOffset() const
 */
 QSize QAbstractScrollArea::minimumSizeHint() const
 {
-    Q_D(const QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     int hsbExt = d->hbar->sizeHint().height();
     int vsbExt = d->vbar->sizeHint().width();
     int extra = 2 * d->frameWidth;
@@ -1345,7 +1299,7 @@ QSize QAbstractScrollArea::minimumSizeHint() const
 */
 QSize QAbstractScrollArea::sizeHint() const
 {
-    Q_D(const QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     if (d->sizeAdjustPolicy == QAbstractScrollArea::AdjustIgnored)
         return QSize(256, 192);
 
@@ -1367,7 +1321,7 @@ QSize QAbstractScrollArea::sizeHint() const
  */
 QSize QAbstractScrollArea::viewportSizeHint() const
 {
-    Q_D(const QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     if (d->viewport) {
         const QSize sh = d->viewport->sizeHint();
         if (sh.isValid()) {
@@ -1381,13 +1335,13 @@ QSize QAbstractScrollArea::viewportSizeHint() const
 
 QAbstractScrollArea::SizeAdjustPolicy QAbstractScrollArea::sizeAdjustPolicy() const
 {
-    Q_D(const QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     return d->sizeAdjustPolicy;
 }
 
 void QAbstractScrollArea::setSizeAdjustPolicy(SizeAdjustPolicy policy)
 {
-    Q_D(QAbstractScrollArea);
+    QAbstractScrollAreaPrivate * const d = d_func();
     if (d->sizeAdjustPolicy == policy)
         return;
 
@@ -1400,8 +1354,5 @@ void QAbstractScrollArea::setupViewport(QWidget *viewport)
 {
     Q_UNUSED(viewport);
 }
-
-QT_END_NAMESPACE
-
 
 #endif // QT_CONFIG(scrollarea)

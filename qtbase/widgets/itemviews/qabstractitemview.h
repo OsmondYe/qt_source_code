@@ -10,36 +10,39 @@
 class tst_QAbstractItemView;
 class tst_QTreeView;
 
-QT_REQUIRE_CONFIG(itemviews);
-
-QT_BEGIN_NAMESPACE
+//QT_REQUIRE_CONFIG(itemviews);
 
 class QMenu;
 class QDrag;
 class QEvent;
 class QAbstractItemViewPrivate;
 
-class Q_WIDGETS_EXPORT QAbstractItemView : public QAbstractScrollArea
+/*
+	oye
+	Î´ÖªÏ¸½Ú: 
+		selection model
+*/
+class  QAbstractItemView : public QAbstractScrollArea
 {
-    Q_OBJECT
-    Q_PROPERTY(bool autoScroll READ hasAutoScroll WRITE setAutoScroll)
-    Q_PROPERTY(int autoScrollMargin READ autoScrollMargin WRITE setAutoScrollMargin)
-    Q_PROPERTY(EditTriggers editTriggers READ editTriggers WRITE setEditTriggers)
-    Q_PROPERTY(bool tabKeyNavigation READ tabKeyNavigation WRITE setTabKeyNavigation)
-#ifndef QT_NO_DRAGANDDROP
-    Q_PROPERTY(bool showDropIndicator READ showDropIndicator WRITE setDropIndicatorShown)
-    Q_PROPERTY(bool dragEnabled READ dragEnabled WRITE setDragEnabled)
-    Q_PROPERTY(bool dragDropOverwriteMode READ dragDropOverwriteMode WRITE setDragDropOverwriteMode)
-    Q_PROPERTY(DragDropMode dragDropMode READ dragDropMode WRITE setDragDropMode)
-    Q_PROPERTY(Qt::DropAction defaultDropAction READ defaultDropAction WRITE setDefaultDropAction)
-#endif
-    Q_PROPERTY(bool alternatingRowColors READ alternatingRowColors WRITE setAlternatingRowColors)
-    Q_PROPERTY(SelectionMode selectionMode READ selectionMode WRITE setSelectionMode)
-    Q_PROPERTY(SelectionBehavior selectionBehavior READ selectionBehavior WRITE setSelectionBehavior)
-    Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize NOTIFY iconSizeChanged)
-    Q_PROPERTY(Qt::TextElideMode textElideMode READ textElideMode WRITE setTextElideMode)
-    Q_PROPERTY(ScrollMode verticalScrollMode READ verticalScrollMode WRITE setVerticalScrollMode RESET resetVerticalScrollMode)
-    Q_PROPERTY(ScrollMode horizontalScrollMode READ horizontalScrollMode WRITE setHorizontalScrollMode RESET resetHorizontalScrollMode)
+//    Q_OBJECT
+//    Q_PROPERTY(bool autoScroll READ hasAutoScroll WRITE setAutoScroll)
+//    Q_PROPERTY(int autoScrollMargin READ autoScrollMargin WRITE setAutoScrollMargin)
+//    Q_PROPERTY(EditTriggers editTriggers READ editTriggers WRITE setEditTriggers)
+//    Q_PROPERTY(bool tabKeyNavigation READ tabKeyNavigation WRITE setTabKeyNavigation)
+//#ifndef QT_NO_DRAGANDDROP
+//    Q_PROPERTY(bool showDropIndicator READ showDropIndicator WRITE setDropIndicatorShown)
+//    Q_PROPERTY(bool dragEnabled READ dragEnabled WRITE setDragEnabled)
+//    Q_PROPERTY(bool dragDropOverwriteMode READ dragDropOverwriteMode WRITE setDragDropOverwriteMode)
+//    Q_PROPERTY(DragDropMode dragDropMode READ dragDropMode WRITE setDragDropMode)
+//    Q_PROPERTY(Qt::DropAction defaultDropAction READ defaultDropAction WRITE setDefaultDropAction)
+//#endif
+//    Q_PROPERTY(bool alternatingRowColors READ alternatingRowColors WRITE setAlternatingRowColors)
+//    Q_PROPERTY(SelectionMode selectionMode READ selectionMode WRITE setSelectionMode)
+//    Q_PROPERTY(SelectionBehavior selectionBehavior READ selectionBehavior WRITE setSelectionBehavior)
+//    Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize NOTIFY iconSizeChanged)
+//    Q_PROPERTY(Qt::TextElideMode textElideMode READ textElideMode WRITE setTextElideMode)
+//    Q_PROPERTY(ScrollMode verticalScrollMode READ verticalScrollMode WRITE setVerticalScrollMode RESET resetVerticalScrollMode)
+//    Q_PROPERTY(ScrollMode horizontalScrollMode READ horizontalScrollMode WRITE setHorizontalScrollMode RESET resetHorizontalScrollMode)
 
 public:
     enum SelectionMode {
@@ -49,14 +52,14 @@ public:
         ExtendedSelection,
         ContiguousSelection
     };
-    Q_ENUM(SelectionMode)
+    //Q_ENUM(SelectionMode)
 
     enum SelectionBehavior {
         SelectItems,
         SelectRows,
         SelectColumns
     };
-    Q_ENUM(SelectionBehavior)
+    //Q_ENUM(SelectionBehavior)
 
     enum ScrollHint {
         EnsureVisible,
@@ -64,7 +67,7 @@ public:
         PositionAtBottom,
         PositionAtCenter
     };
-    Q_ENUM(ScrollHint)
+    //Q_ENUM(ScrollHint)
 
     enum EditTrigger {
         NoEditTriggers = 0,
@@ -76,14 +79,14 @@ public:
         AllEditTriggers = 31
     };
 
-    Q_DECLARE_FLAGS(EditTriggers, EditTrigger)
-    Q_FLAG(EditTriggers)
+    //Q_DECLARE_FLAGS(EditTriggers, EditTrigger)
+    //Q_FLAG(EditTriggers)
 
     enum ScrollMode {
         ScrollPerItem,
         ScrollPerPixel
     };
-    Q_ENUM(ScrollMode)
+    //Q_ENUM(ScrollMode)
 
     explicit QAbstractItemView(QWidget *parent = Q_NULLPTR);
     ~QAbstractItemView();
@@ -143,7 +146,7 @@ public:
         DragDrop,
         InternalMove
     };
-    Q_ENUM(DragDropMode)
+    //Q_ENUM(DragDropMode)
 
     void setDragDropMode(DragDropMode behavior);
     DragDropMode dragDropMode() const;
@@ -185,7 +188,7 @@ public:
 
     QAbstractItemDelegate *itemDelegate(const QModelIndex &index) const;
 
-    virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const Q_DECL_OVERRIDE;
+    virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const override;
 
     using QAbstractScrollArea::update;
 
@@ -287,32 +290,32 @@ protected:
     void stopAutoScroll();
     void doAutoScroll();
 
-    bool focusNextPrevChild(bool next) Q_DECL_OVERRIDE;
-    bool event(QEvent *event) Q_DECL_OVERRIDE;
-    bool viewportEvent(QEvent *event) Q_DECL_OVERRIDE;
-    void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    void mouseDoubleClickEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    bool focusNextPrevChild(bool next) override;
+    bool event(QEvent *event) override;
+    bool viewportEvent(QEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
 #ifndef QT_NO_DRAGANDDROP
-    void dragEnterEvent(QDragEnterEvent *event) Q_DECL_OVERRIDE;
-    void dragMoveEvent(QDragMoveEvent *event) Q_DECL_OVERRIDE;
-    void dragLeaveEvent(QDragLeaveEvent *event) Q_DECL_OVERRIDE;
-    void dropEvent(QDropEvent *event) Q_DECL_OVERRIDE;
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dragMoveEvent(QDragMoveEvent *event) override;
+    void dragLeaveEvent(QDragLeaveEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
 #endif
-    void focusInEvent(QFocusEvent *event) Q_DECL_OVERRIDE;
-    void focusOutEvent(QFocusEvent *event) Q_DECL_OVERRIDE;
-    void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
-    void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
-    void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
-    void inputMethodEvent(QInputMethodEvent *event) Q_DECL_OVERRIDE;
+    void focusInEvent(QFocusEvent *event) override;
+    void focusOutEvent(QFocusEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
+    void timerEvent(QTimerEvent *event) override;
+    void inputMethodEvent(QInputMethodEvent *event) override;
 
 #ifndef QT_NO_DRAGANDDROP
     enum DropIndicatorPosition { OnItem, AboveItem, BelowItem, OnViewport };
     DropIndicatorPosition dropIndicatorPosition() const;
 #endif
 
-    QSize viewportSizeHint() const Q_DECL_OVERRIDE;
+    QSize viewportSizeHint() const override;
 
 private:
     Q_DECLARE_PRIVATE(QAbstractItemView)
@@ -339,8 +342,6 @@ private:
     friend class QAbstractSlider;
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QAbstractItemView::EditTriggers)
-
-QT_END_NAMESPACE
+//Q_DECLARE_OPERATORS_FOR_FLAGS(QAbstractItemView::EditTriggers)
 
 #endif // QABSTRACTITEMVIEW_H

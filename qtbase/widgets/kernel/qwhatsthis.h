@@ -48,9 +48,8 @@ QT_REQUIRE_CONFIG(whatsthis);
 
 QT_BEGIN_NAMESPACE
 
-class QAction;
 
-class Q_WIDGETS_EXPORT QWhatsThis
+class  QWhatsThis
 {
     QWhatsThis() Q_DECL_EQ_DELETE;
 

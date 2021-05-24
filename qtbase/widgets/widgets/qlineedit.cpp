@@ -221,11 +221,9 @@ void QLineEdit::setValidator(const QValidator *v)
 }
 #endif // QT_NO_VALIDATOR
 
-#if QT_CONFIG(completer)
-/*!
-    \since 4.2
 
-    Sets this line edit to provide auto completions from the completer, \a c.
+/*!
+    Sets this line edit to provide auto completions from the completer
     The completion mode is set using QCompleter::setCompletionMode().
 
     To use a QCompleter with a QValidator or QLineEdit::inputMask, you need to
@@ -233,16 +231,15 @@ void QLineEdit::setValidator(const QValidator *v)
     use the QSortFilterProxyModel to ensure that the QCompleter's model contains
     only valid entries.
 
-    If \a c == 0, setCompleter() removes the current completer, effectively
-    disabling auto completion.
-
-    \sa QCompleter
+    If \a c == 0, setCompleter() removes the current completer, 
+    	# effectively disabling auto completion.
 */
 void QLineEdit::setCompleter(QCompleter *c)
 {
     QLineEditPrivate *  d = d_func();
     if (c == d->control->completer())
         return;
+	// oye clear old 
     if (d->control->completer()) {
         disconnect(d->control->completer(), 0, this, 0);
         d->control->completer()->setWidget(0);
@@ -252,28 +249,21 @@ void QLineEdit::setCompleter(QCompleter *c)
     d->control->setCompleter(c);
     if (!c)
         return;
+	
     if (c->widget() == 0)
         c->setWidget(this);
     if (hasFocus()) {
-        QObject::connect(d->control->completer(), SIGNAL(activated(QString)),
-                         this, SLOT(setText(QString)));
-        QObject::connect(d->control->completer(), SIGNAL(highlighted(QString)),
-                         this, SLOT(_q_completionHighlighted(QString)));
+        QObject::connect(d->control->completer(), SIGNAL(activated(QString)), this, SLOT(setText(QString)));
+        QObject::connect(d->control->completer(), SIGNAL(highlighted(QString)), this, SLOT(_q_completionHighlighted(QString)));
     }
 }
 
-/*!
-    \since 4.2
-
-    Returns the current QCompleter that provides completions.
-*/
 QCompleter *QLineEdit::completer() const
 {
     QLineEditPrivate * const d = d_func();
     return d->control->completer();
 }
 
-#endif // QT_CONFIG(completer)
 
 
 QSize QLineEdit::sizeHint() const

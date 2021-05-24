@@ -33,6 +33,8 @@ class QPlatformMenu;
 class QComboBoxListView : public QListView
 {
     //Q_OBJECT
+private:
+    QComboBox *combo;
 public:
     QComboBoxListView(QComboBox *cmb = 0) : combo(cmb) {}
 
@@ -75,12 +77,8 @@ protected:
         QListView::paintEvent(e);
     }
 
-private:
-    QComboBox *combo;
+
 };
-
-
-class QStandardItemModel;
 
 class  QComboBoxPrivateScroller : public QWidget
 {
@@ -166,6 +164,13 @@ private:
 class  QComboBoxPrivateContainer : public QFrame
 {
     //Q_OBJECT
+private:
+	QComboBox *combo;
+	QAbstractItemView *view;
+	QComboBoxPrivateScroller *top;
+	QComboBoxPrivateScroller *bottom;
+	bool maybeIgnoreMouseButtonRelease;
+	QElapsedTimer popupTimer;
 
 public:
     QComboBoxPrivateContainer(QAbstractItemView *itemView, QComboBox *parent);
@@ -202,12 +207,6 @@ Q_SIGNALS:
     void resetButton();
 
 private:
-    QComboBox *combo;
-    QAbstractItemView *view;
-    QComboBoxPrivateScroller *top;
-    QComboBoxPrivateScroller *bottom;
-    bool maybeIgnoreMouseButtonRelease;
-    QElapsedTimer popupTimer;
 
     friend class QComboBox;
     friend class QComboBoxPrivate;
@@ -289,7 +288,7 @@ class  QComboBoxPrivate : public QWidgetPrivate
 public:
 	QAbstractItemModel *model;
     QLineEdit *lineEdit;
-    QComboBoxPrivateContainer *container;
+    QComboBoxPrivateContainer *container;  			// oye, popup的list View放这里
     QComboBox::InsertPolicy insertPolicy;
     QComboBox::SizeAdjustPolicy sizeAdjustPolicy;
     int minimumContentsLength;

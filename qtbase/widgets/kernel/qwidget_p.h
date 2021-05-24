@@ -204,7 +204,7 @@ public:	// Variables.
 	QSizePolicy size_policy;  // oye 横竖轴变动时
 	QLocale locale;
 	QPoint redirectOffset;
-	QList<QAction*> actions;
+	QList<QAction*> actions;		// widget 关联aciton
 	QMap<Qt::GestureType, Qt::GestureFlags> gestureContext;
 
 	// Bit fields.

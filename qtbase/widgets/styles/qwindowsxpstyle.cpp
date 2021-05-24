@@ -51,8 +51,6 @@
 
 #include <algorithm>
 
-QT_BEGIN_NAMESPACE
-
 // General const values
 static const int windowsItemFrame        =  2; // menu item frame width
 static const int windowsItemHMargin      =  3; // menu item hor text margin
@@ -4196,7 +4194,5 @@ void QWindowsXPStylePrivate::showProperties(XPThemeData &themeData)
 #endif
 // Debugging code -----------------------------------------------------------------------[ END ]---
 
-
-QT_END_NAMESPACE
 
 #endif //QT_NO_WINDOWSXP

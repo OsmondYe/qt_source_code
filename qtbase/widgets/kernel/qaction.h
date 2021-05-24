@@ -8,11 +8,10 @@
 #include <QtCore/qvariant.h>
 #include <QtGui/qicon.h>
 
-class QMenu;
-class QActionGroup;
-class QActionPrivate;
-class QGraphicsWidget;
 
+// 就是状态记录器的图形item化, 
+//  text,icon,font,tooltip,short-cut,
+//  enable|visible|checkable
 class QAction : public QObject
 {
     //Q_OBJECT

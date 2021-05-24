@@ -1452,8 +1452,10 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
   see drawPrimitive for comments on the animation support
 
  */
-void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyleOptionComplex *option,
-                                         QPainter *painter, const QWidget *widget) const
+void QWindowsVistaStyle::drawComplexControl(ComplexControl control, 
+						const QStyleOptionComplex *option,
+                        QPainter *painter, 
+                        const QWidget *widget) const
 {
     QWindowsVistaStylePrivate *d = const_cast<QWindowsVistaStylePrivate*>(d_func());
     if (!QWindowsVistaStylePrivate::useVista()) {
@@ -1603,7 +1605,8 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
                     d->drawBackground(theme);
                 }
 
-            } else {
+            } 
+			else {
                 if (sub & SC_ComboBoxFrame) {
                     QStyleOptionButton btn;
                     btn.QStyleOption::operator=(*option);

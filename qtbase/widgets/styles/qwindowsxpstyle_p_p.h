@@ -1,55 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWidgets module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #ifndef QWINDOWSXPSTYLE_P_P_H
 #define QWINDOWSXPSTYLE_P_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of qapplication_*.cpp, qwidget*.cpp and qfiledialog.cpp.  This header
-// file may change from version to version without notice, or even be removed.
-//
-// We mean it.
-//
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qwindowsxpstyle_p.h"
@@ -62,7 +12,6 @@
 
 #include <limits.h>
 
-QT_BEGIN_NAMESPACE
 
 // TMT_TEXTSHADOWCOLOR is wrongly defined in mingw
 #if TMT_TEXTSHADOWCOLOR != 3818
@@ -91,14 +40,25 @@ QT_BEGIN_NAMESPACE
 #define CBS_INACTIVE 5
 #endif
 
-// Uncomment define below to build debug assisting code, and output
-// #define DEBUG_XP_STYLE
 
-#if QT_CONFIG(style_windowsxp)
 
-// Declarations -----------------------------------------------------------------------------------
 class XPThemeData
 {
+public:
+	const QWidget *widget;
+    QPainter *painter;
+
+    int theme;
+    HTHEME htheme;
+    int partId;
+    int stateId;
+
+    uint mirrorHorizontally : 1;
+    uint mirrorVertically : 1;
+    uint noBorder : 1;
+    uint noContent : 1;
+    uint rotate;
+    QRect rect;
 public:
     explicit XPThemeData(const QWidget *w = 0, QPainter *p = 0, int themeIn = -1,
                          int part = 0, int state = 0, const QRect &r = QRect())
@@ -123,20 +83,7 @@ public:
     static QMarginsF themeMargins(const QWidget *w = 0, QPainter *p = 0, int themeIn = -1,
                                   int part = 0, int state = 0, int propId = TMT_CONTENTMARGINS);
 
-    const QWidget *widget;
-    QPainter *painter;
 
-    int theme;
-    HTHEME htheme;
-    int partId;
-    int stateId;
-
-    uint mirrorHorizontally : 1;
-    uint mirrorVertically : 1;
-    uint noBorder : 1;
-    uint noContent : 1;
-    uint rotate;
-    QRect rect;
 };
 
 struct ThemeMapKey {
@@ -185,7 +132,7 @@ struct ThemeMapData {
 
 class QWindowsXPStylePrivate : public QWindowsStylePrivate
 {
-    Q_DECLARE_PUBLIC(QWindowsXPStyle)
+    //Q_DECLARE_PUBLIC(QWindowsXPStyle)
 public:
     enum Theme {
         ButtonTheme,
@@ -337,9 +284,5 @@ inline QMarginsF XPThemeData::themeMargins(const QWidget *w, QPainter *p, int th
     XPThemeData theme(w, p, themeIn, part, state);
     return theme.margins(propId);
 }
-
-#endif // style_windows
-
-QT_END_NAMESPACE
 
 #endif //QWINDOWSXPSTYLE_P_P_H

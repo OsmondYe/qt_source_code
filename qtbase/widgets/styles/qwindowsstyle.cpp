@@ -480,10 +480,8 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
 
         break;
     case SH_ItemView_ShowDecorationSelected:
-#if QT_CONFIG(listview)
         if (qobject_cast<const QListView*>(widget))
             ret = 1;
-#endif
         break;
     case SH_ItemView_ChangeHighlightOnFocus:
         ret = 1;
@@ -502,7 +500,6 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
         // Do nothing if we always paint underlines
         Q_D(const QWindowsStyle);
         if (!ret && widget && d) {
-#if QT_CONFIG(menubar)
             const QMenuBar *menuBar = qobject_cast<const QMenuBar *>(widget);
             if (!menuBar && qobject_cast<const QMenu *>(widget)) {
                 QWidget *w = QApplication::activeWindow();
@@ -515,28 +512,19 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
                     ret = 1;
                 // Otherwise draw underlines if the toplevel widget has seen an alt-press
             } else
-#endif // QT_CONFIG(menubar)
             if (d->hasSeenAlt(widget)) {
                 ret = 1;
             }
         }
-#ifndef QT_NO_ACCESSIBILITY
-        if (!ret && opt && opt->type == QStyleOption::SO_MenuItem
-            && QStyleHelper::isInstanceOf(opt->styleObject, QAccessible::MenuItem)
-            && opt->styleObject->property("_q_showUnderlined").toBool())
-            ret = 1;
-#endif // QT_NO_ACCESSIBILITY
         break;
     }
 #endif // Q_OS_WIN && !Q_OS_WINRT
     case SH_Menu_SubMenuSloppyCloseTimeout:
     case SH_Menu_SubMenuPopupDelay: {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
         DWORD delay;
         if (SystemParametersInfo(SPI_GETMENUSHOWDELAY, 0, &delay, 0))
             ret = delay;
         else
-#endif // Q_OS_WIN && !Q_OS_WINRT
             ret = 400;
         break;
     }

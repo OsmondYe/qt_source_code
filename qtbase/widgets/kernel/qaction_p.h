@@ -19,7 +19,7 @@ class QActionPrivate : public QObjectPrivate
 {
     //Q_DECLARE_PUBLIC(QAction)
 public:
-	QPointer<QActionGroup> group;
+	QPointer<QActionGroup> group;	// 有些是action是共享的, 通过 group来实现
     QString text;
     QString iconText;
     QIcon icon;

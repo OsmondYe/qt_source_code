@@ -114,13 +114,6 @@ void QLayout::addWidget(QWidget *w)
     addItem(QLayoutPrivate::createWidgetItem(this, w));
 }
 
-
-
-/*!
-    Sets the alignment for widget \a w to \a alignment and returns
-    true if \a w is found in this layout (not including child
-    layouts); otherwise returns \c false.
-*/
 bool QLayout::setAlignment(QWidget *w, Qt::Alignment alignment)
 {
     int i = 0;
@@ -137,13 +130,6 @@ bool QLayout::setAlignment(QWidget *w, Qt::Alignment alignment)
     return false;
 }
 
-/*!
-  \overload
-
-  Sets the alignment for the layout \a l to \a alignment and
-  returns \c true if \a l is found in this layout (not including child
-  layouts); otherwise returns \c false.
-*/
 bool QLayout::setAlignment(QLayout *l, Qt::Alignment alignment)
 {
     int i = 0;
@@ -160,19 +146,7 @@ bool QLayout::setAlignment(QLayout *l, Qt::Alignment alignment)
     return false;
 }
 
-/*!
-    \property QLayout::margin
-    \brief the width of the outside border of the layout
-    \obsolete
 
-    Use setContentsMargins() and getContentsMargins() instead.
-
-    \sa contentsRect(), spacing
-*/
-
-/*!
-    \obsolete
-*/
 int QLayout::margin() const
 {
     int left, top, right, bottom;

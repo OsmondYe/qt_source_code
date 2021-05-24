@@ -1,56 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWidgets module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #ifndef QCOMPLETER_P_H
 #define QCOMPLETER_P_H
-
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "private/qobject_p.h"
@@ -62,22 +11,20 @@
 #include "QtGui/qpainter.h"
 #include "private/qabstractproxymodel_p.h"
 
-QT_REQUIRE_CONFIG(completer);
-
-QT_BEGIN_NAMESPACE
+//QT_REQUIRE_CONFIG(completer);
 
 class QCompletionModel;
 
 class QCompleterPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QCompleter)
+    //Q_DECLARE_PUBLIC(QCompleter)
 
 public:
     QCompleterPrivate();
     ~QCompleterPrivate() { delete popup; }
     void init(QAbstractItemModel *model = 0);
 
-    QPointer<QWidget> widget;
+    QPointer<QWidget> widget;  // 根据QCompleter 安装了 filterevent来看, widget 和 popup 必然有联系
     QCompletionModel *proxy;
     QAbstractItemView *popup;
     QCompleter::CompletionMode mode;
@@ -215,7 +162,7 @@ class QCompletionModelPrivate;
 
 class QCompletionModel : public QAbstractProxyModel
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     QCompletionModel(QCompleterPrivate *c, QObject *parent);
@@ -256,9 +203,7 @@ public Q_SLOTS:
 
 class QCompletionModelPrivate : public QAbstractProxyModelPrivate
 {
-    Q_DECLARE_PUBLIC(QCompletionModel)
+    //Q_DECLARE_PUBLIC(QCompletionModel)
 };
-
-QT_END_NAMESPACE
 
 #endif // QCOMPLETER_P_H

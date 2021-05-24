@@ -130,79 +130,26 @@ QMainWindow::QMainWindow(QWidget *parent, Qt::WindowFlags flags)
 QMainWindow::~QMainWindow()
 { }
 
-/*! \property QMainWindow::iconSize
-    \brief size of toolbar icons in this mainwindow.
-
-    The default is the default tool bar icon size of the GUI style.
-    Note that the icons used must be at least of this size as the
-    icons are only scaled down.
-*/
-
-/*!
-    \property QMainWindow::dockOptions
-    \brief the docking behavior of QMainWindow
-    \since 4.3
-
-    The default value is AnimatedDocks | AllowTabbedDocks.
-*/
-
-/*!
-    \enum QMainWindow::DockOption
-    \since 4.3
-
-    This enum contains flags that specify the docking behavior of QMainWindow.
-
-    \value AnimatedDocks    Identical to the \l animated property.
-
-    \value AllowNestedDocks Identical to the \l dockNestingEnabled property.
-
-    \value AllowTabbedDocks The user can drop one dock widget "on top" of
-                            another. The two widgets are stacked and a tab
-                            bar appears for selecting which one is visible.
-
-    \value ForceTabbedDocks Each dock area contains a single stack of tabbed
-                            dock widgets. In other words, dock widgets cannot
-                            be placed next to each other in a dock area. If
-                            this option is set, AllowNestedDocks has no effect.
-
-    \value VerticalTabs     The two vertical dock areas on the sides of the
-                            main window show their tabs vertically. If this
-                            option is not set, all dock areas show their tabs
-                            at the bottom. Implies AllowTabbedDocks. See also
-                            \l setTabPosition().
-
-    \value GroupedDragging  When dragging the titlebar of a dock, all the tabs
-                            that are tabbed with it are going to be dragged.
-                            Implies AllowTabbedDocks. Does not work well if
-                            some QDockWidgets have restrictions in which area
-                            they are allowed. (This enum value was added in Qt
-                            5.6.)
-
-    These options only control how dock widgets may be dropped in a QMainWindow.
-    They do not re-arrange the dock widgets to conform with the specified
-    options. For this reason they should be set before any dock widgets
-    are added to the main window. Exceptions to this are the AnimatedDocks and
-    VerticalTabs options, which may be set at any time.
-*/
-
 void QMainWindow::setDockOptions(DockOptions opt)
 {
-    Q_D(QMainWindow);
+    QMainWindowPrivate * const d = d_func();
     d->layout->setDockOptions(opt);
 }
 
 QMainWindow::DockOptions QMainWindow::dockOptions() const
 {
-    Q_D(const QMainWindow);
+    QMainWindowPrivate * const d = d_func();
     return d->layout->dockOptions;
 }
 
 QSize QMainWindow::iconSize() const
-{ return d_func()->iconSize; }
-
+{ 
+	QMainWindowPrivate * const d = d_func();
+	return d->iconSize;
+}
 void QMainWindow::setIconSize(const QSize &iconSize)
 {
-    Q_D(QMainWindow);
+    QMainWindowPrivate * const d = d_func();
     QSize sz = iconSize;
     if (!sz.isValid()) {
         const int metric = style()->pixelMetric(QStyle::PM_ToolBarIconSize, 0, this);
@@ -215,22 +162,13 @@ void QMainWindow::setIconSize(const QSize &iconSize)
     d->explicitIconSize = iconSize.isValid();
 }
 
-/*! \property QMainWindow::toolButtonStyle
-    \brief style of toolbar buttons in this mainwindow.
-
-    To have the style of toolbuttons follow the system settings, set this property to Qt::ToolButtonFollowStyle.
-    On Unix, the user settings from the desktop environment will be used.
-    On other platforms, Qt::ToolButtonFollowStyle means icon only.
-
-    The default is Qt::ToolButtonIconOnly.
-*/
 
 Qt::ToolButtonStyle QMainWindow::toolButtonStyle() const
 { return d_func()->toolButtonStyle; }
 
 void QMainWindow::setToolButtonStyle(Qt::ToolButtonStyle toolButtonStyle)
 {
-    Q_D(QMainWindow);
+    QMainWindowPrivate * const d = d_func();
     if (d->toolButtonStyle == toolButtonStyle)
         return;
     d->toolButtonStyle = toolButtonStyle;
@@ -318,7 +256,7 @@ QWidget *QMainWindow::menuWidget() const
 */
 void QMainWindow::setMenuWidget(QWidget *menuBar)
 {
-    Q_D(QMainWindow);
+    QMainWindowPrivate * const d = d_func();
     if (d->layout->menuBar() && d->layout->menuBar() != menuBar) {
         d->layout->menuBar()->hide();
         d->layout->menuBar()->deleteLater();
@@ -357,7 +295,7 @@ QStatusBar *QMainWindow::statusBar() const
 */
 void QMainWindow::setStatusBar(QStatusBar *statusbar)
 {
-    Q_D(QMainWindow);
+    QMainWindowPrivate * const d = d_func();
     if (d->layout->statusBar() && d->layout->statusBar() != statusbar) {
         d->layout->statusBar()->hide();
         d->layout->statusBar()->deleteLater();
@@ -366,26 +304,14 @@ void QMainWindow::setStatusBar(QStatusBar *statusbar)
 }
 #endif // QT_CONFIG(statusbar)
 
-/*!
-    Returns the central widget for the main window. This function
-    returns zero if the central widget has not been set.
 
-    \sa setCentralWidget()
-*/
 QWidget *QMainWindow::centralWidget() const
 { return d_func()->layout->centralWidget(); }
 
-/*!
-    Sets the given \a widget to be the main window's central widget.
 
-    Note: QMainWindow takes ownership of the \a widget pointer and
-    deletes it at the appropriate time.
-
-    \sa centralWidget()
-*/
 void QMainWindow::setCentralWidget(QWidget *widget)
 {
-    Q_D(QMainWindow);
+    QMainWindowPrivate * const d = d_func();
     if (d->layout->centralWidget() && d->layout->centralWidget() != widget) {
         d->layout->centralWidget()->hide();
         d->layout->centralWidget()->deleteLater();
@@ -393,16 +319,10 @@ void QMainWindow::setCentralWidget(QWidget *widget)
     d->layout->setCentralWidget(widget);
 }
 
-/*!
-    Removes the central widget from this main window.
 
-    The ownership of the removed widget is passed to the caller.
-
-    \since 5.2
-*/
 QWidget *QMainWindow::takeCentralWidget()
 {
-    Q_D(QMainWindow);
+    QMainWindowPrivate * const d = d_func();
     QWidget *oldcentralwidget = d->layout->centralWidget();
     if (oldcentralwidget) {
         oldcentralwidget->setParent(0);
@@ -491,7 +411,7 @@ void QMainWindow::insertToolBarBreak(QToolBar *before)
 
 void QMainWindow::removeToolBarBreak(QToolBar *before)
 {
-    Q_D(QMainWindow);
+    QMainWindowPrivate * const d = d_func();
     d->layout->removeToolBarBreak(before);
 }
 
@@ -508,7 +428,7 @@ void QMainWindow::addToolBar(Qt::ToolBarArea area, QToolBar *toolbar)
     if (!checkToolBarArea(area, "QMainWindow::addToolBar"))
         return;
 
-    Q_D(QMainWindow);
+    QMainWindowPrivate * const d = d_func();
 
     disconnect(this, SIGNAL(iconSizeChanged(QSize)),
                toolbar, SLOT(_q_updateIconSize(QSize)));
@@ -575,7 +495,7 @@ QToolBar *QMainWindow::addToolBar(const QString &title)
 */
 void QMainWindow::insertToolBar(QToolBar *before, QToolBar *toolbar)
 {
-    Q_D(QMainWindow);
+    QMainWindowPrivate * const d = d_func();
 
     d->layout->removeToolBar(toolbar);
 
@@ -649,13 +569,13 @@ bool QMainWindow::toolBarBreak(QToolBar *toolbar) const
 
 bool QMainWindow::isAnimated() const
 {
-    Q_D(const QMainWindow);
+    QMainWindowPrivate * const d = d_func();
     return d->layout->dockOptions & AnimatedDocks;
 }
 
 void QMainWindow::setAnimated(bool enabled)
 {
-    Q_D(QMainWindow);
+    QMainWindowPrivate * const d = d_func();
 
     DockOptions opts = d->layout->dockOptions;
     opts.setFlag(AnimatedDocks, enabled);
@@ -685,13 +605,13 @@ void QMainWindow::setAnimated(bool enabled)
 
 bool QMainWindow::isDockNestingEnabled() const
 {
-    Q_D(const QMainWindow);
+    QMainWindowPrivate * const d = d_func();
     return d->layout->dockOptions & AllowNestedDocks;
 }
 
 void QMainWindow::setDockNestingEnabled(bool enabled)
 {
-    Q_D(QMainWindow);
+    QMainWindowPrivate * const d = d_func();
 
     DockOptions opts = d->layout->dockOptions;
     opts.setFlag(AllowNestedDocks, enabled);
@@ -1145,7 +1065,7 @@ void QMainWindowPrivate::adjustCursor(const QPoint &pos)
 /*! \reimp */
 bool QMainWindow::event(QEvent *event)
 {
-    Q_D(QMainWindow);
+    QMainWindowPrivate * const d = d_func();
     switch (event->type()) {
 
 #if QT_CONFIG(dockwidget)
@@ -1238,26 +1158,6 @@ bool QMainWindow::event(QEvent *event)
             if (!d->explicitIconSize)
                 setIconSize(QSize());
             break;
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-        case QEvent::Show:
-            if (unifiedTitleAndToolBarOnMac())
-                d->layout->syncUnifiedToolbarVisibility();
-            d->layout->blockVisiblityCheck = false;
-            break;
-       case QEvent::WindowStateChange:
-            {
-                if (isHidden()) {
-                    // We are coming out of a minimize, leave things as is.
-                    d->layout->blockVisiblityCheck = true;
-                }
-                // We need to update the HIToolbar status when we go out of or into fullscreen.
-                QWindowStateChangeEvent *wce = static_cast<QWindowStateChangeEvent *>(event);
-                if ((windowState() & Qt::WindowFullScreen) || (wce->oldState() & Qt::WindowFullScreen)) {
-                    d->layout->updateHIToolBarStatus();
-                }
-            }
-            break;
-#endif
 #if QT_CONFIG(dockwidget) && !defined(QT_NO_CURSOR)
        case QEvent::CursorChange:
            // CursorChange events are triggered as mouse moves to new widgets even
@@ -1285,7 +1185,7 @@ bool QMainWindow::event(QEvent *event)
 bool QMainWindow::isSeparator(const QPoint &pos) const
 {
 #if QT_CONFIG(dockwidget)
-    Q_D(const QMainWindow);
+    QMainWindowPrivate * const d = d_func();
     return !d->layout->layoutState.dockAreaLayout.findSeparator(pos).isEmpty();
 #else
     Q_UNUSED(pos);
@@ -1368,7 +1268,7 @@ void QMainWindow::contextMenuEvent(QContextMenuEvent *event)
 */
 QMenu *QMainWindow::createPopupMenu()
 {
-    Q_D(QMainWindow);
+    QMainWindowPrivate * const d = d_func();
     QMenu *menu = 0;
 #if QT_CONFIG(dockwidget)
     QList<QDockWidget *> dockwidgets = findChildren<QDockWidget *>();

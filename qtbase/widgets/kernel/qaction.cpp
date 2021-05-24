@@ -63,18 +63,22 @@ bool QActionPrivate::showStatusText(QWidget *widget, const QString &str)
 
 void QActionPrivate::sendDataChanged()
 {
-    Q_Q(QAction);
+    QAction * const q= q_func();
     QActionEvent e(QEvent::ActionChanged, q);
+
+	// 给每一个目前拥有此action的widget发送消息
     for (int i = 0; i < widgets.size(); ++i) {
         QWidget *w = widgets.at(i);
         QApplication::sendEvent(w, &e);
     }
+	
 #if QT_CONFIG(graphicsview)
     for (int i = 0; i < graphicsWidgets.size(); ++i) {
         QGraphicsWidget *w = graphicsWidgets.at(i);
         QApplication::sendEvent(w, &e);
     }
 #endif
+
     QApplication::sendEvent(q, &e);
 
     emit q->changed();
@@ -83,7 +87,7 @@ void QActionPrivate::sendDataChanged()
 #ifndef QT_NO_SHORTCUT
 void QActionPrivate::redoGrab(QShortcutMap &map)
 {
-    Q_Q(QAction);
+    QAction * const q= q_func();
     if (shortcutId)
         map.removeShortcut(shortcutId, q);
     if (shortcut.isEmpty())
@@ -97,7 +101,7 @@ void QActionPrivate::redoGrab(QShortcutMap &map)
 
 void QActionPrivate::redoGrabAlternate(QShortcutMap &map)
 {
-    Q_Q(QAction);
+    QAction * const q= q_func();
     for(int i = 0; i < alternateShortcutIds.count(); ++i) {
         if (const int id = alternateShortcutIds.at(i))
             map.removeShortcut(id, q);
@@ -128,7 +132,7 @@ void QActionPrivate::redoGrabAlternate(QShortcutMap &map)
 
 void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
 {
-    Q_Q(QAction);
+    QAction * const q= q_func();
     if (shortcutId)
         map.setShortcutEnabled(enable, shortcutId, q);
     for(int i = 0; i < alternateShortcutIds.count(); ++i) {
@@ -139,16 +143,29 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
 #endif // QT_NO_SHORTCUT
 
 
+//
+// QAction
+//
+
 QAction::QAction(QObject* parent)
     : QAction(*new QActionPrivate, parent)
 {
+}
+
+QAction::QAction(QActionPrivate &dd, QObject *parent)
+    : QObject(dd, parent)
+{
+    QActionPrivate * const d= d_func();
+    d->group = qobject_cast<QActionGroup *>(parent);
+    if (d->group)
+        d->group->addAction(this);
 }
 
 
 QAction::QAction(const QString &text, QObject* parent)
     : QAction(parent)
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     d->text = text;
 }
 
@@ -156,19 +173,12 @@ QAction::QAction(const QString &text, QObject* parent)
 QAction::QAction(const QIcon &icon, const QString &text, QObject* parent)
     : QAction(text, parent)
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     d->icon = icon;
 }
 
 
-QAction::QAction(QActionPrivate &dd, QObject *parent)
-    : QObject(dd, parent)
-{
-    Q_D(QAction);
-    d->group = qobject_cast<QActionGroup *>(parent);
-    if (d->group)
-        d->group->addAction(this);
-}
+
 
 QWidget *QAction::parentWidget() const
 {
@@ -181,7 +191,7 @@ QWidget *QAction::parentWidget() const
 
 QList<QWidget *> QAction::associatedWidgets() const
 {
-    Q_D(const QAction);
+    QActionPrivate * const d= d_func();
     return d->widgets;
 }
 
@@ -194,7 +204,7 @@ QList<QWidget *> QAction::associatedWidgets() const
 */
 QList<QGraphicsWidget *> QAction::associatedGraphicsWidgets() const
 {
-    Q_D(const QAction);
+    QActionPrivate * const d= d_func();
     return d->graphicsWidgets;
 }
 #endif
@@ -211,7 +221,7 @@ void QAction::setShortcut(const QKeySequence &shortcut)
 {
     QAPP_CHECK("setShortcut");
 
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     if (d->shortcut == shortcut)
         return;
 
@@ -223,7 +233,7 @@ void QAction::setShortcut(const QKeySequence &shortcut)
 
 void QAction::setShortcuts(const QList<QKeySequence> &shortcuts)
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
 
     QList <QKeySequence> listCopy = shortcuts;
 
@@ -253,13 +263,13 @@ void QAction::setShortcuts(QKeySequence::StandardKey key)
 
 QKeySequence QAction::shortcut() const
 {
-    Q_D(const QAction);
+    QActionPrivate * const d= d_func();
     return d->shortcut;
 }
 
 QList<QKeySequence> QAction::shortcuts() const
 {
-    Q_D(const QAction);
+    QActionPrivate * const d= d_func();
     QList <QKeySequence> shortcuts;
     if (!d->shortcut.isEmpty())
         shortcuts << d->shortcut;
@@ -271,7 +281,7 @@ QList<QKeySequence> QAction::shortcuts() const
 
 void QAction::setShortcutContext(Qt::ShortcutContext context)
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     if (d->shortcutContext == context)
         return;
     QAPP_CHECK("setShortcutContext");
@@ -283,14 +293,14 @@ void QAction::setShortcutContext(Qt::ShortcutContext context)
 
 Qt::ShortcutContext QAction::shortcutContext() const
 {
-    Q_D(const QAction);
+    QActionPrivate * const d= d_func();
     return d->shortcutContext;
 }
 
 
 void QAction::setAutoRepeat(bool on)
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     if (d->autorepeat == on)
         return;
     QAPP_CHECK("setAutoRepeat");
@@ -302,7 +312,7 @@ void QAction::setAutoRepeat(bool on)
 
 bool QAction::autoRepeat() const
 {
-    Q_D(const QAction);
+    QActionPrivate * const d= d_func();
     return d->autorepeat;
 }
 #endif // QT_NO_SHORTCUT
@@ -310,7 +320,7 @@ bool QAction::autoRepeat() const
 
 void QAction::setFont(const QFont &font)
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     if (d->font == font)
         return;
 
@@ -321,7 +331,7 @@ void QAction::setFont(const QFont &font)
 
 QFont QAction::font() const
 {
-    Q_D(const QAction);
+    QActionPrivate * const d= d_func();
     return d->font;
 }
 
@@ -331,7 +341,7 @@ QFont QAction::font() const
 */
 QAction::~QAction()
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     for (int i = d->widgets.size()-1; i >= 0; --i) {
         QWidget *w = d->widgets.at(i);
         w->removeAction(this);
@@ -358,7 +368,7 @@ QAction::~QAction()
 
 void QAction::setActionGroup(QActionGroup *group)
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     if(group == d->group)
         return;
 
@@ -373,21 +383,21 @@ void QAction::setActionGroup(QActionGroup *group)
 
 QActionGroup *QAction::actionGroup() const
 {
-    Q_D(const QAction);
+    QActionPrivate * const d= d_func();
     return d->group;
 }
 
 
 void QAction::setIcon(const QIcon &icon)
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     d->icon = icon;
     d->sendDataChanged();
 }
 
 QIcon QAction::icon() const
 {
-    Q_D(const QAction);
+    QActionPrivate * const d= d_func();
     return d->icon;
 }
 
@@ -401,7 +411,7 @@ QIcon QAction::icon() const
 */
 QMenu *QAction::menu() const
 {
-    Q_D(const QAction);
+    QActionPrivate * const d= d_func();
     return d->menu;
 }
 
@@ -410,7 +420,7 @@ QMenu *QAction::menu() const
 */
 void QAction::setMenu(QMenu *menu)
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     if (d->menu)
         d->menu->d_func()->setOverrideMenuAction(0); //we reset the default action of any previous menu
     d->menu = menu;
@@ -431,7 +441,7 @@ void QAction::setMenu(QMenu *menu)
 */
 void QAction::setSeparator(bool b)
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     if (d->separator == b)
         return;
 
@@ -447,7 +457,7 @@ void QAction::setSeparator(bool b)
 */
 bool QAction::isSeparator() const
 {
-    Q_D(const QAction);
+    QActionPrivate * const d= d_func();
     return d->separator;
 }
 
@@ -465,7 +475,7 @@ bool QAction::isSeparator() const
 */
 void QAction::setText(const QString &text)
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     if (d->text == text)
         return;
 
@@ -475,7 +485,7 @@ void QAction::setText(const QString &text)
 
 QString QAction::text() const
 {
-    Q_D(const QAction);
+    QActionPrivate * const d= d_func();
     QString s = d->text;
     if(s.isEmpty()) {
         s = d->iconText;
@@ -509,7 +519,7 @@ QString QAction::text() const
 */
 void QAction::setIconText(const QString &text)
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     if (d->iconText == text)
         return;
 
@@ -519,7 +529,7 @@ void QAction::setIconText(const QString &text)
 
 QString QAction::iconText() const
 {
-    Q_D(const QAction);
+    QActionPrivate * const d= d_func();
     if (d->iconText.isEmpty())
         return qt_strippedText(d->text);
     return d->iconText;
@@ -538,7 +548,7 @@ QString QAction::iconText() const
 */
 void QAction::setToolTip(const QString &tooltip)
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     if (d->tooltip == tooltip)
         return;
 
@@ -548,7 +558,7 @@ void QAction::setToolTip(const QString &tooltip)
 
 QString QAction::toolTip() const
 {
-    Q_D(const QAction);
+    QActionPrivate * const d= d_func();
     if (d->tooltip.isEmpty()) {
         if (!d->text.isEmpty())
             return qt_strippedText(d->text);
@@ -570,7 +580,7 @@ QString QAction::toolTip() const
 */
 void QAction::setStatusTip(const QString &statustip)
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     if (d->statustip == statustip)
         return;
 
@@ -580,7 +590,7 @@ void QAction::setStatusTip(const QString &statustip)
 
 QString QAction::statusTip() const
 {
-    Q_D(const QAction);
+    QActionPrivate * const d= d_func();
     return d->statustip;
 }
 
@@ -596,7 +606,7 @@ QString QAction::statusTip() const
 */
 void QAction::setWhatsThis(const QString &whatsthis)
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     if (d->whatsthis == whatsthis)
         return;
 
@@ -606,7 +616,7 @@ void QAction::setWhatsThis(const QString &whatsthis)
 
 QString QAction::whatsThis() const
 {
-    Q_D(const QAction);
+    QActionPrivate * const d= d_func();
     return d->whatsthis;
 }
 
@@ -643,7 +653,7 @@ QString QAction::whatsThis() const
 */
 void QAction::setPriority(Priority priority)
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     if (d->priority == priority)
         return;
 
@@ -653,7 +663,7 @@ void QAction::setPriority(Priority priority)
 
 QAction::Priority QAction::priority() const
 {
-    Q_D(const QAction);
+    QActionPrivate * const d= d_func();
     return d->priority;
 }
 
@@ -678,7 +688,7 @@ QAction::Priority QAction::priority() const
 */
 void QAction::setCheckable(bool b)
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     if (d->checkable == b)
         return;
 
@@ -689,7 +699,7 @@ void QAction::setCheckable(bool b)
 
 bool QAction::isCheckable() const
 {
-    Q_D(const QAction);
+    QActionPrivate * const d= d_func();
     return d->checkable;
 }
 
@@ -701,7 +711,7 @@ bool QAction::isCheckable() const
 */
 void QAction::toggle()
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     setChecked(!d->checked);
 }
 
@@ -716,7 +726,7 @@ void QAction::toggle()
 */
 void QAction::setChecked(bool b)
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     if (!d->checkable || d->checked == b)
         return;
 
@@ -729,7 +739,7 @@ void QAction::setChecked(bool b)
 
 bool QAction::isChecked() const
 {
-    Q_D(const QAction);
+    QActionPrivate * const d= d_func();
     return d->checked;
 }
 
@@ -764,7 +774,7 @@ bool QAction::isChecked() const
 */
 void QAction::setEnabled(bool b)
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     if (b == d->enabled && b != d->forceDisabled)
         return;
     d->forceDisabled = !b;
@@ -780,7 +790,7 @@ void QAction::setEnabled(bool b)
 
 bool QAction::isEnabled() const
 {
-    Q_D(const QAction);
+    QActionPrivate * const d= d_func();
     return d->enabled;
 }
 
@@ -799,7 +809,7 @@ bool QAction::isEnabled() const
 */
 void QAction::setVisible(bool b)
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     if (b == d->visible && b != d->forceInvisible)
         return;
     QAPP_CHECK("setVisible");
@@ -815,7 +825,7 @@ void QAction::setVisible(bool b)
 
 bool QAction::isVisible() const
 {
-    Q_D(const QAction);
+    QActionPrivate * const d= d_func();
     return d->visible;
 }
 
@@ -849,7 +859,7 @@ QAction::event(QEvent *e)
 QVariant
 QAction::data() const
 {
-    Q_D(const QAction);
+    QActionPrivate * const d= d_func();
     return d->userData;
 }
 
@@ -863,7 +873,7 @@ QAction::data() const
 void
 QAction::setData(const QVariant &data)
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     if (d->userData == data)
         return;
     d->userData = data;
@@ -894,7 +904,7 @@ QAction::showStatusText(QWidget *widget)
 */
 void QAction::activate(ActionEvent event)
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     if(event == Trigger) {
         QPointer<QObject> guard = this;
         if(d->checkable) {
@@ -917,7 +927,7 @@ void QAction::activate(ActionEvent event)
 
 void QAction::setMenuRole(MenuRole menuRole)
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     if (d->menuRole == menuRole)
         return;
 
@@ -927,13 +937,13 @@ void QAction::setMenuRole(MenuRole menuRole)
 
 QAction::MenuRole QAction::menuRole() const
 {
-    Q_D(const QAction);
+    QActionPrivate * const d= d_func();
     return d->menuRole;
 }
 
 void QAction::setIconVisibleInMenu(bool visible)
 {
-    Q_D(QAction);
+    QActionPrivate * const d= d_func();
     if (d->iconVisibleInMenu == -1 || visible != bool(d->iconVisibleInMenu)) {
         int oldValue = d->iconVisibleInMenu;
         d->iconVisibleInMenu = visible;
@@ -948,7 +958,7 @@ void QAction::setIconVisibleInMenu(bool visible)
 
 bool QAction::isIconVisibleInMenu() const
 {
-    Q_D(const QAction);
+    QActionPrivate * const d= d_func();
     if (d->iconVisibleInMenu == -1) {
         return !QApplication::instance()->testAttribute(Qt::AA_DontShowIconsInMenus);
     }

@@ -10,30 +10,6 @@
 
 class  QComboBox : public QWidget
 {
-    //Q_OBJECT
-
-    //Q_PROPERTY(bool editable READ isEditable WRITE setEditable)
-    //Q_PROPERTY(int count READ count)
-    //Q_PROPERTY(QString currentText READ currentText WRITE setCurrentText NOTIFY currentTextChanged USER true)
-    //Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
-    //Q_PROPERTY(QVariant currentData READ currentData)
-    //Q_PROPERTY(int maxVisibleItems READ maxVisibleItems WRITE setMaxVisibleItems)
-    //Q_PROPERTY(int maxCount READ maxCount WRITE setMaxCount)
-    //Q_PROPERTY(InsertPolicy insertPolicy READ insertPolicy WRITE setInsertPolicy)
-    //Q_PROPERTY(SizeAdjustPolicy sizeAdjustPolicy READ sizeAdjustPolicy WRITE setSizeAdjustPolicy)
-    //Q_PROPERTY(int minimumContentsLength READ minimumContentsLength WRITE setMinimumContentsLength)
-    //Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize)
-
-//#if QT_CONFIG(completer)
-    //Q_PROPERTY(bool autoCompletion READ autoCompletion WRITE setAutoCompletion DESIGNABLE false)
-    //Q_PROPERTY(Qt::CaseSensitivity autoCompletionCaseSensitivity READ autoCompletionCaseSensitivity WRITE setAutoCompletionCaseSensitivity DESIGNABLE false)
-//#endif // QT_CONFIG(completer)
-
-    //Q_PROPERTY(bool duplicatesEnabled READ duplicatesEnabled WRITE setDuplicatesEnabled)
-    //Q_PROPERTY(bool frame READ hasFrame WRITE setFrame)
-    //Q_PROPERTY(int modelColumn READ modelColumn WRITE setModelColumn)
-public:
-
 public:
     explicit QComboBox(QWidget *parent = Q_NULLPTR);
     ~QComboBox();
@@ -85,7 +61,7 @@ public:
         AdjustToMinimumContentsLength, // ### Qt 6: remove
         AdjustToMinimumContentsLengthWithIcon
     };
-    Q_ENUM(SizeAdjustPolicy)
+    //Q_ENUM(SizeAdjustPolicy)
 
     SizeAdjustPolicy sizeAdjustPolicy() const;
     void setSizeAdjustPolicy(SizeAdjustPolicy policy);
@@ -94,10 +70,12 @@ public:
     QSize iconSize() const;
     void setIconSize(const QSize &size);
 
+	// edit
     bool isEditable() const;
     void setEditable(bool editable);
     void setLineEdit(QLineEdit *edit);
     QLineEdit *lineEdit() const;
+	
 #ifndef QT_NO_VALIDATOR
     void setValidator(const QValidator *v);
     const QValidator *validator() const;
@@ -146,6 +124,7 @@ public:
     void setItemIcon(int index, const QIcon &icon);
     void setItemData(int index, const QVariant &value, int role = Qt::UserRole);
 
+	// ¸øËû»»¸öview?
     QAbstractItemView *view() const;
     void setView(QAbstractItemView *itemView);
 
@@ -165,7 +144,6 @@ public Q_SLOTS:
     void setEditText(const QString &text);
     void setCurrentIndex(int index);
     void setCurrentText(const QString &text);
-
 Q_SIGNALS:
     void editTextChanged(const QString &);
     void activated(int index);

@@ -20,7 +20,6 @@
 QT_BEGIN_NAMESPACE
 
 
-class QAction;
 #ifndef QT_NO_GESTURES
 class QGesture;
 #endif
@@ -660,7 +659,8 @@ private:
 #endif
 
 #ifndef QT_NO_ACTION
-class Q_GUI_EXPORT QActionEvent : public QEvent
+
+class  QActionEvent : public QEvent
 {
     QAction *act, *bef;
 public:

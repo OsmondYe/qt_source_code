@@ -2074,7 +2074,8 @@ QPoint QStyle::visualPos(Qt::LayoutDirection direction, const QRect &boundingRec
      Returns a new rectangle of the specified \a size that is aligned to the given \a
      rectangle according to the specified \a alignment and \a direction.
  */
-QRect QStyle::alignedRect(Qt::LayoutDirection direction, Qt::Alignment alignment, const QSize &size, const QRect &rectangle)
+QRect QStyle::alignedRect(Qt::LayoutDirection direction, Qt::Alignment alignment, 
+							const QSize &size, const QRect &rectangle)
 {
     alignment = visualAlignment(direction, alignment);
     int x = rectangle.x();
@@ -2085,6 +2086,7 @@ QRect QStyle::alignedRect(Qt::LayoutDirection direction, Qt::Alignment alignment
         y += rectangle.size().height()/2 - h/2;
     else if ((alignment & Qt::AlignBottom) == Qt::AlignBottom)
         y += rectangle.size().height() - h;
+	
     if ((alignment & Qt::AlignRight) == Qt::AlignRight)
         x += rectangle.size().width() - w;
     else if ((alignment & Qt::AlignHCenter) == Qt::AlignHCenter)

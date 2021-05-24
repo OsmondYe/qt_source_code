@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_TOOLBAR
 
-class QAction;
+
 class QToolBarExtension;
 class QMenu;
 

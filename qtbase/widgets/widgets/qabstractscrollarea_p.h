@@ -6,13 +6,10 @@
 #include "private/qframe_p.h"
 #include "qabstractscrollarea.h"
 
-QT_BEGIN_NAMESPACE
-
-
 class QScrollBar;
 class QAbstractScrollAreaScrollBarContainer;
 
-class Q_WIDGETS_EXPORT QAbstractScrollAreaPrivate: public QFramePrivate
+class  QAbstractScrollAreaPrivate: public QFramePrivate
 {
 	//Q_DECLARE_PUBLIC(QAbstractScrollArea)
     inline QAbstractScrollArea* q_func() { return static_cast<QAbstractScrollArea *>(q_ptr); } \
@@ -67,7 +64,7 @@ public:
 
 class QAbstractScrollAreaFilter : public QObject
 {
-    Q_OBJECT
+    //Q_OBJECT
 public:
     QAbstractScrollAreaFilter(QAbstractScrollAreaPrivate *p) : d(p)
     { setObjectName(QLatin1String("qt_abstractscrollarea_filter")); }
@@ -77,9 +74,18 @@ private:
     QAbstractScrollAreaPrivate *d;
 };
 
+// 像信封一样, 包了scrollBar, 同时自己搞了一个layout, 
+// 把scrollBar 送入layout 
+// 因为有了layout的存在, 其也可以继续容纳其它 widget
 class QAbstractScrollAreaScrollBarContainer : public QWidget
 {
 public:
+
+    QScrollBar *scrollBar;
+    QBoxLayout *layout;
+    Qt::Orientation orientation;
+	
+
     enum LogicalPosition { LogicalLeft = 1, LogicalRight = 2 };
 
     QAbstractScrollAreaScrollBarContainer(Qt::Orientation orientation, QWidget *parent);
@@ -89,12 +95,7 @@ public:
     int scrollBarLayoutIndex() const;
 
 
-    QScrollBar *scrollBar;
-    QBoxLayout *layout;
-    Qt::Orientation orientation;
+
 };
-
-
-QT_END_NAMESPACE
 
 #endif // QABSTRACTSCROLLAREA_P_H

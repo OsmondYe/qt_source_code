@@ -112,10 +112,10 @@ protected:
     QStyleOptionFrame(int version);
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionFrame::FrameFeatures)
+//Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionFrame::FrameFeatures)
 
-typedef Q_DECL_DEPRECATED QStyleOptionFrame QStyleOptionFrameV2;
-typedef Q_DECL_DEPRECATED QStyleOptionFrame QStyleOptionFrameV3;
+typedef  QStyleOptionFrame QStyleOptionFrameV2;
+typedef  QStyleOptionFrame QStyleOptionFrameV3;
 
 #if QT_CONFIG(tabwidget)
 class  QStyleOptionTabWidgetFrame : public QStyleOption
@@ -141,7 +141,7 @@ protected:
     QStyleOptionTabWidgetFrame(int version);
 };
 
-typedef Q_DECL_DEPRECATED QStyleOptionTabWidgetFrame QStyleOptionTabWidgetFrameV2;
+typedef  QStyleOptionTabWidgetFrame QStyleOptionTabWidgetFrameV2;
 #endif // QT_CONFIG(tabwidget)
 
 
@@ -164,7 +164,7 @@ protected:
     QStyleOptionTabBarBase(int version);
 };
 
-typedef Q_DECL_DEPRECATED QStyleOptionTabBarBase QStyleOptionTabBarBaseV2;
+typedef  QStyleOptionTabBarBase QStyleOptionTabBarBaseV2;
 #endif // QT_CONFIG(tabbar)
 
 class  QStyleOptionHeader : public QStyleOption
@@ -217,7 +217,7 @@ protected:
     QStyleOptionButton(int version);
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionButton::ButtonFeatures)
+//Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionButton::ButtonFeatures)
 
 #if QT_CONFIG(tabbar)
 class  QStyleOptionTab : public QStyleOption
@@ -256,8 +256,8 @@ protected:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionTab::CornerWidgets)
 
-typedef Q_DECL_DEPRECATED QStyleOptionTab QStyleOptionTabV2;
-typedef Q_DECL_DEPRECATED QStyleOptionTab QStyleOptionTabV3;
+typedef  QStyleOptionTab QStyleOptionTabV2;
+typedef  QStyleOptionTab QStyleOptionTabV3;
 #endif // QT_CONFIG(tabbar)
 
 
@@ -284,7 +284,7 @@ protected:
     QStyleOptionToolBar(int version);
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionToolBar::ToolBarFeatures)
+//Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionToolBar::ToolBarFeatures)
 
 #endif // QT_NO_TOOLBAR
 
@@ -311,7 +311,7 @@ protected:
     QStyleOptionProgressBar(int version);
 };
 
-typedef Q_DECL_DEPRECATED QStyleOptionProgressBar QStyleOptionProgressBarV2;
+typedef  QStyleOptionProgressBar QStyleOptionProgressBarV2;
 
 class  QStyleOptionMenuItem : public QStyleOption
 {
@@ -360,7 +360,7 @@ protected:
     QStyleOptionDockWidget(int version);
 };
 
-typedef Q_DECL_DEPRECATED QStyleOptionDockWidget QStyleOptionDockWidgetV2;
+typedef  QStyleOptionDockWidget QStyleOptionDockWidgetV2;
 
 #if QT_CONFIG(itemviews)
 
@@ -388,7 +388,8 @@ public:
         HasDisplay = 0x08,
         HasDecoration = 0x10
     };
-    Q_DECLARE_FLAGS(ViewItemFeatures, ViewItemFeature)
+    //Q_DECLARE_FLAGS(ViewItemFeatures, ViewItemFeature)
+    typedef QFlags<ViewItemFeature> ViewItemFeatures;
 
     ViewItemFeatures features;
 
@@ -411,11 +412,11 @@ protected:
     QStyleOptionViewItem(int version);
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionViewItem::ViewItemFeatures)
+//Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionViewItem::ViewItemFeatures)
 
-typedef Q_DECL_DEPRECATED QStyleOptionViewItem QStyleOptionViewItemV2;
-typedef Q_DECL_DEPRECATED QStyleOptionViewItem QStyleOptionViewItemV3;
-typedef Q_DECL_DEPRECATED QStyleOptionViewItem QStyleOptionViewItemV4;
+typedef  QStyleOptionViewItem QStyleOptionViewItemV2;
+typedef  QStyleOptionViewItem QStyleOptionViewItemV3;
+typedef  QStyleOptionViewItem QStyleOptionViewItemV4;
 
 #endif // QT_CONFIG(itemviews)
 
@@ -441,7 +442,7 @@ protected:
     QStyleOptionToolBox(int version);
 };
 
-typedef Q_DECL_DEPRECATED QStyleOptionToolBox QStyleOptionToolBoxV2;
+typedef  QStyleOptionToolBox QStyleOptionToolBoxV2;
 
 #if QT_CONFIG(rubberband)
 class  QStyleOptionRubberBand : public QStyleOption
@@ -548,7 +549,8 @@ protected:
     QStyleOptionToolButton(int version);
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionToolButton::ToolButtonFeatures)
+//Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionToolButton::ToolButtonFeatures)
+
 
 class  QStyleOptionComboBox : public QStyleOptionComplex
 {
@@ -665,6 +667,9 @@ T qstyleoption_cast(QStyleOption *opt)
 // -------------------------- QStyleHintReturn -------------------------------
 class  QStyleHintReturn {
 public:
+	int version;
+    int type;
+	// ¸ù¾Ýenum×öcast
     enum HintReturnType {
         SH_Default=0xf000, SH_Mask, SH_Variant
     };
@@ -675,30 +680,31 @@ public:
     QStyleHintReturn(int version = QStyleOption::Version, int type = SH_Default);
     ~QStyleHintReturn();
 
-    int version;
-    int type;
+
 };
 
 class  QStyleHintReturnMask : public QStyleHintReturn {
 public:
+    QRegion region;
     enum StyleOptionType { Type = SH_Mask };
     enum StyleOptionVersion { Version = 1 };
 
     QStyleHintReturnMask();
     ~QStyleHintReturnMask();
 
-    QRegion region;
+
 };
 
 class  QStyleHintReturnVariant : public QStyleHintReturn {
 public:
+	QVariant variant;
     enum StyleOptionType { Type = SH_Variant };
     enum StyleOptionVersion { Version = 1 };
 
     QStyleHintReturnVariant();
     ~QStyleHintReturnVariant();
 
-    QVariant variant;
+
 };
 
 template <typename T>

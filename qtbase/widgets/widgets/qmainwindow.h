@@ -65,6 +65,7 @@ public Q_SLOTS:
 #endif
 
 Q_SIGNALS:
+
     void iconSizeChanged(const QSize &iconSize);
     void toolButtonStyleChanged(Qt::ToolButtonStyle toolButtonStyle);
 #if QT_CONFIG(dockwidget)

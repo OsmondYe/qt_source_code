@@ -48,7 +48,7 @@ QT_REQUIRE_CONFIG(undocommand);
 
 QT_BEGIN_NAMESPACE
 
-class QAction;
+
 class QUndoCommandPrivate;
 class QUndoStackPrivate;
 

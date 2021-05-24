@@ -24,11 +24,13 @@ typedef QArrayData QByteArrayData;
 // oye: MOC回来scan一遍源代码,在里面找这些他认为的关键字,然后去做额外的处理
 
 // 比下面2位仁兄更简洁的定义方法
-#define slots Q_SLOTS
 #define signals Q_SIGNALS
+#define slots Q_SLOTS
 
-#define Q_SLOTS 						QT_ANNOTATE_ACCESS_SPECIFIER(qt_slot)
+// oye signal 比如是public,  信号都是公开的
 #define Q_SIGNALS 						public QT_ANNOTATE_ACCESS_SPECIFIER(qt_signal)
+// 
+#define Q_SLOTS 						QT_ANNOTATE_ACCESS_SPECIFIER(qt_slot)
 
 // Widget的源码里面很常见 -> 比如是被moc特殊处理的
 #define Q_PRIVATE_SLOT(d, signature) 	QT_ANNOTATE_CLASS2(qt_private_slot, d, signature)

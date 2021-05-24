@@ -108,21 +108,16 @@ static QWindow *qt_getWindow(const QWidget *widget)
 /*!
     Constructs a QCommonStyle.
 */
-QCommonStyle::QCommonStyle()
-    : QStyle(*new QCommonStylePrivate)
-{ }
+QCommonStyle::QCommonStyle()   : QStyle(*new QCommonStylePrivate){ }
 
 /*! \internal
 */
-QCommonStyle::QCommonStyle(QCommonStylePrivate &dd)
-    : QStyle(dd)
-{ }
+QCommonStyle::QCommonStyle(QCommonStylePrivate &dd)    : QStyle(dd){ }
 
 /*!
     Destroys the style.
 */
-QCommonStyle::~QCommonStyle()
-{ }
+QCommonStyle::~QCommonStyle(){ }
 
 
 /*!
@@ -2073,18 +2068,23 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
             QRect editRect = proxy()->subControlRect(CC_ComboBox, cb, SC_ComboBoxEditField, widget);
             p->save();
+			// 要求只在编辑框范围内作图
             p->setClipRect(editRect);
+			// 先画Icon
             if (!cb->currentIcon.isNull()) {
                 QIcon::Mode mode = cb->state & State_Enabled ? QIcon::Normal
                                                              : QIcon::Disabled;
                 QPixmap pixmap = cb->currentIcon.pixmap(qt_getWindow(widget), cb->iconSize, mode);
                 QRect iconRect(editRect);
                 iconRect.setWidth(cb->iconSize.width() + 4);
+				// 按照icon尺寸在原始可绘制rect中选择icon的合适位置, 根据对其规则
                 iconRect = alignedRect(cb->direction,
                                        Qt::AlignLeft | Qt::AlignVCenter,
                                        iconRect.size(), editRect);
                 if (cb->editable)
+					// 给编辑区域一个基本的rect, 用颜色填充
                     p->fillRect(iconRect, opt->palette.brush(QPalette::Base));
+				// 绘制Icon
                 proxy()->drawItemPixmap(p, iconRect, Qt::AlignCenter, pixmap);
 
                 if (cb->direction == Qt::RightToLeft)
@@ -2092,10 +2092,16 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                 else
                     editRect.translate(cb->iconSize.width() + 4, 0);
             }
+			// 再画文字 ,  为什么 可编辑后不走这里??
             if (!cb->currentText.isEmpty() && !cb->editable) {
-                proxy()->drawItemText(p, editRect.adjusted(1, 0, -1, 0),
-                             visualAlignment(cb->direction, Qt::AlignLeft | Qt::AlignVCenter),
-                             cb->palette, cb->state & State_Enabled, cb->currentText);
+                proxy()->drawItemText(
+						p,  // painter 
+						editRect.adjusted(1, 0, -1, 0),  //
+                        visualAlignment(cb->direction, Qt::AlignLeft | Qt::AlignVCenter),
+                        cb->palette, 
+                        cb->state & State_Enabled, 
+                        cb->currentText
+                        );
             }
             p->restore();
         }

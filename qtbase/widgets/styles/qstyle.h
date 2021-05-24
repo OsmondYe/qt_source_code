@@ -13,7 +13,7 @@
 /*
 	oye
 	好兄弟 QStyleOption
-	
+	子: QWindowsVistaStyle
 */
 class  QStyle : public QObject
 {
@@ -56,9 +56,11 @@ public:
 
     virtual void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p,
                                     const QWidget *widget = Q_NULLPTR) const = 0;
-	
+
+	// 点击测试, 对于复合控件, 看看点击到那个子控件上了								
     virtual SubControl hitTestComplexControl(ComplexControl cc, const QStyleOptionComplex *opt,
                                              const QPoint &pt, const QWidget *widget = Q_NULLPTR) const = 0;
+	// 计算子控件,应该位于的区域
     virtual QRect subControlRect(ComplexControl cc, const QStyleOptionComplex *opt,
                                  SubControl sc, const QWidget *widget = Q_NULLPTR) const = 0;
 
@@ -74,9 +76,11 @@ public:
 	*/
     virtual QSize sizeFromContents(ContentsType ct, const QStyleOption *opt,
                                    const QSize &contentsSize, const QWidget *w = Q_NULLPTR) const = 0;   
-	
+
+	// 纯虚
     virtual int styleHint(StyleHint stylehint, const QStyleOption *opt = Q_NULLPTR,
-                          const QWidget *widget = Q_NULLPTR, QStyleHintReturn* returnData = Q_NULLPTR) const = 0;   
+                          const QWidget *widget = Q_NULLPTR, 
+                          QStyleHintReturn* returnData = Q_NULLPTR) const = 0;   
 
     virtual QPixmap standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt = Q_NULLPTR,
                                    const QWidget *widget = Q_NULLPTR) const = 0;
@@ -443,6 +447,7 @@ public:
 		SC_CustomBase = 		   0xf0000000,
 		SC_All =				   0xffffffff
 	};
+	typedef QFlags<SubControl> SubControls;
 
 	enum PixelMetric {
 		PM_ButtonMargin,

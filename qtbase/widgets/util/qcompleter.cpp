@@ -966,7 +966,7 @@ void QCompleterPrivate::_q_fileSystemModelDirectoryLoaded(const QString &path)
 QCompleter::QCompleter(QObject *parent)
 : QObject(*new QCompleterPrivate(), parent)
 {
-    Q_D(QCompleter);
+    QCompleterPrivate * const d = d_func();
     d->init();
 }
 
@@ -977,7 +977,7 @@ QCompleter::QCompleter(QObject *parent)
 QCompleter::QCompleter(QAbstractItemModel *model, QObject *parent)
     : QObject(*new QCompleterPrivate(), parent)
 {
-    Q_D(QCompleter);
+    QCompleterPrivate * const d = d_func();
     d->init(model);
 }
 
@@ -989,7 +989,7 @@ QCompleter::QCompleter(QAbstractItemModel *model, QObject *parent)
 QCompleter::QCompleter(const QStringList& list, QObject *parent)
 : QObject(*new QCompleterPrivate(), parent)
 {
-    Q_D(QCompleter);
+    QCompleterPrivate * const d = d_func();
     d->init(new QStringListModel(list, this));
 }
 #endif // QT_NO_STRINGLISTMODEL
@@ -1002,7 +1002,7 @@ QCompleter::~QCompleter()
 }
 
 /*!
-    Sets the widget for which completion are provided for to \a widget. This
+    Sets the widget for which completion are provided for to widget. This
     function is automatically called when a QCompleter is set on a QLineEdit
     using QLineEdit::setCompleter() or on a QComboBox using
     QComboBox::setCompleter(). The widget needs to be set explicitly when
@@ -1012,15 +1012,18 @@ QCompleter::~QCompleter()
  */
 void QCompleter::setWidget(QWidget *widget)
 {
-    Q_D(QCompleter);
+    QCompleterPrivate * const d = d_func();
     if (widget == d->widget)
         return;
-
+	// oye clear old
     if (d->widget)
         d->widget->removeEventFilter(this);
+
+	// setup new	
     d->widget = widget;
+	
     if (d->widget)
-        d->widget->installEventFilter(this);
+        d->widget->installEventFilter(this); // for this eventFilter
 
     if (d->popup) {
         d->popup->hide();
@@ -1052,7 +1055,7 @@ QWidget *QCompleter::widget() const
 */
 void QCompleter::setModel(QAbstractItemModel *model)
 {
-    Q_D(QCompleter);
+    QCompleterPrivate * const d = d_func();
     QAbstractItemModel *oldModel = d->proxy->sourceModel();
 #if QT_CONFIG(filesystemmodel)
     if (qobject_cast<const QFileSystemModel *>(oldModel))
@@ -1117,7 +1120,7 @@ QAbstractItemModel *QCompleter::model() const
 */
 void QCompleter::setCompletionMode(QCompleter::CompletionMode mode)
 {
-    Q_D(QCompleter);
+    QCompleterPrivate * const d = d_func();
     d->mode = mode;
     d->proxy->setFiltered(mode != QCompleter::UnfilteredPopupCompletion);
 
@@ -1159,7 +1162,7 @@ QCompleter::CompletionMode QCompleter::completionMode() const
 
 void QCompleter::setFilterMode(Qt::MatchFlags filterMode)
 {
-    Q_D(QCompleter);
+    QCompleterPrivate * const d = d_func();
 
     if (d->filterMode == filterMode)
         return;
@@ -1199,7 +1202,7 @@ Qt::MatchFlags QCompleter::filterMode() const
 */
 void QCompleter::setPopup(QAbstractItemView *popup)
 {
-    Q_D(QCompleter);
+    QCompleterPrivate * const d = d_func();
     Q_ASSERT(popup != 0);
     if (d->popup) {
         QObject::disconnect(d->popup->selectionModel(), 0, this, 0);
@@ -1270,11 +1273,12 @@ bool QCompleter::event(QEvent *ev)
 }
 
 /*!
-  \reimp
+  oye 
+  专门为 设置setWidiget()的 widget准备的, 在具体信息发送给widget之前, 先过滤
 */
 bool QCompleter::eventFilter(QObject *o, QEvent *e)
 {
-    Q_D(QCompleter);
+    QCompleterPrivate * const d = d_func();
 
     if (d->eatFocusOut && o == d->widget && e->type() == QEvent::FocusOut) {
         d->hiddenBecauseNoMatch = false;
@@ -1282,6 +1286,7 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
             return true;
     }
 
+	// oye : 看来,主要是对popup 做体现过滤
     if (o != d->popup)
         return QObject::eventFilter(o, e);
 
@@ -1459,7 +1464,7 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
 */
 void QCompleter::complete(const QRect& rect)
 {
-    Q_D(QCompleter);
+    QCompleterPrivate * const d = d_func();
     QModelIndex idx = d->proxy->currentIndex(false);
     d->hiddenBecauseNoMatch = false;
     if (d->mode == QCompleter::InlineCompletion) {
@@ -1496,7 +1501,7 @@ void QCompleter::complete(const QRect& rect)
 */
 bool QCompleter::setCurrentRow(int row)
 {
-    Q_D(QCompleter);
+    QCompleterPrivate * const d = d_func();
     return d->proxy->setCurrentRow(row);
 }
 
@@ -1558,7 +1563,7 @@ int QCompleter::completionCount() const
 */
 void QCompleter::setModelSorting(QCompleter::ModelSorting sorting)
 {
-    Q_D(QCompleter);
+    QCompleterPrivate * const d = d_func();
     if (d->sorting == sorting)
         return;
     d->sorting = sorting;
@@ -1585,7 +1590,7 @@ QCompleter::ModelSorting QCompleter::modelSorting() const
 */
 void QCompleter::setCompletionColumn(int column)
 {
-    Q_D(QCompleter);
+    QCompleterPrivate * const d = d_func();
     if (d->column == column)
         return;
 #if QT_CONFIG(listview)
@@ -1612,7 +1617,7 @@ int QCompleter::completionColumn() const
 */
 void QCompleter::setCompletionRole(int role)
 {
-    Q_D(QCompleter);
+    QCompleterPrivate * const d = d_func();
     if (d->role == role)
         return;
     d->role = role;
@@ -1634,7 +1639,7 @@ int QCompleter::completionRole() const
 */
 void QCompleter::setWrapAround(bool wrap)
 {
-    Q_D(QCompleter);
+    QCompleterPrivate * const d = d_func();
     if (d->wrap == wrap)
         return;
     d->wrap = wrap;
@@ -1661,7 +1666,7 @@ int QCompleter::maxVisibleItems() const
 
 void QCompleter::setMaxVisibleItems(int maxItems)
 {
-    Q_D(QCompleter);
+    QCompleterPrivate * const d = d_func();
     if (Q_UNLIKELY(maxItems < 0)) {
         qWarning("QCompleter::setMaxVisibleItems: "
                  "Invalid max visible items (%d) must be >= 0", maxItems);
@@ -1680,7 +1685,7 @@ void QCompleter::setMaxVisibleItems(int maxItems)
 */
 void QCompleter::setCaseSensitivity(Qt::CaseSensitivity cs)
 {
-    Q_D(QCompleter);
+    QCompleterPrivate * const d = d_func();
     if (d->cs == cs)
         return;
     d->cs = cs;
@@ -1703,7 +1708,7 @@ Qt::CaseSensitivity QCompleter::caseSensitivity() const
 */
 void QCompleter::setCompletionPrefix(const QString &prefix)
 {
-    Q_D(QCompleter);
+    QCompleterPrivate * const d = d_func();
     d->prefix = prefix;
     d->proxy->filter(splitPath(prefix));
 }
