@@ -1856,6 +1856,7 @@ void QWidget::setStyleSheet(const QString& styleSheet)
 QStyle *QWidget::style() const
 {
     QWidgetPrivate * const d = d_func();
+	// 默认情况下是没有extra的, 但如果有了qss, 或者设计了新的style时, 这里就有值了
     if (d->extra && d->extra->style)
         return d->extra->style;
     return QApplication::style();

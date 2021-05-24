@@ -43,7 +43,8 @@ public:
                                 int alignment, const QPixmap &pixmap) const;
 
     virtual QPalette standardPalette() const;
-	//oye 先画粗糙的雏形出来
+	// oye 先画粗糙的雏形出来
+	// 纯虚
     virtual void drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p,
                                const QWidget *w = Q_NULLPTR) const = 0;
     

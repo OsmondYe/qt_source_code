@@ -337,6 +337,8 @@ private:
 };
 
 
+// region 表示 本次事件中 需要重绘的区域, 可能是不规则的
+// rect:  所有不规则区域共同组成的最小矩形
 class  QPaintEvent : public QEvent
 {
 public:

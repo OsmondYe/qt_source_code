@@ -1307,6 +1307,7 @@ void QWindowsXPStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt
 {
     QWindowsXPStylePrivate *d = const_cast<QWindowsXPStylePrivate*>(d_func());
 
+	// 如果非xp特色, 直接走WindowsStyle
     if (!QWindowsXPStylePrivate::useXP()) {
         QWindowsStyle::drawPrimitive(pe, option, p, widget);
         return;

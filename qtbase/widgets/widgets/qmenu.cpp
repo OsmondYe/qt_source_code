@@ -2511,6 +2511,8 @@ void QMenu::paintEvent(QPaintEvent *e)
     menuOpt.checkType = QStyleOptionMenuItem::NotCheckable;
     menuOpt.maxIconWidth = 0;
     menuOpt.tabWidth = 0;
+	
+	// vista<-xp-<  qss_style 会在这里有处理 
     style()->drawPrimitive(QStyle::PE_PanelMenu, &menuOpt, &p, this);
 
     //calculate the scroll up / down rect
@@ -2518,11 +2520,13 @@ void QMenu::paintEvent(QPaintEvent *e)
     const int hmargin = style()->pixelMetric(QStyle::PM_MenuHMargin,0, this);
     const int vmargin = style()->pixelMetric(QStyle::PM_MenuVMargin, 0, this);
 
+	// qss的margin靠这里起作用, 本质上是widget的margin
     QRect scrollUpRect, scrollDownRect;
     const int leftmargin = fw + hmargin + d->leftmargin;
     const int topmargin = fw + vmargin + d->topmargin;
     const int bottommargin = fw + vmargin + d->bottommargin;
     const int contentWidth = width() - (fw + hmargin) * 2 - d->leftmargin - d->rightmargin;
+	
     if (d->scroll) {
         if (d->scroll->scrollFlags & QMenuPrivate::QMenuScroller::ScrollUp)
             scrollUpRect.setRect(leftmargin, topmargin, contentWidth, d->scrollerHeight());
@@ -2543,11 +2547,14 @@ void QMenu::paintEvent(QPaintEvent *e)
 
     //draw the items that need updating..
     QRect scrollUpTearOffRect = scrollUpRect.united(tearOffRect);
+
+	// 循环,针对所有的menu_item
     for (int i = 0; i < d->actions.count(); ++i) {
+		
         QAction *action = d->actions.at(i);
         QRect actionRect = d->actionRects.at(i);
-        if (!e->rect().intersects(actionRect)
-            || d->widgetItems.value(action))
+	
+        if (!e->rect().intersects(actionRect)  || d->widgetItems.value(action))
            continue;
         //set the clip region to be extra safe (and adjust for the scrollers)
         emptyArea -= QRegion(actionRect);
@@ -2579,6 +2586,7 @@ void QMenu::paintEvent(QPaintEvent *e)
         QStyleOptionMenuItem opt;
         initStyleOption(&opt, action);
         opt.rect = actionRect;
+		// 选定好参数后, 用统一的style来做绘制, 此时绘制的是item,
         style()->drawControl(QStyle::CE_MenuItem, &opt, &p, this);
     }
 
