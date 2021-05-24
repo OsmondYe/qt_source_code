@@ -10,7 +10,6 @@
 QT_BEGIN_NAMESPACE
 
 
-class QRegion;
 class QRect;
 class QPoint;
 class QImage;

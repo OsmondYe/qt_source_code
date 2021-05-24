@@ -59,7 +59,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QRegion;
 
 template <typename T>
 class QVector
